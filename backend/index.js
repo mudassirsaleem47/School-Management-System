@@ -12,6 +12,7 @@ const PORT = process.env.PORT || 5000;
 // Middleware (Data samajhne ke liye)
 app.use(express.json());
 app.use(cors());
+app.use('/uploads', express.static('uploads'));
 
 // Basic Route (Check karne ke liye ke server chal raha hai ya nahi)
 app.get("/", (req, res) => {

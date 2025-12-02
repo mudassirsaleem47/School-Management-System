@@ -9,6 +9,8 @@ import AdmissionEnquiry from './pages/AdmissionEnquiry';
 import ShowClasses from './pages/ShowClasses';
 import TeacherList from './pages/TeacherList';
 import VisitorBook from './pages/VisitorBook';
+import PhoneCallLog from './pages/PhoneCallLog';
+import ComplainPage from './pages/ComplainPage';
 
 
 import { ToastProvider } from './context/ToastContext';
@@ -33,6 +35,8 @@ function App() {
                 <Route path="classes" element={<ShowClasses />} />
                 <Route path="teachers" element={<TeacherList />} />
                 <Route path="visitor-book" element={<VisitorBook />} />
+                <Route path="phone-calls" element={<PhoneCallLog />} />
+                <Route path="complain" element={<ComplainPage />} />
              </Route>
           </Route>
         </Routes>

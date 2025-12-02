@@ -3,8 +3,8 @@ import { NavLink, useLocation } from 'react-router-dom';
 import logo from '../assets/spark-logo.svg';
 
 import { 
-    Home, BookOpen, DollarSign, Briefcase,
-    ChevronDown, ChevronRight, Settings, FileText,ChevronsRight
+    Home, BookOpen, GraduationCap, DollarSign, Briefcase,
+    ChevronDown, ChevronRight, Settings, FileText, ChevronsRight
 } from 'lucide-react';
 
 const Sidebar = ({ onLogout }) => {
@@ -27,6 +27,17 @@ const Sidebar = ({ onLogout }) => {
             children: [
                 { name: 'Admission Enquiry', path: '/admin/enquiry' },
                 { name: 'Visitor Book', path: '/admin/visitor-book' },
+                { name: 'Phone Call Log', path: '/admin/phone-calls' },
+                { name: 'Complain', path: '/admin/complain' },
+            ]
+        },
+        { 
+            name: 'Student Information', 
+            icon: GraduationCap, 
+            type: 'dropdown',
+            children: [
+                { name: 'Students Details', path: '/admin/students' },
+                { name: 'Student Admission', path: '/admin/admission' },
             ]
         },
         { 
@@ -35,8 +46,6 @@ const Sidebar = ({ onLogout }) => {
             type: 'dropdown',
             children: [
                 { name: 'Classes', path: '/admin/classes' },
-                { name: 'Subjects', path: '/admin/subjects' },
-                { name: 'Students', path: '/admin/students' },
                 { name: 'Teachers', path: '/admin/teachers' },
             ]
         },

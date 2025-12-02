@@ -29,7 +29,7 @@ const Toast = ({ message, type, onClose }) => {
     const animationStyles = isExiting ? "animate-slide-out" : "animate-slide-in";
 
     return (
-        <div className={`${baseStyles} ${typeStyles} ${animationStyles}`}>
+        <div className={`${baseStyles} ${typeStyles} ${animationStyles} z-999`}>
             {type === 'success' ? (
                 <CheckCircle className="w-6 h-6 text-green-500" />
             ) : (

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { useModalAnimation } from '../../hooks/useModalAnimation';
 import axios from 'axios';
@@ -140,9 +141,10 @@ const VisitorModal = ({ isOpen, onClose, onSubmit, initialData, viewMode = false
         onSubmit(formData);
     };
 
-    return (
-        <div className={`fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 overflow-y-auto p-4 ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`}>
-            <div className={`bg-white rounded-2xl shadow-2xl w-full max-w-6xl relative ${isClosing ? 'animate-scale-down' : 'animate-scale-up'}`}>
+    return createPortal(
+        <div className={`fixed inset-0 z-[9999] overflow-y-auto bg-black/70 backdrop-blur-sm ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`}>
+            <div className="flex min-h-full items-center justify-center p-4">
+                <div className={`bg-white rounded-2xl shadow-2xl w-full max-w-6xl relative ${isClosing ? 'animate-scale-down' : 'animate-scale-up'}`}>
                 
                 {/* Header */}
                 <div className="p-7 rounded-t-2xl flex justify-between items-start gap-4">
@@ -156,7 +158,7 @@ const VisitorModal = ({ isOpen, onClose, onSubmit, initialData, viewMode = false
                     </div>
                     <button 
                         onClick={handleClose} 
-                        className="text-red-600 bg-gray-50 cursor-pointer hover:bg-gray-100 p-2 rounded-lg transition duration-150 flex-shrink-0"
+                        className="text-red-600 bg-gray-50 cursor-pointer hover:bg-gray-100 p-2 rounded-lg transition duration-150 shrink-0"
                     >
                         <X size={24} />
                     </button>
@@ -539,7 +541,9 @@ const VisitorModal = ({ isOpen, onClose, onSubmit, initialData, viewMode = false
                     </form>
                 )}
             </div>
-        </div>
+            </div>
+        </div>,
+        document.body
     );
 };
 
