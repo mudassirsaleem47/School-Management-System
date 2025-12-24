@@ -58,17 +58,13 @@ const FeeManagement = () => {
 
   const fetchData = async () => {
     try {
-      setLoading(true);
-      console.log('Fetching fee data for school ID:', currentUser._id);
+        setLoading(true);
       const [statsRes, structuresRes, classesRes] = await Promise.all([
         axios.get(`${API_BASE}/FeeStatistics/${currentUser._id}`),
         axios.get(`${API_BASE}/FeeStructures/${currentUser._id}`),
         axios.get(`${API_BASE}/Sclasses/${currentUser._id}`)
       ]);
-      
-      console.log('Classes API response:', classesRes.data);
-      console.log('Number of classes:', classesRes.data?.length || 0);
-      
+
       setStatistics(statsRes.data || {
         pendingFees: { amount: 0, count: 0 },
         todayCollection: { amount: 0, count: 0 },
@@ -360,14 +356,11 @@ const FeeManagement = () => {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   >
                     <option value="">Select Class</option>
-                    {classes.map(cls => {
-                      console.log('Rendering class:', cls);
-                      return (
-                        <option key={cls._id} value={cls._id}>
-                          {cls.sclassName || cls.name || 'Unknown Class'}
-                        </option>
-                      );
-                    })}
+                                      {classes.map(cls => (
+                                          <option key={cls._id} value={cls._id}>
+                                              {cls.sclassName || cls.name || 'Unknown Class'}
+                                          </option>
+                    ))}
                   </select>
                 </div>
 

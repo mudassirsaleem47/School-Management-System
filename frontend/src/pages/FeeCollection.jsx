@@ -46,15 +46,10 @@ const FeeCollection = () => {
   }, [currentUser]);
 
   const fetchStudents = async () => {
-    try {
-      console.log('Fetching students for school ID:', currentUser._id);
-      const response = await axios.get(`${API_BASE}/Students/${currentUser._id}`);
-      console.log('Students API response:', response.data);
-      console.log('Number of students:', response.data?.length || 0);
+      try {
+        const response = await axios.get(`${API_BASE}/Students/${currentUser._id}`);
       setStudents(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
-      console.error('Error fetching students:', error);
-      console.error('Error response:', error.response?.data);
       showToast(error.response?.data?.message || 'Error fetching students', 'error');
     }
   };
@@ -64,7 +59,6 @@ const FeeCollection = () => {
       const response = await axios.get(`${API_BASE}/StudentFees/${studentId}`);
       setStudentFees(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
-      console.error('Error fetching student fees:', error);
       showToast('Error fetching student fees', 'error');
     }
   };
