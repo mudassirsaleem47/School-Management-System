@@ -17,6 +17,8 @@ import SettingsProfile from './pages/SettingsProfile';
 import FeeManagement from './pages/FeeManagement';
 import FeeCollection from './pages/FeeCollection';
 import FeeReports from './pages/FeeReports';
+import FeeAssignment from './pages/FeeAssignment';
+
 
 
 import { ToastProvider } from './context/ToastContext';
@@ -47,6 +49,7 @@ function App() {
                 <Route path="students/disabled" element={<DisabledStudents />} />
                 <Route path="settings" element={<SettingsProfile />} />
               <Route path="fee-management" element={<FeeManagement />} />
+              <Route path="fee-assignment" element={<FeeAssignment />} />
               <Route path="fee-collection" element={<FeeCollection />} />
               <Route path="fee-reports" element={<FeeReports />} />
              </Route>

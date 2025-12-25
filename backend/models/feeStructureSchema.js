@@ -22,7 +22,7 @@ const feeStructureSchema = new mongoose.Schema({
     },
     section: {
         type: String,
-        required: true
+        default: 'All'
     },
     amount: {
         type: Number,
@@ -40,6 +40,17 @@ const feeStructureSchema = new mongoose.Schema({
     description: {
         type: String,
         default: ""
+    },
+    frequency: {
+        type: String,
+        enum: ['Monthly', 'Quarterly', 'Yearly', 'One-time'],
+        default: 'One-time'
+    },
+    month: {
+        type: String,
+        enum: ['January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December', ''],
+        default: ''
     },
     status: {
         type: String,

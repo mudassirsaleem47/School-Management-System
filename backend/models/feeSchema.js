@@ -51,7 +51,7 @@ const feeSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Update status based on payment
-feeSchema.pre('save', function(next) {
+feeSchema.pre('save', async function () {
     if (this.paidAmount === 0) {
         this.status = this.dueDate < new Date() ? 'Overdue' : 'Pending';
     } else if (this.paidAmount >= this.totalAmount) {
@@ -61,7 +61,7 @@ feeSchema.pre('save', function(next) {
         this.status = 'Partial';
     }
     this.pendingAmount = this.totalAmount - this.paidAmount;
-    next();
 });
+
 
 module.exports = mongoose.model("fee", feeSchema);

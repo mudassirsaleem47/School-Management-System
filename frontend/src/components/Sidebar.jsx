@@ -56,6 +56,7 @@ const Sidebar = ({ onLogout }) => {
             type: 'dropdown',
             children: [
                 { name: 'Collect Fees', path: '/admin/fee-collection' },
+                { name: 'Assign Fees', path: '/admin/fee-assignment' },
                 { name: 'Fee Management', path: '/admin/fee-management' },
                 { name: 'Fee Reports', path: '/admin/fee-reports' },
             ]

@@ -142,10 +142,11 @@ const FeeManagement = () => {
     setFormData({
       feeName: '',
       feeType: 'Tuition',
-      class: '',
-      section: '',
+        class: '',
       amount: '',
       academicYear: new Date().getFullYear().toString(),
+        frequency: 'Monthly',
+        month: '',
       dueDate: '',
       description: ''
     });
@@ -242,6 +243,8 @@ const FeeManagement = () => {
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Type</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Class</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Section</th>
+                                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Frequency</th>
+                                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Month</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Amount</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Due Date</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Year</th>
@@ -262,10 +265,15 @@ const FeeManagement = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-gray-700">
                       {fee.class?.sclassName || 'N/A'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-700">
-                      {fee.section}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">
+                                {fee.frequency || 'One-time'}
+                            </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-gray-700">
+                            {fee.month || '-'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
                       <div className="font-semibold text-gray-900">Rs. {fee.amount.toLocaleString()}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-gray-700">
@@ -366,27 +374,6 @@ const FeeManagement = () => {
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Section *
-                  </label>
-                  <select
-                    name="section"
-                    value={formData.section}
-                    onChange={handleInputChange}
-                    required
-                    disabled={!formData.class}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100"
-                  >
-                    <option value="">Select Section</option>
-                    {formData.class && getSectionsForClass(formData.class).map(section => (
-                      <option key={section._id} value={section.sectionName}>
-                        {section.sectionName}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Amount (Rs.) *
                   </label>
                   <input
@@ -396,7 +383,6 @@ const FeeManagement = () => {
                     onChange={handleInputChange}
                     required
                     min="0"
-                    step="0.01"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                     placeholder="Enter amount"
                   />
@@ -416,6 +402,53 @@ const FeeManagement = () => {
                     placeholder="2025"
                   />
                 </div>
+
+                              <div>
+                                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                      Frequency *
+                                  </label>
+                                  <select
+                                      name="frequency"
+                                      value={formData.frequency}
+                                      onChange={handleInputChange}
+                                      required
+                                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                  >
+                                      <option value="Monthly">Monthly</option>
+                                      <option value="Quarterly">Quarterly</option>
+                                      <option value="Yearly">Yearly</option>
+                                      <option value="One-time">One-time</option>
+                                  </select>
+                              </div>
+
+                              {formData.frequency === 'Monthly' && (
+                                  <div>
+                                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                          Month *
+                                      </label>
+                                      <select
+                                          name="month"
+                                          value={formData.month}
+                                          onChange={handleInputChange}
+                                          required
+                                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                      >
+                                          <option value="">Select Month</option>
+                                          <option value="January">January</option>
+                                          <option value="February">February</option>
+                                          <option value="March">March</option>
+                                          <option value="April">April</option>
+                                          <option value="May">May</option>
+                                          <option value="June">June</option>
+                                          <option value="July">July</option>
+                                          <option value="August">August</option>
+                                          <option value="September">September</option>
+                                          <option value="October">October</option>
+                                          <option value="November">November</option>
+                                          <option value="December">December</option>
+                                      </select>
+                                  </div>
+                              )}
 
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-gray-700 mb-2">

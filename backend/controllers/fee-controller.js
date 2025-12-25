@@ -107,11 +107,21 @@ const assignFeeToStudents = async (req, res) => {
     try {
         const { feeStructureId, studentIds, school } = req.body;
 
+        console.log('📌 Assign Fee Request:', {
+            feeStructureId,
+            studentIds,
+            school,
+            studentCount: studentIds?.length
+        });
+
         // Get fee structure
         const feeStructure = await FeeStructure.findById(feeStructureId);
         if (!feeStructure) {
+            console.log('❌ Fee structure not found:', feeStructureId);
             return res.status(404).json({ message: "Fee structure not found." });
         }
+
+        console.log('✅ Fee structure found:', feeStructure.feeName);
 
         const assignedFees = [];
         const errors = [];
@@ -126,6 +136,7 @@ const assignFeeToStudents = async (req, res) => {
                 });
 
                 if (existingFee) {
+                    console.log('⚠️ Fee already assigned to student:', studentId);
                     errors.push({ studentId, message: "Fee already assigned" });
                     continue;
                 }
@@ -142,12 +153,16 @@ const assignFeeToStudents = async (req, res) => {
                 });
 
                 const savedFee = await newFee.save();
+                console.log('✅ Fee assigned to student:', studentId);
                 assignedFees.push(savedFee);
 
             } catch (err) {
+                console.log('❌ Error assigning to student:', studentId, err.message);
                 errors.push({ studentId, message: err.message });
             }
         }
+
+        console.log(`🎉 Assignment complete: ${assignedFees.length} success, ${errors.length} errors`);
 
         res.status(201).json({
             message: `Fees assigned successfully to ${assignedFees.length} student(s)`,
@@ -156,6 +171,7 @@ const assignFeeToStudents = async (req, res) => {
         });
 
     } catch (err) {
+        console.log('❌ Error in assignFeeToStudents:', err.message);
         res.status(500).json({ message: "Error assigning fees.", error: err.message });
     }
 };
@@ -207,6 +223,8 @@ const getPendingFees = async (req, res) => {
 // 8. Collect Fee (Process Payment)
 const collectFee = async (req, res) => {
     try {
+        console.log('💰 Collect Fee Request:', req.body);
+
         const { 
             feeId, 
             amount, 
@@ -218,18 +236,26 @@ const collectFee = async (req, res) => {
             remarks 
         } = req.body;
 
+        console.log('📋 Payment Details:', { feeId, amount, paymentMethod, collectedBy });
+
         // Get the fee record
         const fee = await Fee.findById(feeId).populate('student').populate('feeStructure');
         if (!fee) {
+            console.log('❌ Fee not found:', feeId);
             return res.status(404).json({ message: "Fee record not found." });
         }
 
+        console.log('✅ Fee found:', fee.feeStructure?.feeName, 'Pending:', fee.pendingAmount);
+
         // Validate payment amount
         if (amount <= 0 || amount > fee.pendingAmount) {
+            console.log('❌ Invalid amount:', amount, 'Pending:', fee.pendingAmount);
             return res.status(400).json({ 
                 message: `Invalid payment amount. Pending amount is ${fee.pendingAmount}` 
             });
         }
+
+        console.log('💳 Creating transaction...');
 
         // Create transaction record
         const transaction = new FeeTransaction({
@@ -245,7 +271,9 @@ const collectFee = async (req, res) => {
             remarks: remarks || ""
         });
 
+        console.log('💾 Saving transaction...');
         await transaction.save();
+        console.log('✅ Transaction saved:', transaction.receiptNumber);
 
         // Update fee record
         fee.paidAmount += amount;
@@ -257,7 +285,9 @@ const collectFee = async (req, res) => {
             fee.status = 'Partial';
         }
 
+        console.log('💾 Updating fee record...');
         await fee.save();
+        console.log('✅ Fee updated. New status:', fee.status);
 
         res.status(201).json({
             message: "Payment collected successfully!",
@@ -266,7 +296,8 @@ const collectFee = async (req, res) => {
         });
 
     } catch (err) {
-        console.error(err);
+        console.error('❌ Collect Fee Error:', err);
+        console.error('Error stack:', err.stack);
         res.status(500).json({ message: "Error processing payment.", error: err.message });
     }
 };
@@ -277,6 +308,9 @@ const getFeeTransactions = async (req, res) => {
         const { schoolId } = req.params;
         const { startDate, endDate } = req.query;
 
+        console.log('📊 Get Transactions - School ID:', schoolId);
+        console.log('📅 Date Range:', { startDate, endDate });
+
         let query = { school: schoolId };
         
         // Filter by date range if provided
@@ -286,6 +320,8 @@ const getFeeTransactions = async (req, res) => {
                 $lte: new Date(endDate)
             };
         }
+
+        console.log('🔍 Query:', query);
 
         const transactions = await FeeTransaction.find(query)
             .populate('student', 'name rollNum sclassName section')
@@ -300,9 +336,15 @@ const getFeeTransactions = async (req, res) => {
             })
             .sort({ paymentDate: -1 });
 
+        console.log('✅ Transactions found:', transactions.length);
+        if (transactions.length > 0) {
+            console.log('First transaction:', transactions[0]);
+        }
+
         res.status(200).json(transactions);
 
     } catch (err) {
+        console.error('❌ Get Transactions Error:', err);
         res.status(500).json({ message: "Error fetching transactions.", error: err.message });
     }
 };

@@ -3,12 +3,10 @@ const mongoose = require("mongoose");
 const feeTransactionSchema = new mongoose.Schema({
     transactionId: {
         type: String,
-        required: true,
         unique: true
     },
     receiptNumber: {
         type: String,
-        required: true,
         unique: true
     },
     student: {
@@ -64,7 +62,7 @@ const feeTransactionSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Generate unique transaction ID
-feeTransactionSchema.pre('save', async function(next) {
+feeTransactionSchema.pre('save', async function () {
     if (!this.transactionId) {
         const timestamp = Date.now();
         const random = Math.floor(Math.random() * 1000);
@@ -75,7 +73,7 @@ feeTransactionSchema.pre('save', async function(next) {
         const year = new Date().getFullYear();
         this.receiptNumber = `REC${year}${String(count + 1).padStart(6, '0')}`;
     }
-    next();
 });
+
 
 module.exports = mongoose.model("feeTransaction", feeTransactionSchema);
