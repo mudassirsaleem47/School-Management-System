@@ -5,9 +5,6 @@ body ,html, button{
   font-family: 'Geist', 'Stack Sans Text', sans-serif;
 }
 
-button a {
-  cursor: pointer !important;
-}
 /* Remove default black outline from all inputs */
 input, select, textarea {
   outline: none;
@@ -126,6 +123,32 @@ input:focus, select:focus, textarea:focus {
   --navitem-text-icon: #262626;
 }
 
+/* Cursor Pointer for Interactive Elements */
+button,
+a,
+[role="button"],
+[onclick],
+.clickable {
+  cursor: pointer;
+}
+
+/* Cursor pointer for table rows with hover effects */
+tr:hover,
+tbody tr {
+  cursor: default;
+}
+
+tbody tr[onclick],
+tbody tr.clickable {
+  cursor: pointer;
+}
+
+/* Cursor pointer for SVG icons that are clickable */
+button svg,
+a svg,
+[role="button"] svg {
+  cursor: pointer;
+}
 
 @layer components {
 

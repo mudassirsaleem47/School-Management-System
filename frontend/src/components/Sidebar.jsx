@@ -4,7 +4,7 @@ import logo from '../assets/spark-logo.svg';
 
 import { 
     Home, BookOpen, GraduationCap, DollarSign, Briefcase,
-    ChevronDown, ChevronRight, Settings, FileText, ChevronsRight
+    ChevronDown, ChevronRight, Settings, FileText, ChevronsRight, Wallet
 } from 'lucide-react';
 
 const Sidebar = ({ onLogout }) => {
@@ -59,6 +59,27 @@ const Sidebar = ({ onLogout }) => {
                 { name: 'Assign Fees', path: '/admin/fee-assignment' },
                 { name: 'Fee Management', path: '/admin/fee-management' },
                 { name: 'Fee Reports', path: '/admin/fee-reports' },
+            ]
+        },
+        {
+            name: 'Finance',
+            icon: Wallet,
+            type: 'dropdown',
+            children: [
+                { name: 'Income Management', path: '/admin/income' },
+                { name: 'Expense Management', path: '/admin/expense' },
+            ]
+        },
+        {
+            name: 'Examinations',
+            icon: BookOpen,
+            type: 'dropdown',
+            children: [
+                { name: 'Exam Groups', path: '/admin/exam-groups' },
+                { name: 'Exam Schedule', path: '/admin/exam-schedule' },
+                { name: 'Exam Result', path: '/admin/exam-result' },
+                { name: 'Marks Grade', path: '/admin/marks-grade' },
+                { name: 'Marks Division', path: '/admin/marks-division' },
             ]
         },
         { name: 'Reports', path: '/admin/reports', icon: FileText, type: 'link' },

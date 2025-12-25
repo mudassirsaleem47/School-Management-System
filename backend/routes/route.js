@@ -10,6 +10,15 @@ const { createComplain, getComplains, getComplainById, updateComplain, deleteCom
 const { createPhoneCall, getPhoneCalls, getPhoneCallById, updatePhoneCall, deletePhoneCall } = require('../controllers/phonecall-controller.js');
 const { getNotifications, createNotification, markAsRead, markAllAsRead, deleteNotification, clearAllNotifications, getUnreadCount } = require('../controllers/notification-controller.js');
 const { createFeeStructure, getFeeStructuresBySchool, updateFeeStructure, deleteFeeStructure, assignFeeToStudents, getStudentFees, getPendingFees, collectFee, getFeeTransactions, getReceiptDetails, getFeeStatistics } = require('../controllers/fee-controller.js');
+const { createIncome, getIncomeBySchool, updateIncome, deleteIncome, getIncomeStatistics } = require('../controllers/income-controller.js');
+const { createExpense, getExpenseBySchool, updateExpense, deleteExpense, getExpenseStatistics } = require('../controllers/expense-controller.js');
+const {
+    createExamGroup, getExamGroupsBySchool, updateExamGroup, deleteExamGroup,
+    createExamSchedule, getExamSchedulesByGroup, getExamSchedulesByClass, updateExamSchedule, deleteExamSchedule,
+    createExamResult, getResultsByStudent, getResultsByExam, updateExamResult, deleteExamResult,
+    createMarksGrade, getMarksGradesBySchool, updateMarksGrade, deleteMarksGrade,
+    createMarksDivision, getMarksDivisionsBySchool, updateMarksDivision, deleteMarksDivision
+} = require('../controllers/examination-controller.js');
 
 
 // --- Admin Auth Routes ---
@@ -97,6 +106,53 @@ router.post('/CollectFee', collectFee);
 router.get('/FeeTransactions/:schoolId', getFeeTransactions);
 router.get('/FeeReceipt/:transactionId', getReceiptDetails);
 router.get('/FeeStatistics/:schoolId', getFeeStatistics);
+
+// --- Income Management Routes ---
+router.post('/IncomeCreate', createIncome);
+router.get('/Income/:schoolId', getIncomeBySchool);
+router.put('/Income/:id', updateIncome);
+router.delete('/Income/:id', deleteIncome);
+router.get('/IncomeStatistics/:schoolId', getIncomeStatistics);
+
+// --- Expense Management Routes ---
+router.post('/ExpenseCreate', createExpense);
+router.get('/Expense/:schoolId', getExpenseBySchool);
+router.put('/Expense/:id', updateExpense);
+router.delete('/Expense/:id', deleteExpense);
+router.get('/ExpenseStatistics/:schoolId', getExpenseStatistics);
+
+// --- Examination Management Routes ---
+// Exam Groups
+router.post('/ExamGroupCreate', createExamGroup);
+router.get('/ExamGroups/:schoolId', getExamGroupsBySchool);
+router.put('/ExamGroup/:id', updateExamGroup);
+router.delete('/ExamGroup/:id', deleteExamGroup);
+
+// Exam Schedules
+router.post('/ExamScheduleCreate', createExamSchedule);
+router.get('/ExamSchedules/Group/:groupId', getExamSchedulesByGroup);
+router.get('/ExamSchedules/Class/:classId', getExamSchedulesByClass);
+router.put('/ExamSchedule/:id', updateExamSchedule);
+router.delete('/ExamSchedule/:id', deleteExamSchedule);
+
+// Exam Results
+router.post('/ExamResultCreate', createExamResult);
+router.get('/ExamResults/Student/:studentId', getResultsByStudent);
+router.get('/ExamResults/Exam/:scheduleId', getResultsByExam);
+router.put('/ExamResult/:id', updateExamResult);
+router.delete('/ExamResult/:id', deleteExamResult);
+
+// Marks Grades
+router.post('/MarksGradeCreate', createMarksGrade);
+router.get('/MarksGrades/:schoolId', getMarksGradesBySchool);
+router.put('/MarksGrade/:id', updateMarksGrade);
+router.delete('/MarksGrade/:id', deleteMarksGrade);
+
+// Marks Divisions
+router.post('/MarksDivisionCreate', createMarksDivision);
+router.get('/MarksDivisions/:schoolId', getMarksDivisionsBySchool);
+router.put('/MarksDivision/:id', updateMarksDivision);
+router.delete('/MarksDivision/:id', deleteMarksDivision);
 
 
 module.exports = router;

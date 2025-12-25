@@ -7,7 +7,7 @@ import StudentModal from '../components/form-popup/StudentModal';
 import StudentDetailsModal from '../components/form-popup/StudentDetailsModal';
 import ConfirmationModal from '../components/ConfirmationModal';
 import SearchBar from '../components/SearchBar';
-import { Edit, Trash2, Plus, Eye, LayoutGrid, List as ListIcon, Filter, X } from 'lucide-react';
+import { Edit, Trash2, Plus, Eye, LayoutGrid, List as ListIcon, Filter, X, GraduationCap, Users, ChevronRight, ArrowLeft } from 'lucide-react';
 
 const API_BASE = "http://localhost:5000";
 
@@ -21,6 +21,10 @@ const StudentList = () => {
     const [loading, setLoading] = useState(true);
     const [viewMode, setViewMode] = useState('list'); // 'list' or 'grid'
     
+    // Navigation State
+    const [viewType, setViewType] = useState('classes'); // 'classes' or 'students'
+    const [selectedClass, setSelectedClass] = useState(null);
+
     // Filter State
     const [searchQuery, setSearchQuery] = useState("");
     const [filterClass, setFilterClass] = useState("");
@@ -128,6 +132,29 @@ const StudentList = () => {
         setIsDetailsModalOpen(true);
     };
 
+    // Class Selection Handler
+    const handleClassSelect = (classData) => {
+        setSelectedClass(classData);
+        setViewType('students');
+        setFilterClass(classData._id);
+        setSearchQuery("");
+        setFilterSection("");
+    };
+
+    // Back to Classes Handler
+    const handleBackToClasses = () => {
+        setViewType('classes');
+        setSelectedClass(null);
+        setFilterClass("");
+        setFilterSection("");
+        setSearchQuery("");
+    };
+
+    // Get student count for a specific class
+    const getStudentCountForClass = (classId) => {
+        return students.filter(student => student.sclassName?._id === classId).length;
+    };
+
     // Filter students based on search query and filters
     const filteredStudents = students.filter((student) => {
         const query = searchQuery.toLowerCase();
@@ -140,7 +167,7 @@ const StudentList = () => {
             student.sclassName?.sclassName?.toLowerCase().includes(query)
         );
 
-        // Class Filter
+        // Class Filter (auto-applied when a class is selected)
         const matchesClass = !filterClass || student.sclassName?._id === filterClass;
 
         // Section Filter
@@ -156,100 +183,113 @@ const StudentList = () => {
             <div>
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                     <div>
-                        <h1 className="text-4xl font-bold text-gray-900">Student Management</h1>
-                        <p className="text-gray-600 mt-2">Manage and track all students in your school</p>
-                    </div>
-                </div>
-
-                {/* Controls Bar */}
-                <div className="flex flex-col xl:flex-row justify-between items-center gap-4 mb-6">
-                    
-                    {/* Search & Filters Group */}
-                    <div className="w-full flex flex-col md:flex-row gap-3 items-center flex-1">
-                        {/* Search Bar */}
-                        <div className="w-full md:w-72">
-                            <SearchBar 
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Search students..."
-                                className="w-full"
-                            />
-                        </div>
-
-                        {/* Filters */}
-                        <div className="flex flex-wrap gap-2 w-full md:w-auto">
-                            <div className="relative">
-                                <select
-                                    value={filterClass}
-                                    onChange={(e) => {
-                                        setFilterClass(e.target.value);
-                                        setFilterSection(""); // Reset section when class changes
-                                    }}
-                                    className="appearance-none pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white min-w-[140px]"
+                        {/* Breadcrumb Navigation */}
+                        {viewType === 'students' && selectedClass && (
+                            <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                                <button
+                                    onClick={handleBackToClasses}
+                                    className="flex items-center gap-1 hover:text-indigo-600 transition-colors"
                                 >
-                                    <option value="">All Classes</option>
-                                    {classesList.map((cls) => (
-                                        <option key={cls._id} value={cls._id}>
-                                            {cls.sclassName}
-                                        </option>
-                                    ))}
-                                </select>
-                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
-                                    <Filter size={14} />
-                                </div>
-                            </div>
-
-                            <div className="relative">
-                                <select
-                                    value={filterSection}
-                                    onChange={(e) => setFilterSection(e.target.value)}
-                                    disabled={!filterClass}
-                                    className={`appearance-none pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm min-w-[140px] ${!filterClass ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white'}`}
-                                >
-                                    <option value="">All Sections</option>
-                                    {filterClass && classesList.find(c => c._id === filterClass)?.sections?.map((sec, idx) => (
-                                        <option key={idx} value={sec.sectionName || sec}>
-                                            {sec.sectionName || sec}
-                                        </option>
-                                    ))}
-                                </select>
-                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
-                                    <Filter size={14} />
-                                </div>
-                            </div>
-                            
-                            {(filterClass || filterSection) && (
-                                <button 
-                                    onClick={() => {
-                                        setFilterClass("");
-                                        setFilterSection("");
-                                    }}
-                                    className="flex items-center gap-1 px-3 py-2 text-sm text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
-                                >
-                                    <X size={14} /> Clear
+                                    Classes
                                 </button>
-                            )}
-                        </div>
+                                <ChevronRight size={16} />
+                                <span className="text-gray-900 font-semibold">{selectedClass.sclassName}</span>
+                            </div>
+                        )}
+                        <h1 className="text-4xl font-bold text-gray-900">
+                            {viewType === 'classes' ? 'Student Management' : `${selectedClass?.sclassName || 'Class'} Students`}
+                        </h1>
+                        <p className="text-gray-600 mt-2">
+                            {viewType === 'classes'
+                                ? 'Select a class to view and manage students'
+                                : `Manage students in ${selectedClass?.sclassName || 'this class'}`
+                            }
+                        </p>
                     </div>
 
-                    {/* View Toggle */}
-                    <div className="flex bg-white rounded-lg shadow-xs p-1 border border-gray-200 shrink-0">
-                        <button 
-                            onClick={() => setViewMode('list')}
-                            className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-indigo-100 text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}
-                            title="List View"
+                    {/* Back to Classes Button */}
+                    {viewType === 'students' && (
+                        <button
+                            onClick={handleBackToClasses}
+                            className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
                         >
-                            <ListIcon size={20} />
+                            <ArrowLeft size={18} />
+                            Back to Classes
                         </button>
-                        <button 
-                            onClick={() => setViewMode('grid')}
-                            className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-indigo-100 text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}
-                            title="Grid View"
-                        >
-                            <LayoutGrid size={20} />
-                        </button>
-                    </div>
+                    )}
                 </div>
+
+
+                {/* Controls Bar - Only show in students view */}
+                {viewType === 'students' && (
+                    <div className="flex flex-col xl:flex-row justify-between items-center gap-4 mb-6">
+
+                        {/* Search & Filters Group */}
+                        <div className="w-full flex flex-col md:flex-row gap-3 items-center flex-1">
+                            {/* Search Bar */}
+                            <div className="w-full md:w-72">
+                                <SearchBar
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    placeholder="Search students..."
+                                    className="w-full"
+                                />
+                            </div>
+
+                            {/* Filters */}
+                            <div className="flex flex-wrap gap-2 w-full md:w-auto">
+                                {/* Section Filter */}
+                                <div className="relative">
+                                    <select
+                                        value={filterSection}
+                                        onChange={(e) => setFilterSection(e.target.value)}
+                                        className="appearance-none pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white min-w-[140px]"
+                                    >
+                                        <option value="">All Sections</option>
+                                        {selectedClass?.sections?.map((sec, idx) => (
+                                            <option key={idx} value={sec.sectionName || sec}>
+                                                {sec.sectionName || sec}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                                        <Filter size={14} />
+                                    </div>
+                                </div>
+
+                                {(filterSection || searchQuery) && (
+                                    <button
+                                        onClick={() => {
+                                            setFilterSection("");
+                                            setSearchQuery("");
+                                        }}
+                                        className="flex items-center gap-1 px-3 py-2 text-sm text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+                                    >
+                                        <X size={14} /> Clear
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* View Toggle */}
+                        <div className="flex bg-white rounded-lg shadow-xs p-1 border border-gray-200 shrink-0">
+                            <button
+                                onClick={() => setViewMode('list')}
+                                className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-indigo-100 text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}
+                                title="List View"
+                            >
+                                <ListIcon size={20} />
+                            </button>
+                            <button
+                                onClick={() => setViewMode('grid')}
+                                className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-indigo-100 text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}
+                                title="Grid View"
+                            >
+                                <LayoutGrid size={20} />
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {/* Content Section */}
                 <div className="min-h-[400px]">
@@ -257,9 +297,81 @@ const StudentList = () => {
                         <div className="flex items-center justify-center py-12">
                             <div className="text-center">
                                 <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
-                                <p className="text-gray-600">Loading students...</p>
+                                <p className="text-gray-600">Loading...</p>
                             </div>
                         </div>
+                    ) : viewType === 'classes' ? (
+                        /* CLASSES GRID VIEW */
+                        classesList.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-12 px-4 bg-white rounded-xl shadow-sm border border-gray-200">
+                                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                    <GraduationCap className="w-8 h-8 text-gray-400" />
+                                </div>
+                                <p className="text-gray-600 text-lg font-500">No classes yet</p>
+                                <p className="text-gray-500 text-sm mt-1">Create classes first to view students</p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                {classesList.map((classData) => {
+                                    const studentCount = getStudentCountForClass(classData._id);
+                                    return (
+                                        <div
+                                            key={classData._id}
+                                            onClick={() => handleClassSelect(classData)}
+                                            className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-indigo-500 overflow-hidden group"
+                                        >
+                                            {/* Card Header with Gradient */}
+                                            <div className="h-32 bg-linear-to-br from-indigo-500 to-purple-600 flex items-center justify-center relative overflow-hidden">
+                                                <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors"></div>
+                                                <GraduationCap className="w-16 h-16 text-white relative z-10" />
+                                            </div>
+
+                                            {/* Card Content */}
+                                            <div className="p-6">
+                                                <h3 className="text-xl font-bold text-gray-900 mb-2 text-center">
+                                                    {classData.sclassName}
+                                                </h3>
+
+                                                {/* Student Count */}
+                                                <div className="flex items-center justify-center gap-2 text-gray-600 mb-4">
+                                                    <Users size={18} />
+                                                    <span className="text-sm">
+                                                        {studentCount} {studentCount === 1 ? 'Student' : 'Students'}
+                                                    </span>
+                                                </div>
+
+                                                {/* Sections Info */}
+                                                {classData.sections && classData.sections.length > 0 && (
+                                                    <div className="text-center">
+                                                        <p className="text-xs text-gray-500 mb-2">Sections:</p>
+                                                        <div className="flex flex-wrap justify-center gap-2">
+                                                            {classData.sections.slice(0, 3).map((sec, idx) => (
+                                                                <span
+                                                                    key={idx}
+                                                                    className="px-2 py-1 bg-indigo-50 text-indigo-700 rounded text-xs font-medium"
+                                                                >
+                                                                    {sec.sectionName || sec}
+                                                                </span>
+                                                            ))}
+                                                            {classData.sections.length > 3 && (
+                                                                <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs">
+                                                                    +{classData.sections.length - 3}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* View Button */}
+                                                <button className="w-full mt-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-500 transition-colors font-medium text-sm group-hover:bg-indigo-600 group-hover:text-white">
+                                                    View Students
+                                                </button>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                                    </div>
+                                )
                     ) : students.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-12 px-4 bg-white rounded-xl shadow-sm border border-gray-200">
                             <div 

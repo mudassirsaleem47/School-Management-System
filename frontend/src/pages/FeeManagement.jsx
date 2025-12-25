@@ -41,7 +41,6 @@ const FeeManagement = () => {
     feeName: '',
     feeType: 'Tuition',
     class: '',
-    section: '',
     amount: '',
     academicYear: new Date().getFullYear().toString(),
     dueDate: '',
@@ -117,7 +116,6 @@ const FeeManagement = () => {
       feeName: fee.feeName,
       feeType: fee.feeType,
       class: fee.class._id,
-      section: fee.section,
       amount: fee.amount.toString(),
       academicYear: fee.academicYear,
       dueDate: fee.dueDate.split('T')[0],
@@ -142,11 +140,11 @@ const FeeManagement = () => {
     setFormData({
       feeName: '',
       feeType: 'Tuition',
-        class: '',
+      class: '',
       amount: '',
       academicYear: new Date().getFullYear().toString(),
-        frequency: 'Monthly',
-        month: '',
+      frequency: 'Monthly',
+      month: '',
       dueDate: '',
       description: ''
     });
@@ -235,15 +233,14 @@ const FeeManagement = () => {
             <p className="text-gray-400 text-sm">Create your first fee structure to get started</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-2xl">
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Fee Name</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Type</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Class</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Section</th>
-                                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Frequency</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Class</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Frequency</th>
                                       <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Month</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Amount</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Due Date</th>
@@ -265,11 +262,11 @@ const FeeManagement = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-gray-700">
                       {fee.class?.sclassName || 'N/A'}
                     </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">
-                                {fee.frequency || 'One-time'}
-                            </span>
-                        </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">
+                        {fee.frequency || 'One-time'}
+                      </span>
+                    </td>
                         <td className="px-6 py-4 whitespace-nowrap text-gray-700">
                             {fee.month || '-'}
                         </td>

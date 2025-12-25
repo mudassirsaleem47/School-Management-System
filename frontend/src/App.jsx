@@ -1,8 +1,8 @@
 import { Routes, Route } from 'react-router-dom';
 import AdminLoginPage from './pages/AdminLoginPage';
-import AdminDashboard from './pages/AdminDashboard'; 
-import ProtectedRoute from './components/ProtectedRoute'; 
-import AdminLayout from './components/AdminLayout'; 
+import AdminDashboard from './pages/AdminDashboard';
+import ProtectedRoute from './components/ProtectedRoute';
+import AdminLayout from './components/AdminLayout';
 import StudentList from './pages/StudentList';
 import AdminRegisterPage from './pages/AdminRegisterPage';
 import AdmissionEnquiry from './pages/AdmissionEnquiry';
@@ -18,6 +18,13 @@ import FeeManagement from './pages/FeeManagement';
 import FeeCollection from './pages/FeeCollection';
 import FeeReports from './pages/FeeReports';
 import FeeAssignment from './pages/FeeAssignment';
+import IncomeManagement from './pages/IncomeManagement';
+import ExpenseManagement from './pages/ExpenseManagement';
+import ExamGroup from './pages/ExamGroup';
+import MarksGrade from './pages/MarksGrade';
+import ExamSchedule from './pages/ExamSchedule';
+import MarksDivision from './pages/MarksDivision';
+import ExamResult from './pages/ExamResult';
 
 
 
@@ -32,27 +39,34 @@ function App() {
           <Route path="/" element={<AdminLoginPage />} /> {/* Default route Admin Login */}
           <Route path="/AdminLogin" element={<AdminLoginPage />} />
           <Route path="/AdminRegister" element={<AdminRegisterPage />} />
-          
+
           {/* Protected Routes (Saare admin pages iske andar aayenge) */}
           <Route element={<ProtectedRoute />}>
-             <Route path="/admin" element={<AdminLayout />}> {/* <--- Layout Wrapper */}
-                <Route index element={<AdminDashboard />} />
-                <Route path="dashboard" element={<AdminDashboard />} /> 
-                <Route path="students" element={<StudentList />}/>
-                <Route path="enquiry" element={<AdmissionEnquiry />}/>
-                <Route path="classes" element={<ShowClasses />} />
-                <Route path="teachers" element={<TeacherList />} />
-                <Route path="visitor-book" element={<VisitorBook />} />
-                <Route path="phone-calls" element={<PhoneCallLog />} />
-                <Route path="complain" element={<ComplainPage />} />
-                <Route path="admission" element={<StudentAdmission />} />
-                <Route path="students/disabled" element={<DisabledStudents />} />
-                <Route path="settings" element={<SettingsProfile />} />
+            <Route path="/admin" element={<AdminLayout />}> {/* <--- Layout Wrapper */}
+              <Route index element={<AdminDashboard />} />
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="students" element={<StudentList />} />
+              <Route path="enquiry" element={<AdmissionEnquiry />} />
+              <Route path="classes" element={<ShowClasses />} />
+              <Route path="teachers" element={<TeacherList />} />
+              <Route path="visitor-book" element={<VisitorBook />} />
+              <Route path="phone-calls" element={<PhoneCallLog />} />
+              <Route path="complain" element={<ComplainPage />} />
+              <Route path="admission" element={<StudentAdmission />} />
+              <Route path="students/disabled" element={<DisabledStudents />} />
+              <Route path="settings" element={<SettingsProfile />} />
               <Route path="fee-management" element={<FeeManagement />} />
               <Route path="fee-assignment" element={<FeeAssignment />} />
               <Route path="fee-collection" element={<FeeCollection />} />
               <Route path="fee-reports" element={<FeeReports />} />
-             </Route>
+              <Route path="income" element={<IncomeManagement />} />
+              <Route path="expense" element={<ExpenseManagement />} />
+              <Route path="exam-groups" element={<ExamGroup />} />
+              <Route path="marks-grade" element={<MarksGrade />} />
+              <Route path="exam-schedule" element={<ExamSchedule />} />
+              <Route path="marks-division" element={<MarksDivision />} />
+              <Route path="exam-result" element={<ExamResult />} />
+            </Route>
           </Route>
         </Routes>
       </ToastProvider>
