@@ -54,7 +54,7 @@ const VisitorModal = ({ isOpen, onClose, onSubmit, initialData, viewMode = false
             const res = await axios.get(`${API_BASE}/Teachers/${currentUser._id}`);
             setStaffList(Array.isArray(res.data) ? res.data : []);
         } catch (err) {
-            console.error("Error fetching staff:", err);
+            // Silent fail - staff list will be empty
         }
     };
 
@@ -63,7 +63,7 @@ const VisitorModal = ({ isOpen, onClose, onSubmit, initialData, viewMode = false
             const res = await axios.get(`${API_BASE}/Sclasses/${currentUser._id}`);
             setClassesList(res.data);
         } catch (err) {
-            console.error("Error fetching classes:", err);
+            // Silent fail - classes will be empty
         }
     };
 
@@ -73,7 +73,7 @@ const VisitorModal = ({ isOpen, onClose, onSubmit, initialData, viewMode = false
             const filteredStudents = res.data.filter(student => student.sclassName?._id === classId);
             setStudentsList(filteredStudents);
         } catch (err) {
-            console.error("Error fetching students:", err);
+            // Silent fail - students list will be empty
         }
     };
     

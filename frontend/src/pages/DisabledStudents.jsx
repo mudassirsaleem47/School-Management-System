@@ -35,18 +35,16 @@ const DisabledStudents = () => {
         try {
             setLoading(true);
             const schoolId = currentUser._id;
-            
-            console.log('🚫 Fetching disabled students for School ID:', schoolId);
+
             setStudents([]);
             
             const response = await axios.get(`${API_BASE}/Students/Disabled/${schoolId}`);
-            console.log(`✅ Loaded ${response.data.length} disabled students`);
             setStudents(Array.isArray(response.data) ? response.data : []);
         } catch (err) {
             if (err.response && err.response.status === 404) {
                 setStudents([]);
             } else {
-                console.error("Error loading disabled students", err);
+                showToast("Error loading disabled students", "error");
             }
         } finally {
             setLoading(false);

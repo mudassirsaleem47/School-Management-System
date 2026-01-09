@@ -24,17 +24,21 @@ const AdminDashboard = () => {
       <div>
         
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900">Admin Dashboard</h1>
-            <p className="text-sm md:text-base text-gray-600 mt-2">Welcome back, {currentUser ? currentUser.name : 'Admin'}!</p>
+        <div className="flex flex-col gap-4 mb-8">
+          {/* Top Row - Title and Logout */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900">Admin Dashboard</h1>
+              <p className="text-sm md:text-base text-gray-600 mt-2">Welcome back, {currentUser ? currentUser.name : 'Admin'}!</p>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="w-full md:w-auto flex items-center justify-center px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 shadow-lg hover:shadow-xl transition duration-200 font-600 text-sm md:text-base"
+            >
+              <LogOut className="w-4 md:w-5 h-4 md:h-5 mr-2" /> Logout
+            </button>
           </div>
-          <button
-            onClick={handleLogout}
-            className="w-full md:w-auto flex items-center justify-center px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 shadow-lg hover:shadow-xl transition duration-200 font-600 text-sm md:text-base"
-          >
-            <LogOut className="w-4 md:w-5 h-4 md:h-5 mr-2" /> Logout
-          </button>
+
         </div>
 
         {/* Stats Grid */}
@@ -60,27 +64,7 @@ const AdminDashboard = () => {
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
-          {/* Welcome Card */}
-          <div className="lg:col-span-2 bg-linear-to-br from-indigo-600 to-indigo-700 rounded-xl shadow-lg p-8 text-white">
-            <h2 className="text-3xl font-bold mb-2">Welcome to Your School Dashboard</h2>
-            <p className="text-indigo-100 text-lg mb-6">
-              Manage your school operations efficiently with our modern admin panel
-            </p>
-            <div className="space-y-3">
-              <p className="flex items-center text-indigo-100">
-                <span className="w-2 h-2 bg-white rounded-full mr-3"></span>
-                Manage classes and sections
-              </p>
-              <p className="flex items-center text-indigo-100">
-                <span className="w-2 h-2 bg-white rounded-full mr-3"></span>
-                Track student admissions
-              </p>
-              <p className="flex items-center text-indigo-100">
-                <span className="w-2 h-2 bg-white rounded-full mr-3"></span>
-                Handle enquiries efficiently
-              </p>
-            </div>
-          </div>
+
 
           {/* Quick Access Card */}
           <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">

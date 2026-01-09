@@ -4,6 +4,7 @@ import { useToast } from '../context/ToastContext';
 
 const NotificationCenter = () => {
     const [isOpen, setIsOpen] = useState(false);
+    const [isClosing, setIsClosing] = useState(false);
     const { notifications, markAsRead, clearNotifications } = useToast();
     const dropdownRef = useRef(null);
 
@@ -11,7 +12,7 @@ const NotificationCenter = () => {
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                setIsOpen(false);
+                handleClose();
             }
         };
 
@@ -23,6 +24,22 @@ const NotificationCenter = () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [isOpen]);
+
+    const handleClose = () => {
+        setIsClosing(true);
+        setTimeout(() => {
+            setIsOpen(false);
+            setIsClosing(false);
+        }, 150); // Match animation duration
+    };
+
+    const handleToggle = () => {
+        if (isOpen) {
+            handleClose();
+        } else {
+            setIsOpen(true);
+        }
+    };
 
     const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -44,7 +61,7 @@ const NotificationCenter = () => {
         <div className="relative" ref={dropdownRef}>
             {/* Bell Icon Button */}
             <button
-                onClick={() => setIsOpen(!isOpen)}
+                onClick={handleToggle}
                 className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition"
             >
                 {unreadCount > 0 ? (
@@ -63,7 +80,9 @@ const NotificationCenter = () => {
 
             {/* Dropdown Panel */}
             {isOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-2xl border border-gray-200 z-50 max-h-96 overflow-hidden flex flex-col">
+                <div
+                    className={`notification-panel ${isClosing ? 'notification-panel-closing' : 'notification-panel-opening'}`}
+                >
                     {/* Header */}
                     <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between bg-gray-50">
                         <h3 className="font-semibold text-gray-800">Notifications</h3>
@@ -131,6 +150,78 @@ const NotificationCenter = () => {
                             </div>
                         )}
                     </div>
+
+                    <style jsx>{`
+                        .notification-panel {
+                            position: absolute;
+                            right: 0;
+                            margin-top: 0.5rem;
+                            width: 20rem;
+                            background-color: white;
+                            border-radius: 0.5rem;
+                            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+                            border: 1px solid #e5e7eb;
+                            z-index: 50;
+                            max-height: 24rem;
+                            overflow: hidden;
+                            display: flex;
+                            flex-direction: column;
+                        }
+
+                        .notification-panel-opening {
+                            animation: slideDownFadeIn 0.15s ease-out forwards;
+                            -webkit-animation: slideDownFadeIn 0.15s ease-out forwards;
+                        }
+
+                        .notification-panel-closing {
+                            animation: fadeOut 0.15s ease-in forwards;
+                            -webkit-animation: fadeOut 0.15s ease-in forwards;
+                        }
+
+                        @keyframes slideDownFadeIn {
+                            from {
+                                opacity: 0;
+                                transform: translateY(-10px) scale(0.95);
+                            }
+                            to {
+                                opacity: 1;
+                                transform: translateY(0) scale(1);
+                            }
+                        }
+
+                        @-webkit-keyframes slideDownFadeIn {
+                            from {
+                                opacity: 0;
+                                -webkit-transform: translateY(-10px) scale(0.95);
+                            }
+                            to {
+                                opacity: 1;
+                                -webkit-transform: translateY(0) scale(1);
+                            }
+                        }
+
+                        @keyframes fadeOut {
+                            from {
+                                opacity: 1;
+                                transform: translateY(0) scale(1);
+                            }
+                            to {
+                                opacity: 0;
+                                transform: translateY(-10px) scale(0.95);
+                            }
+                        }
+
+                        @-webkit-keyframes fadeOut {
+                            from {
+                                opacity: 1;
+                                -webkit-transform: translateY(0) scale(1);
+                            }
+                            to {
+                                opacity: 0;
+                                -webkit-transform: translateY(-10px) scale(0.95);
+                            }
+                        }
+                    `}</style>
                 </div>
             )}
         </div>

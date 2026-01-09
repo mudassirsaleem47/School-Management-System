@@ -47,11 +47,7 @@ const StudentList = () => {
         try {
             setLoading(true);
             const schoolId = currentUser._id;
-            
-            // Debug logging
-            console.log('📚 Fetching students for School ID:', schoolId);
-            
-            // Clear previous data to prevent showing stale records
+
             setStudents([]);
             setClassesList([]);
             
@@ -60,11 +56,9 @@ const StudentList = () => {
                 axios.get(`${API_BASE}/Sclasses/${schoolId}`)
             ]);
 
-            console.log(`✅ Loaded ${studentsRes.data.length} students`);
             setStudents(Array.isArray(studentsRes.data) ? studentsRes.data : []);
             setClassesList(Array.isArray(classesRes.data) ? classesRes.data : []);
         } catch (err) {
-            console.error("Error loading data", err);
             showToast("Error loading data", "error");
         } finally {
             setLoading(false);
@@ -73,7 +67,6 @@ const StudentList = () => {
 
     useEffect(() => {
         if (currentUser) {
-            console.log('🏫 Selected Campus:', selectedCampus?.campusName || 'All Campuses');
             fetchData();
         }
     }, [currentUser, selectedCampus, fetchData]);
@@ -102,7 +95,6 @@ const StudentList = () => {
             showToast("Student saved successfully!", "success");
         } catch (err) {
             showToast("Failed to save student.", "error");
-            console.error(err);
         }
     };
 
@@ -119,7 +111,6 @@ const StudentList = () => {
             fetchData();
             showToast("Student deleted successfully!", "success");
         } catch (err) {
-            console.error(err);
             showToast("Error deleting student", "error");
         }
         setShowDeleteModal(false);
@@ -183,10 +174,6 @@ const StudentList = () => {
 
         return matchesSearch && matchesClass && matchesSection && matchesCampus;
     });
-
-    // Debug log to see filtering results
-    console.log(`📊 Total Students: ${students.length}, Filtered: ${filteredStudents.length}, Selected Campus: ${selectedCampus?.campusName || 'All'}`);
-
     return (
         <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 p-4 md:p-6 lg:p-8">
             

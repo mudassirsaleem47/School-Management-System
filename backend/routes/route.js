@@ -4,7 +4,7 @@ const { adminRegister, adminLogin, getAdminDetail, updateAdmin } = require('../c
 const { studentAdmission, getStudentsBySchool, updateStudent, deleteStudent, getDisabledStudents } = require('../controllers/student-controller.js');
 const { enquiryCreate, enquiryList, enquiryDelete, enquiryUpdate } = require('../controllers/enquiry-controller.js');
 const { sclassCreate, getSclassesBySchool, deleteSclass, addSection, deleteSection } = require('../controllers/sclass-controller.js');
-const { addTeacher, getTeachersBySchool, updateTeacher, deleteTeacher, assignClassToTeacher, removeClassFromTeacher } = require('../controllers/teacher-controller.js');
+const { addTeacher, getTeachersBySchool, updateTeacher, deleteTeacher, assignClassToTeacher, removeClassFromTeacher, teacherLogin } = require('../controllers/teacher-controller.js');
 const { visitorCreate, visitorList, visitorUpdate, visitorDelete } = require('../controllers/visitor-controller.js');
 const { createComplain, getComplains, getComplainById, updateComplain, deleteComplain } = require('../controllers/complain-controller.js');
 const { createPhoneCall, getPhoneCalls, getPhoneCallById, updatePhoneCall, deletePhoneCall } = require('../controllers/phonecall-controller.js');
@@ -61,12 +61,14 @@ router.delete('/EnquiryDelete/:id', enquiryDelete);
 router.put('/EnquiryUpdate/:id', enquiryUpdate);
 
 // --- Teacher Routes ---
+router.post('/TeacherLogin', teacherLogin);
 router.post('/TeacherRegister', addTeacher);
 router.get('/Teachers/:schoolId', getTeachersBySchool);
 router.put('/Teacher/:id', updateTeacher);
 router.delete('/Teacher/:id', deleteTeacher);
 router.put('/Teacher/:id/AssignClass', assignClassToTeacher);
 router.delete('/Teacher/:id/Class/:classId', removeClassFromTeacher);
+
 
 // --- Visitor Routes ---
 router.post('/VisitorCreate', visitorCreate);

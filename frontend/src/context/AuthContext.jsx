@@ -5,6 +5,7 @@ import API_URL from '../config/api.js';
 export const AuthContext = createContext();
 
 const LOGIN_URL = `${API_URL}/AdminLogin`; 
+const TEACHER_LOGIN_URL = `${API_URL}/TeacherLogin`;
 
 // Local Storage se data load karne ka function
 const getInitialUser = () => {
@@ -28,13 +29,8 @@ export const AuthContextProvider = ({ children }) => {
         try {
             if (currentUser) {
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                // Debug logging to track which school is active
-                console.log('🏫 Current School:', currentUser.schoolName);
-                console.log('👤 Current Admin:', currentUser.name, `(${currentUser.email})`);
-                console.log('🔑 School ID:', currentUser._id);
             } else {
                 localStorage.removeItem('currentUser');
-                console.log('🚪 User logged out - localStorage cleared');
             }
         } catch (error) {
             console.warn("LocalStorage access denied:", error);
@@ -42,17 +38,33 @@ export const AuthContextProvider = ({ children }) => {
     }, [currentUser]);
     // ----------------------------------------------------------------------
 
+    // Admin Login
     const login = async (credentials) => {
         setLoading(true);
         setError(null);
         try {
             const res = await axios.post(LOGIN_URL, credentials);
-            
-            console.log('✅ Login successful!');
-            setCurrentUser(res.data);
+            const userData = { ...res.data, userType: 'admin' };
+            setCurrentUser(userData);
             setLoading(false);
-            return res.data; 
+            return userData;
+        } catch (err) {
+            setError(err.response?.data?.message || "Login failed. Check server status.");
+            setLoading(false);
+            throw err;
+        }
+    };
 
+    // Teacher Login
+    const teacherLogin = async (credentials) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const res = await axios.post(TEACHER_LOGIN_URL, credentials);
+            const userData = { ...res.data.teacher, userType: 'teacher' };
+            setCurrentUser(userData);
+            setLoading(false);
+            return userData; 
         } catch (err) {
             setError(err.response?.data?.message || "Login failed. Check server status.");
             setLoading(false);
@@ -61,25 +73,27 @@ export const AuthContextProvider = ({ children }) => {
     };
 
     const logout = () => {
-        console.log('🔴 Logging out and clearing all data...');
+        const userType = currentUser?.userType;
         setCurrentUser(null);
         setError(null);
-        
-        // Clear all localStorage items related to app
+
         try {
             localStorage.clear();
         } catch (error) {
             console.warn("LocalStorage clear failed:", error);
         }
-        
-        // Force page reload to ensure all state is cleared
+
         setTimeout(() => {
-            window.location.href = '/AdminLogin';
+            if (userType === 'teacher') {
+                window.location.href = '/teacher/login';
+            } else {
+                window.location.href = '/AdminLogin';
+            }
         }, 100);
     };
 
     return (
-        <AuthContext.Provider value={{ currentUser, setCurrentUser, loading, error, login, logout }}>
+        <AuthContext.Provider value={{ currentUser, setCurrentUser, loading, error, login, teacherLogin, logout }}>
             {children}
         </AuthContext.Provider>
     );

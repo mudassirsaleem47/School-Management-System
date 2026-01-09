@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 // 1. Add New Teacher
 const addTeacher = async (req, res) => {
     try {
-        const { name, email, password, phone, subject, qualification, experience, salary, joiningDate, school } = req.body;
+        const { name, email, password, phone, subject, qualification, experience, salary, joiningDate, school, campus } = req.body;
 
         // Check: Email already exists?
         const teacherExists = await Teacher.findOne({ email });
@@ -28,6 +28,7 @@ const addTeacher = async (req, res) => {
             salary,
             joiningDate: joiningDate || Date.now(),
             school,
+            campus, // Added campus field
             assignedClasses: []
         });
 
@@ -171,11 +172,60 @@ const removeClassFromTeacher = async (req, res) => {
     }
 };
 
+// 7. Teacher Login
+const teacherLogin = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        // Find teacher by email
+        const teacher = await Teacher.findOne({ email })
+            .populate('school', 'schoolName')
+            .populate('campus', 'name')
+            .populate('assignedClasses', 'sclassName');
+
+        if (!teacher) {
+            return res.status(404).json({ message: "Teacher not found with this email." });
+        }
+
+        // Verify password
+        const isPasswordValid = await bcrypt.compare(password, teacher.password);
+        if (!isPasswordValid) {
+            return res.status(401).json({ message: "Invalid credentials." });
+        }
+
+        // Return teacher data (without password)
+        const teacherData = {
+            _id: teacher._id,
+            name: teacher.name,
+            email: teacher.email,
+            phone: teacher.phone,
+            subject: teacher.subject,
+            qualification: teacher.qualification,
+            experience: teacher.experience,
+            salary: teacher.salary,
+            joiningDate: teacher.joiningDate,
+            school: teacher.school,
+            campus: teacher.campus,
+            assignedClasses: teacher.assignedClasses,
+            role: teacher.role
+        };
+
+        res.status(200).json({
+            message: "Login successful!",
+            teacher: teacherData
+        });
+
+    } catch (err) {
+        res.status(500).json({ message: "Internal Server Error during Teacher Login.", error: err.message });
+    }
+};
+
 module.exports = {
     addTeacher,
     getTeachersBySchool,
     updateTeacher,
     deleteTeacher,
     assignClassToTeacher,
-    removeClassFromTeacher
+    removeClassFromTeacher,
+    teacherLogin
 };

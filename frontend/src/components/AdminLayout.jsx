@@ -3,19 +3,23 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import CampusSelector from './CampusSelector';
 import NotificationCenter from './NotificationCenter';
-import { LogOut, User, Settings, Mail, Lock, Globe, ChevronDown, Menu } from 'lucide-react';
+import { LogOut, User, Settings, Mail, Lock, Globe, ChevronDown, Menu, Search } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const AdminLayout = () => {
   const { logout, currentUser } = useAuth();
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const dropdownRef = useRef(null);
 
   const handleLogout = () => {
-    setShowDropdown(false);
-    logout();
+    handleCloseDropdown();
+    setTimeout(() => {
+      logout();
+    }, 150);
   };
 
   const toggleSidebar = () => {
@@ -26,11 +30,33 @@ const AdminLayout = () => {
     setSidebarOpen(false);
   };
 
+  const handleCloseDropdown = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setShowDropdown(false);
+      setIsClosing(false);
+    }, 150);
+  };
+
+  const handleToggleDropdown = () => {
+    if (showDropdown) {
+      handleCloseDropdown();
+    } else {
+      setShowDropdown(true);
+    }
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    // Search functionality yahan implement kar sakte hain
+    console.log('Searching for:', searchQuery);
+  };
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setShowDropdown(false);
+        handleCloseDropdown();
       }
     };
 
@@ -60,8 +86,8 @@ const AdminLayout = () => {
       <div className="flex-1 flex flex-col overflow-hidden">
         
         {/* Header/Navbar - Mobile responsive */}
-        <header className="bg-white border-b border-gray-100 px-4 md:px-7 py-4 md:py-5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <header className="bg-white border-b border-gray-100 px-4 md:px-7 py-4 md:py-5 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 flex-1">
             {/* Hamburger Menu for Mobile */}
             <button
               onClick={toggleSidebar}
@@ -71,9 +97,25 @@ const AdminLayout = () => {
               <Menu className="w-5 h-5 text-gray-700" />
             </button>
 
-            <div className="text-sm text-gray-600 hidden sm:block">
+            <div className="text-sm text-gray-600 hidden sm:block whitespace-nowrap">
               Welcome Back! 👋
             </div>
+
+            {/* Search Bar */}
+            <form onSubmit={handleSearch} className="flex-1 max-w-xl mx-4">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search className="h-4 w-4 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search students, classes, teachers..."
+                  className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent focus:bg-white transition duration-200 text-sm text-gray-900 placeholder-gray-400"
+                />
+              </div>
+            </form>
           </div>
           
           <div className="flex items-center gap-2 md:gap-4">
@@ -84,7 +126,7 @@ const AdminLayout = () => {
             {currentUser && (
               <div className="relative" ref={dropdownRef}>
                 <button
-                  onClick={() => setShowDropdown(!showDropdown)}
+                  onClick={handleToggleDropdown}
                   className="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
                 >
                   <div className="w-8 md:w-9 h-8 md:h-9 bg-indigo-100 rounded-full flex items-center justify-center">
@@ -95,7 +137,7 @@ const AdminLayout = () => {
 
                 {/* Dropdown Menu */}
                 {showDropdown && (
-                  <div className="absolute right-0 mt-2 w-64 md:w-72 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50">
+                  <div className={`profile-dropdown ${isClosing ? 'profile-dropdown-closing' : 'profile-dropdown-opening'}`}>
                     {/* User Info Section */}
                     <div className="px-4 py-3 border-b border-gray-100">
                       <div className="flex items-center gap-3">
@@ -121,8 +163,10 @@ const AdminLayout = () => {
                         <button
                           key={index}
                           onClick={() => {
-                            setShowDropdown(false);
-                            item.action();
+                            handleCloseDropdown();
+                            setTimeout(() => {
+                              item.action();
+                            }, 150);
                           }}
                           className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors text-left"
                         >
@@ -142,6 +186,82 @@ const AdminLayout = () => {
                         <span className="text-sm text-red-600 font-medium">Logout</span>
                       </button>
                     </div>
+
+                    <style jsx>{`
+                      .profile-dropdown {
+                        position: absolute;
+                        right: 0;
+                        margin-top: 0.5rem;
+                        width: 16rem;
+                        background-color: white;
+                        border-radius: 0.75rem;
+                        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+                        border: 1px solid #e5e7eb;
+                        padding-top: 0.5rem;
+                        padding-bottom: 0.5rem;
+                        z-index: 50;
+                      }
+
+                      @media (min-width: 768px) {
+                        .profile-dropdown {
+                          width: 18rem;
+                        }
+                      }
+
+                      .profile-dropdown-opening {
+                        animation: slideDownFadeIn 0.15s ease-out forwards;
+                        -webkit-animation: slideDownFadeIn 0.15s ease-out forwards;
+                      }
+
+                      .profile-dropdown-closing {
+                        animation: fadeOut 0.15s ease-in forwards;
+                        -webkit-animation: fadeOut 0.15s ease-in forwards;
+                      }
+
+                      @keyframes slideDownFadeIn {
+                        from {
+                          opacity: 0;
+                          transform: translateY(-10px) scale(0.95);
+                        }
+                        to {
+                          opacity: 1;
+                          transform: translateY(0) scale(1);
+                        }
+                      }
+
+                      @-webkit-keyframes slideDownFadeIn {
+                        from {
+                          opacity: 0;
+                          -webkit-transform: translateY(-10px) scale(0.95);
+                        }
+                        to {
+                          opacity: 1;
+                          -webkit-transform: translateY(0) scale(1);
+                        }
+                      }
+
+                      @keyframes fadeOut {
+                        from {
+                          opacity: 1;
+                          transform: translateY(0) scale(1);
+                        }
+                        to {
+                          opacity: 0;
+                          transform: translateY(-10px) scale(0.95);
+                        }
+                      }
+
+                      @-webkit-keyframes fadeOut {
+                        from {
+                          opacity: 1;
+                          -webkit-transform: translateY(0) scale(1);
+                        }
+                        to {
+                          opacity: 0;
+                          -webkit-transform: translateY(-10px) scale(0.95);
+                        }
+                      }
+                    `}</style>
                   </div>
                 )}
               </div>

@@ -56,26 +56,9 @@ const FeeCollection = () => {
 
   const fetchStudentFees = async (studentId) => {
     try {
-        console.log('🔍 Fetching fees for student ID:', studentId);
       const response = await axios.get(`${API_BASE}/StudentFees/${studentId}`);
-        console.log('📊 Student fees response:', response.data);
-        console.log('📝 Number of fees:', response.data?.length || 0);
-
-        if (response.data && response.data.length > 0) {
-            response.data.forEach((fee, index) => {
-                console.log(`Fee ${index + 1}:`, {
-                    feeName: fee.feeStructure?.feeName,
-                    status: fee.status,
-                    total: fee.totalAmount,
-                    pending: fee.pendingAmount
-                });
-            });
-        }
-
       setStudentFees(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
-        console.error('❌ Error fetching student fees:', error);
-        console.error('Error details:', error.response?.data);
       showToast('Error fetching student fees', 'error');
     }
   };

@@ -88,7 +88,6 @@ const StudentAdmissionForm = ({ onSuccess, onCancel }) => {
             const res = await axios.get(`${API_URL}/Sclasses/${currentUser._id}`);
             setClassesList(res.data);
         } catch (err) {
-            console.error("Error fetching classes:", err);
             showToast("Failed to load classes", "error");
         }
     };
@@ -188,7 +187,6 @@ const StudentAdmissionForm = ({ onSuccess, onCancel }) => {
             showToast("Student admitted successfully!", "success");
             if (onSuccess) onSuccess();
         } catch (err) {
-            console.error(err);
             showToast(err.response?.data?.message || "Error admitting student", "error");
         } finally {
             setLoading(false);

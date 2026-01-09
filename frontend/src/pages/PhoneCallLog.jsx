@@ -36,15 +36,13 @@ const PhoneCallLog = () => {
         try {
             setLoading(true);
             const schoolId = currentUser._id;
-            
-            console.log('📞 Fetching phone calls for School ID:', schoolId);
+
             setPhoneCalls([]);
             
             const response = await axios.get(`${API_BASE}/PhoneCalls/${schoolId}`);
-            console.log(`✅ Loaded ${response.data.length} phone calls`);
             setPhoneCalls(Array.isArray(response.data) ? response.data : []);
         } catch (err) {
-            console.error("Error loading phone calls", err);
+            showToast("Error loading phone calls", "error");
         } finally {
             setLoading(false);
         }
@@ -60,7 +58,6 @@ const PhoneCallLog = () => {
     const handleFormSubmit = async (formData) => {
         try {
             const dataToSend = { ...formData, school: currentUser._id };
-            console.log("Sending Phone Call Data:", dataToSend);
             
             if (currentCall) {
                 // UPDATE Existing
@@ -77,7 +74,6 @@ const PhoneCallLog = () => {
             showToast("Phone call saved successfully!", "success");
         } catch (err) {
             showToast("Failed to save phone call.", "error");
-            console.error(err);
         }
     };
 

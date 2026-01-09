@@ -33,7 +33,7 @@ const StudentModal = ({ isOpen, onClose, onSubmit, initialData }) => {
             const res = await axios.get(`${API_BASE}/Sclasses/${currentUser._id}`);
             setClassesList(res.data);
         } catch (err) {
-            console.error("Error fetching classes:", err);
+            // Silent fail - classes will be empty
         }
     };
     

@@ -36,15 +36,13 @@ const VisitorBook = () => {
         try {
             setLoading(true);
             const schoolId = currentUser._id;
-            
-            console.log('👥 Fetching visitors for School ID:', schoolId);
+
             setVisitors([]);
             
             const response = await axios.get(`${API_BASE}/Visitors/${schoolId}`);
-            console.log(`✅ Loaded ${response.data.length} visitors`);
             setVisitors(Array.isArray(response.data) ? response.data : []);
         } catch (err) {
-            console.error("Error loading visitors", err);
+            showToast("Error loading visitors", "error");
         } finally {
             setLoading(false);
         }
@@ -66,7 +64,6 @@ const VisitorBook = () => {
             if (!cleanedData.student) delete cleanedData.student;
             
             const dataToSend = { ...cleanedData, school: currentUser._id };
-            console.log("Sending Visitor Data:", dataToSend);
             
             if (currentVisitor) {
                 // UPDATE Existing
@@ -83,7 +80,6 @@ const VisitorBook = () => {
             showToast("Visitor saved successfully!", "success");
         } catch (err) {
             showToast("Failed to save visitor.", "error");
-            console.error(err);
         }
     };
 

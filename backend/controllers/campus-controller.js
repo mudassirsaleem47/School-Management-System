@@ -215,12 +215,12 @@ const getCampusStats = async (req, res) => {
         const { id } = req.params;
 
         const Student = require("../models/studentSchema");
-        const Teacher = require("../models/teacherSchema");
+        const Staff = require("../models/staffSchema"); // Use Staff model instead of Teacher
         const Sclass = require("../models/sclassSchema");
 
         const [studentCount, teacherCount, classCount, campus] = await Promise.all([
             Student.countDocuments({ campus: id, status: 'Active' }),
-            Teacher.countDocuments({ campus: id }),
+            Staff.countDocuments({ campus: id, role: 'Teacher' }), // Count teachers from Staff model
             Sclass.countDocuments({ campus: id }),
             Campus.findById(id)
         ]);

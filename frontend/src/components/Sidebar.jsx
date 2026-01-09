@@ -5,7 +5,7 @@ import { X } from 'lucide-react';
 
 import { 
     Home, BookOpen, GraduationCap, DollarSign, Briefcase,
-    ChevronDown, ChevronRight, Settings, FileText, ChevronsRight, Wallet, Users
+    ChevronDown, ChevronRight, Settings, FileText, ChevronsRight, Wallet, Users, Building2
 } from 'lucide-react';
 
 const Sidebar = ({ onLogout, isOpen, onClose }) => {
@@ -58,7 +58,7 @@ const Sidebar = ({ onLogout, isOpen, onClose }) => {
             ]
         },
         { 
-            name: 'Fees Collection', 
+            name: 'Fees Collections',    
             icon: DollarSign, 
             type: 'dropdown',
             children: [
@@ -89,6 +89,7 @@ const Sidebar = ({ onLogout, isOpen, onClose }) => {
                 { name: 'Marks Division', path: '/admin/marks-division' },
             ]
         },
+        { name: 'Campuses', path: '/admin/campuses', icon: Building2, type: 'link' },
         { name: 'Staff Management', path: '/admin/staff', icon: Users, type: 'link' },
         { name: 'Reports', path: '/admin/reports', icon: FileText, type: 'link' },
         { name: 'Settings', path: '/admin/settings', icon: Settings, type: 'link' },

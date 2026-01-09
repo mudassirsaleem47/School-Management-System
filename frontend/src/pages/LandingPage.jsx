@@ -54,16 +54,16 @@ function LandingPage() {
             </div>
             <div className="flex gap-3">
               <Link
-                to="/AdminLogin"
-                className="px-6 py-2 text-gray-700 font-medium hover:text-gray-900 transition"
+                to="/teacher/login"
+                className="px-4 py-2 text-emerald-700 font-medium hover:text-emerald-800 transition border border-emerald-600 rounded-lg hover:bg-emerald-50"
               >
-                Login
+                Teacher Login
               </Link>
               <Link
-                to="/AdminRegister"
-                className="px-6 py-2 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition"
+                to="/AdminLogin"
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition"
               >
-                Get Started
+                Admin Login
               </Link>
             </div>
           </div>
@@ -83,21 +83,57 @@ function LandingPage() {
               Built for efficiency and ease of use.
             </p>
 
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Link
-                to="/AdminLogin"
-                className="group px-8 py-4 bg-gray-900 text-white rounded-lg font-semibold text-lg hover:bg-gray-800 transition-all duration-200 flex items-center gap-2"
-              >
-                Login to Portal
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <Link
-                to="/AdminRegister"
-                className="px-8 py-4 bg-white border-2 border-gray-900 text-gray-900 rounded-lg font-semibold text-lg hover:bg-gray-50 transition-all duration-200"
-              >
-                Start Free Trial
-              </Link>
+            {/* CTA Buttons - Admin & Teacher Login */}
+            <div className="flex flex-col gap-6 justify-center items-center max-w-4xl mx-auto">
+              <h3 className="text-lg font-600 text-gray-700">Choose Your Portal</h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+                {/* Admin Login Card */}
+                <Link
+                  to="/AdminLogin"
+                  className="group p-8 bg-white border-2 border-indigo-600 rounded-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
+                >
+                  <div className="flex flex-col items-center text-center">
+                    <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-indigo-600 transition-colors">
+                      <Shield className="w-8 h-8 text-indigo-600 group-hover:text-white transition-colors" />
+                    </div>
+                    <h4 className="text-2xl font-bold text-gray-900 mb-2">Admin Portal</h4>
+                    <p className="text-gray-600 mb-4">Manage your school operations</p>
+                    <div className="flex items-center gap-2 text-indigo-600 font-600">
+                      Login as Admin
+                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </div>
+                </Link>
+
+                {/* Teacher Login Card */}
+                <Link
+                  to="/teacher/login"
+                  className="group p-8 bg-white border-2 border-emerald-600 rounded-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
+                >
+                  <div className="flex flex-col items-center text-center">
+                    <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-emerald-600 transition-colors">
+                      <GraduationCap className="w-8 h-8 text-emerald-600 group-hover:text-white transition-colors" />
+                    </div>
+                    <h4 className="text-2xl font-bold text-gray-900 mb-2">Teacher Portal</h4>
+                    <p className="text-gray-600 mb-4">Access your teaching dashboard</p>
+                    <div className="flex items-center gap-2 text-emerald-600 font-600">
+                      Login as Teacher
+                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </div>
+                </Link>
+              </div>
+
+              {/* Register Link */}
+              <div className="mt-4 text-center">
+                <p className="text-gray-600">
+                  New school?
+                  <Link to="/AdminRegister" className="ml-2 text-indigo-600 hover:text-indigo-700 font-600 underline">
+                    Register here
+                  </Link>
+                </p>
+              </div>
             </div>
 
             {/* Stats */}

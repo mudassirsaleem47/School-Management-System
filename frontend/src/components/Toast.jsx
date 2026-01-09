@@ -9,8 +9,8 @@ const Toast = ({ message, type, onClose }) => {
             setIsExiting(true);
             setTimeout(() => {
                 onClose();
-            }, 100); // Wait for exit animation to complete
-        }, 2000); // Auto close after 3 seconds
+            }, 150); // Wait for exit animation to complete
+        }, 2000); // Auto close after 2 seconds
 
         return () => clearTimeout(timer);
     }, [onClose]);
@@ -19,7 +19,7 @@ const Toast = ({ message, type, onClose }) => {
         setIsExiting(true);
         setTimeout(() => {
             onClose();
-        }, 100); // Wait for exit animation to complete
+        }, 150); // Wait for exit animation to complete
     };
 
     const baseStyles = "fixed top-5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 px-5 py-4 rounded-xl shadow-lg min-w-[400px]";

@@ -28,7 +28,14 @@ import MarksDivision from './pages/MarksDivision';
 import ExamResult from './pages/ExamResult';
 import CampusManagement from './pages/CampusManagement';
 import StaffManagement from './pages/StaffManagement';
-
+import TeacherLoginPage from './pages/TeacherLoginPage';
+import TeacherDashboard from './pages/TeacherDashboard';
+import TeacherLayout from './components/TeacherLayout';
+import AttendancePage from './pages/teacher/AttendancePage';
+import TeacherStudentsPage from './pages/teacher/TeacherStudentsPage';
+import SchedulePage from './pages/teacher/SchedulePage';
+import AssignmentsPage from './pages/teacher/AssignmentsPage';
+import AnalyticsPage from './pages/teacher/AnalyticsPage';
 
 
 
@@ -47,6 +54,10 @@ function App() {
             {/* Admin Auth Routes */}
           <Route path="/AdminLogin" element={<AdminLoginPage />} />
             <Route path="/AdminRegister" element={<AdminRegisterPage />} />
+
+            {/* Teacher Auth Routes */}
+            <Route path="/teacher/login" element={<TeacherLoginPage />} />
+
           <Route element={<ProtectedRoute />}>
             <Route path="/admin" element={<AdminLayout />}> {/* <--- Layout Wrapper */}
               <Route index element={<AdminDashboard />} />
@@ -75,6 +86,17 @@ function App() {
                 <Route path="campuses" element={<CampusManagement />} />
                 <Route path="staff" element={<StaffManagement />} />
             </Route>
+
+              {/* Teacher Protected Routes */}
+              <Route path="/teacher" element={<TeacherLayout />}>
+                <Route path="dashboard" element={<TeacherDashboard />} />
+                <Route path="attendance" element={<AttendancePage />} />
+                <Route path="students" element={<TeacherStudentsPage />} />
+                <Route path="schedule" element={<SchedulePage />} />
+                <Route path="assignments" element={<AssignmentsPage />} />
+                <Route path="analytics" element={<AnalyticsPage />} />
+                <Route path="settings" element={<SettingsProfile />} />
+              </Route>
           </Route>
         </Routes>
         </CampusProvider>
