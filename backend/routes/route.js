@@ -22,7 +22,6 @@ const {
 const { createCampus, getCampusesBySchool, getCampusById, updateCampus, deleteCampus, getCampusStats } = require('../controllers/campus-controller.js');
 const { createStaff, getStaffBySchool, getStaffById, updateStaff, deleteStaff, resetStaffPassword, staffLogin } = require('../controllers/staff-controller.js');
 const { createDesignation, getDesignationsBySchool, updateDesignation, deleteDesignation } = require('../controllers/designation-controller.js');
-const { chat, getSuggestions } = require('../controllers/ai-controller.js');
 
 
 
@@ -185,8 +184,5 @@ router.get('/Designations/:schoolId', getDesignationsBySchool);
 router.put('/Designation/:id', updateDesignation);
 router.delete('/Designation/:id', deleteDesignation);
 
-// --- AI Chatbot Routes ---
-router.post('/ai/chat/:schoolId', chat);
-router.get('/ai/suggestions', getSuggestions);
 
 module.exports = router;

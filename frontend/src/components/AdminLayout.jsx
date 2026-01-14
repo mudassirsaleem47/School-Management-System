@@ -5,7 +5,6 @@ import CampusSelector from './CampusSelector';
 import NotificationCenter from './NotificationCenter';
 import { LogOut, User, Settings, Mail, Lock, Globe, ChevronDown, Menu, Search } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import Chatbot from './Chatbot';
 
 const AdminLayout = () => {
   const { logout, currentUser } = useAuth();
@@ -277,9 +276,6 @@ const AdminLayout = () => {
           </div>
         </main>
       </div>
-
-      {/* AI Chatbot */}
-      <Chatbot />
     </div>
   );
 }; 
