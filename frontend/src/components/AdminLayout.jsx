@@ -3,7 +3,9 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import CampusSelector from './CampusSelector';
 import NotificationCenter from './NotificationCenter';
-import { LogOut, User, Settings, Mail, Lock, Globe, ChevronDown, Menu, Search } from 'lucide-react';
+import CalendarModal from './CalendarModal';
+import TaskModal from './TaskModal';
+import { LogOut, User, Settings, Mail, Lock, Globe, ChevronDown, Menu, Search, Calendar } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const AdminLayout = () => {
@@ -13,6 +15,7 @@ const AdminLayout = () => {
   const [isClosing, setIsClosing] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showCalendar, setShowCalendar] = useState(false);
   const dropdownRef = useRef(null);
 
   const handleLogout = () => {
@@ -97,9 +100,7 @@ const AdminLayout = () => {
               <Menu className="w-5 h-5 text-gray-700" />
             </button>
 
-            <div className="text-sm text-gray-600 hidden sm:block whitespace-nowrap">
-              Welcome Back! 👋
-            </div>
+          
 
             {/* Search Bar */}
             <form onSubmit={handleSearch} className="flex-1 max-w-xl mx-4">
@@ -120,6 +121,19 @@ const AdminLayout = () => {
           
           <div className="flex items-center gap-2 md:gap-4">
             <CampusSelector />
+
+            {/* Calendar Icon */}
+            <button
+              onClick={() => setShowCalendar(true)}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors relative"
+              title="School Calendar"
+            >
+              <Calendar className="w-5 h-5 text-gray-700" />
+            </button>
+
+            {/* Task Icon */}
+            <TaskModal />
+
             <NotificationCenter />
             
             {/* Profile Dropdown */}
@@ -276,6 +290,9 @@ const AdminLayout = () => {
           </div>
         </main>
       </div>
+
+      {/* Calendar Modal */}
+      <CalendarModal isOpen={showCalendar} onClose={() => setShowCalendar(false)} />
     </div>
   );
 }; 

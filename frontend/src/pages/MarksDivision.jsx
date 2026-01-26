@@ -4,7 +4,7 @@ import { useToast } from '../context/ToastContext';
 import { useModalAnimation } from '../hooks/useModalAnimation';
 import axios from 'axios';
 import { Award, Plus, Edit, Trash2, TrendingUp } from 'lucide-react';
-import ConfirmationModal from '../components/ConfirmationModal';
+
 
 const API_BASE = "http://localhost:5000";
 
@@ -16,8 +16,7 @@ const MarksDivision = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingDivision, setEditingDivision] = useState(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deletingId, setDeletingId] = useState(null);
+  const [selectedDeleteId, setSelectedDeleteId] = useState(null);
   
   const { isVisible, isClosing, handleClose } = useModalAnimation(showModal, () => {
     setShowModal(false);
@@ -90,20 +89,24 @@ const MarksDivision = () => {
   };
 
   const handleDelete = (id) => {
-    setDeletingId(id);
-    setShowDeleteConfirm(true);
+    if (selectedDeleteId === id) {
+      confirmDelete();
+    } else {
+      setSelectedDeleteId(id);
+      setTimeout(() => setSelectedDeleteId(prev => prev === id ? null : prev), 3000);
+    }
   };
 
   const confirmDelete = async () => {
+    if (!selectedDeleteId) return;
     try {
-      await axios.delete(`${API_BASE}/MarksDivision/${deletingId}`);
+      await axios.delete(`${API_BASE}/MarksDivision/${selectedDeleteId}`);
       showToast('Division deleted successfully!', 'success');
       fetchDivisions();
     } catch (error) {
       showToast(error.response?.data?.message || 'Error deleting division', 'error');
     }
-    setShowDeleteConfirm(false);
-    setDeletingId(null);
+    setSelectedDeleteId(null);
   };
 
   const resetForm = () => {
@@ -192,10 +195,19 @@ const MarksDivision = () => {
                   </button>
                   <button
                     onClick={() => handleDelete(division._id)}
-                    className="flex-1 px-3 py-2 bg-white text-red-600 rounded-lg hover:bg-red-50 transition flex items-center justify-center gap-2"
+                    className={`flex-1 px-3 py-2 rounded-lg transition flex items-center justify-center gap-2 ${selectedDeleteId === division._id
+                      ? "bg-red-600 text-white hover:bg-red-700 font-bold"
+                      : "bg-white text-red-600 hover:bg-red-50"
+                      }`}
                   >
-                    <Trash2 className="w-4 h-4" />
-                    Delete
+                    {selectedDeleteId === division._id ? (
+                      <span>Sure?</span>
+                    ) : (
+                      <>
+                          <Trash2 className="w-4 h-4" />
+                          Delete
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
@@ -292,16 +304,7 @@ const MarksDivision = () => {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={showDeleteConfirm}
-        onClose={() => { setShowDeleteConfirm(false); setDeletingId(null); }}
-        onConfirm={confirmDelete}
-        title="Delete Division"
-        message="Are you sure you want to delete this division? This action cannot be undone."
-        confirmText="Delete"
-        cancelText="Cancel"
-      />
+
     </div>
   );
 };

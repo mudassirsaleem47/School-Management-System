@@ -5,7 +5,7 @@ import { useToast } from '../context/ToastContext';
 import API_URL from '../config/api.js';
 import { Briefcase, Plus, Edit, Trash2, CheckCircle, XCircle, GripVertical, Search } from 'lucide-react';
 import DesignationModal from '../components/form-popup/DesignationModal';
-import ConfirmationModal from '../components/ConfirmationModal';
+
 import {
     DndContext,
     closestCenter,
@@ -24,7 +24,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 
 // Sortable Card Component
-const SortableCard = ({ designation, onEdit, onDelete }) => {
+const SortableCard = ({ designation, onEdit, onDelete, selectedDeleteId }) => {
     const {
         attributes,
         listeners,
@@ -101,11 +101,20 @@ const SortableCard = ({ designation, onEdit, onDelete }) => {
                         Edit
                     </button>
                     <button
-                        onClick={() => onDelete(designation)}
-                        className="px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition flex items-center gap-2"
+                        onClick={() => onDelete(designation._id)}
+                        className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${selectedDeleteId === designation._id
+                            ? "bg-red-600 text-white hover:bg-red-700 font-bold"
+                            : "bg-red-50 text-red-600 hover:bg-red-100"
+                            }`}
                     >
-                        <Trash2 className="w-4 h-4" />
-                        Delete
+                        {selectedDeleteId === designation._id ? (
+                            <span>Sure?</span>
+                        ) : (
+                            <>
+                                    <Trash2 className="w-4 h-4" />
+                                    Delete
+                            </>
+                        )}
                     </button>
                 </div>
             </div>
@@ -120,8 +129,7 @@ const DesignationManagement = () => {
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [selectedDesignation, setSelectedDesignation] = useState(null);
-    const [showConfirmation, setShowConfirmation] = useState(false);
-    const [designationToDelete, setDesignationToDelete] = useState(null);
+    const [selectedDeleteId, setSelectedDeleteId] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
 
     // Drag and Drop sensors
@@ -164,14 +172,21 @@ const DesignationManagement = () => {
         setShowModal(true);
     };
 
-    const handleDeleteClick = (designation) => {
-        setDesignationToDelete(designation);
-        setShowConfirmation(true);
+    const handleDeleteClick = (id) => {
+        if (selectedDeleteId === id) {
+            handleDeleteConfirm();
+        } else {
+            setSelectedDeleteId(id);
+            setTimeout(() => {
+                setSelectedDeleteId(prev => prev === id ? null : prev);
+            }, 3000);
+        }
     };
 
     const handleDeleteConfirm = async () => {
+        if (!selectedDeleteId) return;
         try {
-            const response = await axios.delete(`${API_URL}/Designation/${designationToDelete._id}`);
+            const response = await axios.delete(`${API_URL}/Designation/${selectedDeleteId}`);
             if (response.data.success) {
                 showToast('Designation deleted successfully', 'success');
                 fetchDesignations();
@@ -180,8 +195,7 @@ const DesignationManagement = () => {
             const errorMsg = error.response?.data?.message || 'Failed to delete designation';
             showToast(errorMsg, 'error');
         } finally {
-            setShowConfirmation(false);
-            setDesignationToDelete(null);
+            setSelectedDeleteId(null);
         }
     };
 
@@ -292,6 +306,7 @@ const DesignationManagement = () => {
                                                 designation={designation}
                                                 onEdit={handleEditDesignation}
                                                 onDelete={handleDeleteClick}
+                                                selectedDeleteId={selectedDeleteId}
                                             />
                                         ))}
                                     </div>
@@ -308,16 +323,7 @@ const DesignationManagement = () => {
                 />
             )}
 
-            {/* Confirmation Modal */}
-            {showConfirmation && (
-                <ConfirmationModal
-                    isOpen={showConfirmation}
-                    onClose={() => setShowConfirmation(false)}
-                    onConfirm={handleDeleteConfirm}
-                    title="Delete Designation"
-                    message={`Are you sure you want to delete "${designationToDelete?.name}"? This action cannot be undone if no staff members are assigned to this designation.`}
-                />
-            )}
+
         </div>
     );
 };

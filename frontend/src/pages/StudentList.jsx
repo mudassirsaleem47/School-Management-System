@@ -6,9 +6,9 @@ import { useCampus } from '../context/CampusContext';
 import { useToast } from '../context/ToastContext';
 import StudentModal from '../components/form-popup/StudentModal';
 import StudentDetailsModal from '../components/form-popup/StudentDetailsModal';
-import ConfirmationModal from '../components/ConfirmationModal';
+
 import SearchBar from '../components/SearchBar';
-import { Edit, Trash2, Plus, Eye, LayoutGrid, List as ListIcon, Filter, X, GraduationCap, Users, ChevronRight, ArrowLeft } from 'lucide-react';
+import { Edit, Trash2, Plus, Eye, LayoutGrid, List as ListIcon, Filter, X, GraduationCap, Users, ChevronRight, ArrowLeft, Check } from 'lucide-react';
 
 const API_BASE = "http://localhost:5000";
 
@@ -39,7 +39,7 @@ const StudentList = () => {
     const [currentStudent, setCurrentStudent] = useState(null);
 
     // Delete Confirmation State
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
+
     const [selectedDeleteId, setSelectedDeleteId] = useState(null);
 
     // --- 1. Data Fetching ---
@@ -100,8 +100,15 @@ const StudentList = () => {
 
     // Delete Logic
     const handleDelete = (id) => {
-        setSelectedDeleteId(id);
-        setShowDeleteModal(true);
+        if (selectedDeleteId === id) {
+            confirmDelete();
+        } else {
+            setSelectedDeleteId(id);
+            // Auto-reset after 3 seconds
+            setTimeout(() => {
+                setSelectedDeleteId(prev => prev === id ? null : prev);
+            }, 3000);
+        }
     };
 
     const confirmDelete = async () => {
@@ -113,7 +120,6 @@ const StudentList = () => {
         } catch (err) {
             showToast("Error deleting student", "error");
         }
-        setShowDeleteModal(false);
         setSelectedDeleteId(null);
     };
 
@@ -455,10 +461,13 @@ const StudentList = () => {
                                                                 </button>
                                                                 <button 
                                                                     onClick={() => handleDelete(student._id)} 
-                                                                    className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition duration-150"
+                                                                    className={`p-2 rounded-lg transition duration-150 inline-flex items-center justify-center h-9 w-9 ${selectedDeleteId === student._id
+                                                                        ? "bg-red-600 text-white hover:bg-red-700"
+                                                                        : "bg-red-50 text-red-600 hover:bg-red-100"
+                                                                        }`}
                                                                     title="Delete student"
                                                                 >
-                                                                    <Trash2 size={16} />
+                                                                    {selectedDeleteId === student._id ? <Check size={16} /> : <Trash2 size={16} />}
                                                                 </button>
                                                             </div>
                                                         </td>
@@ -512,9 +521,18 @@ const StudentList = () => {
                                                     </button>
                                                     <button 
                                                         onClick={() => handleDelete(student._id)}
-                                                        className="flex items-center gap-1 text-sm text-red-600 hover:text-red-700 font-medium px-3 py-1.5 hover:bg-red-50 rounded-lg transition-colors"
+                                                        className={`flex items-center gap-1 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors ${selectedDeleteId === student._id
+                                                            ? "bg-red-600 text-white hover:bg-red-700"
+                                                            : "text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                            }`}
                                                     >
-                                                        <Trash2 size={16} /> Delete
+                                                        {selectedDeleteId === student._id ? (
+                                                            <span>Sure?</span>
+                                                        ) : (
+                                                            <>
+                                                                    <Trash2 size={16} /> Delete
+                                                            </>
+                                                        )}
                                                     </button>
                                                 </div>
                                             </div>
@@ -542,17 +560,7 @@ const StudentList = () => {
                 student={currentStudent}
             />
 
-            {/* Delete Confirmation Modal */}
-            <ConfirmationModal 
-                isOpen={showDeleteModal}
-                onClose={() => {
-                    setShowDeleteModal(false);
-                    setSelectedDeleteId(null);
-                }}
-                onConfirm={confirmDelete}
-                title="Delete Student"
-                message="Are you sure you want to delete this student? This action cannot be undone."
-            />
+
         </div>
     );
 };

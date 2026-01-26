@@ -4,9 +4,9 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useNavigate } from 'react-router-dom';
 import API_URL from '../config/api.js';
-import { Users, Plus, Edit, Trash2, UserCheck, UserX, Building2, Briefcase, Mail, Phone } from 'lucide-react';
+import { Users, Plus, Edit, Trash2, UserCheck, UserX, Building2, Briefcase, Mail, Phone, Check } from 'lucide-react';
 import StaffModal from '../components/form-popup/StaffModal';
-import ConfirmationModal from '../components/ConfirmationModal';
+
 
 const StaffManagement = () => {
     const { currentUser } = useAuth();
@@ -17,8 +17,7 @@ const StaffManagement = () => {
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [selectedStaff, setSelectedStaff] = useState(null);
-    const [showConfirmation, setShowConfirmation] = useState(false);
-    const [staffToDelete, setStaffToDelete] = useState(null);
+    const [selectedDeleteId, setSelectedDeleteId] = useState(null);
     const [activeTab, setActiveTab] = useState('all');
 
     // Fetch staff and designations
@@ -65,14 +64,21 @@ const StaffManagement = () => {
         setShowModal(true);
     };
 
-    const handleDeleteClick = (staffMember) => {
-        setStaffToDelete(staffMember);
-        setShowConfirmation(true);
+    const handleDeleteClick = (id) => {
+        if (selectedDeleteId === id) {
+            handleDeleteConfirm();
+        } else {
+            setSelectedDeleteId(id);
+            setTimeout(() => {
+                setSelectedDeleteId(prev => prev === id ? null : prev);
+            }, 3000);
+        }
     };
 
     const handleDeleteConfirm = async () => {
+        if (!selectedDeleteId) return;
         try {
-            const response = await axios.delete(`${API_URL}/Staff/${staffToDelete._id}`);
+            const response = await axios.delete(`${API_URL}/Staff/${selectedDeleteId}`);
             if (response.data.success) {
                 showToast('Staff member deleted successfully', 'success');
                 fetchStaff();
@@ -81,8 +87,7 @@ const StaffManagement = () => {
             const errorMsg = error.response?.data?.message || 'Failed to delete staff member';
             showToast(errorMsg, 'error');
         } finally {
-            setShowConfirmation(false);
-            setStaffToDelete(null);
+            setSelectedDeleteId(null);
         }
     };
 
@@ -319,11 +324,14 @@ const StaffManagement = () => {
                                                         <Edit className="w-4 h-4" />
                                                     </button>
                                                     <button
-                                                        onClick={() => handleDeleteClick(staffMember)}
-                                                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                                                                onClick={() => handleDeleteClick(staffMember._id)}
+                                                                className={`p-2 rounded-lg transition inline-flex items-center justify-center h-9 w-9 ${selectedDeleteId === staffMember._id
+                                                                    ? "bg-red-600 text-white hover:bg-red-700"
+                                                                    : "text-red-600 hover:bg-red-50"
+                                                                    }`}
                                                         title="Delete"
                                                     >
-                                                        <Trash2 className="w-4 h-4" />
+                                                                {selectedDeleteId === staffMember._id ? <Check className="w-4 h-4" /> : <Trash2 className="w-4 h-4" />}
                                                     </button>
                                                 </div>
                                             </td>
@@ -344,16 +352,7 @@ const StaffManagement = () => {
                 />
             )}
 
-            {/* Confirmation Modal */}
-            {showConfirmation && (
-                <ConfirmationModal
-                    isOpen={showConfirmation}
-                    onClose={() => setShowConfirmation(false)}
-                    onConfirm={handleDeleteConfirm}
-                    title="Delete Staff Member"
-                    message={`Are you sure you want to delete ${staffToDelete?.name}? This action cannot be undone.`}
-                />
-            )}
+
         </div>
     );
 };

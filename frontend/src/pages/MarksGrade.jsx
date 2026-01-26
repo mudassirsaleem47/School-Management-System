@@ -3,8 +3,8 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useModalAnimation } from '../hooks/useModalAnimation';
 import axios from 'axios';
-import { Award, Plus, Edit, Trash2, TrendingUp } from 'lucide-react';
-import ConfirmationModal from '../components/ConfirmationModal';
+import { Award, Plus, Edit, Trash2, TrendingUp, Check } from 'lucide-react';
+
 
 const API_BASE = "http://localhost:5000";
 
@@ -16,8 +16,7 @@ const MarksGrade = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingGrade, setEditingGrade] = useState(null);
-    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    const [deletingId, setDeletingId] = useState(null);
+  const [selectedDeleteId, setSelectedDeleteId] = useState(null);
   
   const { isVisible, isClosing, handleClose } = useModalAnimation(showModal, () => {
     setShowModal(false);
@@ -95,20 +94,24 @@ const MarksGrade = () => {
   };
 
     const handleDelete = (id) => {
-        setDeletingId(id);
-        setShowDeleteConfirm(true);
+      if (selectedDeleteId === id) {
+        confirmDelete();
+      } else {
+        setSelectedDeleteId(id);
+        setTimeout(() => setSelectedDeleteId(prev => prev === id ? null : prev), 3000);
+      }
     };
 
     const confirmDelete = async () => {
+      if (!selectedDeleteId) return;
         try {
-            await axios.delete(`${API_BASE}/MarksGrade/${deletingId}`);
+          await axios.delete(`${API_BASE}/MarksGrade/${selectedDeleteId}`);
         showToast('Grade deleted successfully!', 'success');
         fetchGrades();
         } catch (error) {
         showToast(error.response?.data?.message || 'Error deleting grade', 'error');
         }
-        setShowDeleteConfirm(false);
-        setDeletingId(null);
+      setSelectedDeleteId(null);
   };
 
   const resetForm = () => {
@@ -215,9 +218,17 @@ const MarksGrade = () => {
                         </button>
                         <button
                           onClick={() => handleDelete(grade._id)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                          className={`p-2 rounded-lg transition overflow-hidden ${selectedDeleteId === grade._id
+                            ? "bg-red-600 text-white hover:bg-red-700"
+                            : "text-red-600 hover:bg-red-50"
+                            }`}
+                          title="Delete"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          {selectedDeleteId === grade._id ? (
+                            <Check className="w-4 h-4" />
+                          ) : (
+                              <Trash2 className="w-4 h-4" />
+                          )}
                         </button>
                       </div>
                     </td>
@@ -341,16 +352,7 @@ const MarksGrade = () => {
         </div>
       )}
 
-          {/* Delete Confirmation Modal */}
-          <ConfirmationModal
-              isOpen={showDeleteConfirm}
-              onClose={() => { setShowDeleteConfirm(false); setDeletingId(null); }}
-              onConfirm={confirmDelete}
-              title="Delete Grade"
-              message="Are you sure you want to delete this grade? This action cannot be undone."
-              confirmText="Delete"
-              cancelText="Cancel"
-          />
+
     </div>
   );
 };

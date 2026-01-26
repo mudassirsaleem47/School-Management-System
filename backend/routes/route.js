@@ -22,7 +22,8 @@ const {
 const { createCampus, getCampusesBySchool, getCampusById, updateCampus, deleteCampus, getCampusStats } = require('../controllers/campus-controller.js');
 const { createStaff, getStaffBySchool, getStaffById, updateStaff, deleteStaff, resetStaffPassword, staffLogin } = require('../controllers/staff-controller.js');
 const { createDesignation, getDesignationsBySchool, updateDesignation, deleteDesignation } = require('../controllers/designation-controller.js');
-const { createIdCardTemplate, getTemplatesBySchool, getTemplateById, updateIdCardTemplate, deleteIdCardTemplate } = require('../controllers/idCardTemplate-controller.js');
+const { createEvent, getEventsBySchool, getEventById, updateEvent, deleteEvent } = require('../controllers/event-controller.js');
+const { createTask, getTasksBySchool, getTaskById, updateTask, deleteTask } = require('../controllers/task-controller.js');
 
 
 
@@ -186,12 +187,19 @@ router.get('/Designations/:schoolId', getDesignationsBySchool);
 router.put('/Designation/:id', updateDesignation);
 router.delete('/Designation/:id', deleteDesignation);
 
-// --- ID Card Template Management Routes ---
-router.post('/IdCardTemplate', upload.single('templateFile'), createIdCardTemplate);
-router.get('/IdCardTemplates/:schoolId', getTemplatesBySchool);
-router.get('/IdCardTemplate/:id', getTemplateById);
-router.put('/IdCardTemplate/:id', upload.single('templateFile'), updateIdCardTemplate);
-router.delete('/IdCardTemplate/:id', deleteIdCardTemplate);
+// --- Event Management Routes ---
+router.post('/Event', createEvent);
+router.get('/Events/:schoolId', getEventsBySchool);
+router.get('/Event/:id', getEventById);
+router.put('/Event/:id', updateEvent);
+router.delete('/Event/:id', deleteEvent);
+
+// --- Task Management Routes ---
+router.post('/Task', createTask);
+router.get('/Tasks/:schoolId', getTasksBySchool);
+router.get('/Task/:id', getTaskById);
+router.put('/Task/:id', updateTask);
+router.delete('/Task/:id', deleteTask);
 
 
 module.exports = router;

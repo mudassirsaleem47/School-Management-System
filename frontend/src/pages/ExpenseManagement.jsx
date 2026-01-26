@@ -12,9 +12,10 @@ import {
   Trash2,
   FileText,
   Filter,
-  X
+  X,
+  Check
 } from 'lucide-react';
-import ConfirmationModal from '../components/ConfirmationModal';
+
 
 const API_BASE = "http://localhost:5000";
 
@@ -34,8 +35,7 @@ const ExpenseManagement = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingExpense, setEditingExpense] = useState(null);
   const [filterCategory, setFilterCategory] = useState('');
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deletingId, setDeletingId] = useState(null);
+  const [selectedDeleteId, setSelectedDeleteId] = useState(null);
   
   const { isVisible, isClosing, handleClose } = useModalAnimation(showModal, () => {
     setShowModal(false);
@@ -122,20 +122,24 @@ const ExpenseManagement = () => {
   };
 
   const handleDelete = (id) => {
-    setDeletingId(id);
-    setShowDeleteConfirm(true);
+    if (selectedDeleteId === id) {
+      confirmDelete();
+    } else {
+      setSelectedDeleteId(id);
+      setTimeout(() => setSelectedDeleteId(prev => prev === id ? null : prev), 3000);
+    }
   };
 
   const confirmDelete = async () => {
+    if (!selectedDeleteId) return;
     try {
-      await axios.delete(`${API_BASE}/Expense/${deletingId}`);
+      await axios.delete(`${API_BASE}/Expense/${selectedDeleteId}`);
       showToast('Expense deleted successfully!', 'success');
       fetchData();
     } catch (error) {
       showToast(error.response?.data?.message || 'Error deleting expense', 'error');
     }
-    setShowDeleteConfirm(false);
-    setDeletingId(null);
+    setSelectedDeleteId(null);
   };
 
   const resetForm = () => {
@@ -293,10 +297,17 @@ const ExpenseManagement = () => {
                         </button>
                         <button
                           onClick={() => handleDelete(expense._id)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                          className={`p-2 rounded-lg transition overflow-hidden ${selectedDeleteId === expense._id
+                            ? "bg-red-600 text-white hover:bg-red-700"
+                            : "text-red-600 hover:bg-red-50"
+                            }`}
                           title="Delete"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          {selectedDeleteId === expense._id ? (
+                            <Check className="w-4 h-4" />
+                          ) : (
+                              <Trash2 className="w-4 h-4" />
+                          )}
                         </button>
                       </div>
                     </td>
@@ -435,16 +446,7 @@ const ExpenseManagement = () => {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={showDeleteConfirm}
-        onClose={() => { setShowDeleteConfirm(false); setDeletingId(null); }}
-        onConfirm={confirmDelete}
-        title="Delete Expense Entry"
-        message="Are you sure you want to delete this expense entry? This action cannot be undone."
-        confirmText="Delete"
-        cancelText="Cancel"
-      />
+
     </div>
   );
 };

@@ -29,7 +29,6 @@ import ExamResult from './pages/ExamResult';
 import CampusManagement from './pages/CampusManagement';
 import StaffManagement from './pages/StaffManagement';
 import DesignationManagement from './pages/DesignationManagement';
-import IdCardTemplateManagement from './pages/IdCardTemplateManagement';
 import DisableReasonPage from './pages/DisableReasonPage';
 import TeacherLoginPage from './pages/TeacherLoginPage';
 import TeacherDashboard from './pages/TeacherDashboard';
@@ -90,7 +89,6 @@ function App() {
                 <Route path="campuses" element={<CampusManagement />} />
                 <Route path="staff" element={<StaffManagement />} />
                 <Route path="designations" element={<DesignationManagement />} />
-                <Route path="id-card-template" element={<IdCardTemplateManagement />} />
             </Route>
 
               {/* Teacher Protected Routes */}

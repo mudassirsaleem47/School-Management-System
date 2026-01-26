@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Eye, Pencil, Trash2, AlertCircle } from 'lucide-react';
+import { Search, Plus, Eye, Pencil, Trash2, AlertCircle, Check } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import ComplainModal from '../components/form-popup/ComplainModal';
-import ConfirmationModal from '../components/ConfirmationModal';
+
 
 const API_BASE = "http://localhost:5000";
 
@@ -18,7 +18,7 @@ const ComplainPage = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedComplain, setSelectedComplain] = useState(null);
     const [viewMode, setViewMode] = useState(false);
-    const [deleteModal, setDeleteModal] = useState({ isOpen: false, id: null });
+    const [selectedDeleteId, setSelectedDeleteId] = useState(null);
 
     useEffect(() => {
         if (currentUser) {
@@ -57,18 +57,24 @@ const ComplainPage = () => {
     };
 
     const handleDelete = (id) => {
-        setDeleteModal({ isOpen: true, id });
+        if (selectedDeleteId === id) {
+            confirmDelete();
+        } else {
+            setSelectedDeleteId(id);
+            setTimeout(() => setSelectedDeleteId(prev => prev === id ? null : prev), 3000);
+        }
     };
 
     const confirmDelete = async () => {
+        if (!selectedDeleteId) return;
         try {
-            await axios.delete(`${API_BASE}/Complain/${deleteModal.id}`);
+            await axios.delete(`${API_BASE}/Complain/${selectedDeleteId}`);
             showToast('Complain deleted successfully', 'success');
             fetchComplains();
-            setDeleteModal({ isOpen: false, id: null });
         } catch (error) {
             showToast('Error deleting complain', 'error');
         }
+        setSelectedDeleteId(null);
     };
 
     const handleSubmit = async (formData) => {
@@ -210,10 +216,17 @@ const ComplainPage = () => {
                                                 </button>
                                                 <button
                                                     onClick={() => handleDelete(complain._id)}
-                                                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                                                    className={`p-2 rounded-lg transition overflow-hidden ${selectedDeleteId === complain._id
+                                                        ? "bg-red-600 text-white hover:bg-red-700"
+                                                        : "text-red-600 hover:bg-red-50"
+                                                        }`}
                                                     title="Delete"
                                                 >
-                                                    <Trash2 className="w-4 h-4" />
+                                                    {selectedDeleteId === complain._id ? (
+                                                        <Check className="w-4 h-4" />
+                                                    ) : (
+                                                            <Trash2 className="w-4 h-4" />
+                                                    )}
                                                 </button>
                                             </div>
                                         </td>
@@ -234,13 +247,7 @@ const ComplainPage = () => {
                 viewMode={viewMode}
             />
 
-            <ConfirmationModal
-                isOpen={deleteModal.isOpen}
-                onClose={() => setDeleteModal({ isOpen: false, id: null })}
-                onConfirm={confirmDelete}
-                title="Delete Complain"
-                message="Are you sure you want to delete this complain? This action cannot be undone."
-            />
+
         </div>
     );
 };

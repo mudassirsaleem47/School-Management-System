@@ -3,9 +3,9 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import API_URL from '../config/api.js';
-import { UserX, Search, Eye, CheckCircle, Calendar, User } from 'lucide-react';
+import { UserX, Search, Eye, CheckCircle, Calendar, User, Check } from 'lucide-react';
 import StudentDetailsModal from '../components/form-popup/StudentDetailsModal';
-import ConfirmationModal from '../components/ConfirmationModal';
+
 
 const DisableReasonPage = () => {
     const { currentUser } = useAuth();
@@ -16,8 +16,7 @@ const DisableReasonPage = () => {
     const [filterReason, setFilterReason] = useState('all');
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [showDetailsModal, setShowDetailsModal] = useState(false);
-    const [showConfirmModal, setShowConfirmModal] = useState(false);
-    const [studentToEnable, setStudentToEnable] = useState(null);
+    const [selectedEnableId, setSelectedEnableId] = useState(null);
 
     const reasons = ['Left School', 'Transferred', 'Expelled', 'Medical', 'Financial', 'Other'];
 
@@ -46,16 +45,26 @@ const DisableReasonPage = () => {
         }
     };
 
-    const handleEnableStudent = async () => {
+    const handleEnableClick = (id) => {
+        if (selectedEnableId === id) {
+            handleEnableConfirm();
+        } else {
+            setSelectedEnableId(id);
+            setTimeout(() => setSelectedEnableId(prev => prev === id ? null : prev), 3000);
+        }
+    }
+
+    const handleEnableConfirm = async () => {
+        if (!selectedEnableId) return;
         try {
-            await axios.put(`${API_URL}/Student/${studentToEnable}`, { status: 'Active' });
+            await axios.put(`${API_URL}/Student/${selectedEnableId}`, { status: 'Active' });
             showToast("Student enabled successfully!", "success");
             fetchData();
         } catch (err) {
             showToast("Error enabling student", "error");
+        } finally {
+            setSelectedEnableId(null);
         }
-        setShowConfirmModal(false);
-        setStudentToEnable(null);
     };
 
     const filteredStudents = students.filter(student => {
@@ -207,14 +216,18 @@ const DisableReasonPage = () => {
                                                         <Eye size={16} />
                                                     </button>
                                                     <button
-                                                        onClick={() => {
-                                                            setStudentToEnable(student._id);
-                                                            setShowConfirmModal(true);
-                                                        }}
-                                                        className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition"
+                                                        onClick={() => handleEnableClick(student._id)}
+                                                        className={`p-2 rounded-lg transition overflow-hidden flex items-center justify-center ${selectedEnableId === student._id
+                                                            ? "bg-blue-600 text-white hover:bg-blue-700"
+                                                            : "bg-blue-50 text-blue-600 hover:bg-blue-100"
+                                                            }`}
                                                         title="Re-enable Student"
                                                     >
-                                                        <CheckCircle size={16} />
+                                                        {selectedEnableId === student._id ? (
+                                                            <Check size={16} />
+                                                        ) : (
+                                                                <CheckCircle size={16} />
+                                                        )}
                                                     </button>
                                                 </div>
                                             </td>
@@ -234,14 +247,7 @@ const DisableReasonPage = () => {
                 student={selectedStudent}
             />
 
-            {/* Confirmation Modal */}
-            <ConfirmationModal
-                isOpen={showConfirmModal}
-                onClose={() => setShowConfirmModal(false)}
-                onConfirm={handleEnableStudent}
-                title="Re-enable Student"
-                message="Are you sure you want to re-enable this student? They will be moved back to the active students list."
-            />
+
         </div>
     );
 };

@@ -5,7 +5,7 @@ import { X } from 'lucide-react';
 
 import { 
     Home, BookOpen, GraduationCap, DollarSign, Briefcase,
-    ChevronDown, ChevronRight, Settings, FileText, ChevronsRight, Wallet, Users, Building2, CreditCard
+    ChevronDown, ChevronRight, Settings, FileText, ChevronsRight, Wallet, Users, Building2
 } from 'lucide-react';
 
 const Sidebar = ({ onLogout, isOpen, onClose }) => {
@@ -97,18 +97,6 @@ const Sidebar = ({ onLogout, isOpen, onClose }) => {
             children: [
                 { name: 'Staff List', path: '/admin/staff' },
                 { name: 'Designations', path: '/admin/designations' },
-            ]
-        },
-        {
-            name: 'Card Management',
-            icon: CreditCard,
-            type: 'dropdown',
-            children: [
-                { name: 'Id Card Template', path: '/admin/id-card-template' },
-                { name: 'Student Id Card', path: '/admin/student-id-card' },
-                { name: 'Employee Id Card', path: '/admin/employee-id-card' },
-                { name: 'Admit Card Template', path: '/admin/admit-card-template' },
-                { name: 'Generate Admit Card', path: '/admin/generate-admit-card' },
             ]
         },
         { name: 'Campuses', path: '/admin/campuses', icon: Building2, type: 'link' },

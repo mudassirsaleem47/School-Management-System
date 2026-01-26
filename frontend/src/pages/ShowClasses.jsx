@@ -3,8 +3,8 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useModalAnimation } from '../hooks/useModalAnimation';
-import ConfirmationModal from '../components/ConfirmationModal';
-import { Trash2, Plus, X } from 'lucide-react';
+
+import { Trash2, Plus, X, Check } from 'lucide-react';
 
 const API_BASE = "http://localhost:5000";
 
@@ -25,8 +25,7 @@ const ShowClasses = () => {
     const { isVisible, isClosing, handleClose } = useModalAnimation(showPopup, () => setShowPopup(false));
 
     // Delete Confirmation State
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [deleteConfig, setDeleteConfig] = useState({ type: null, id: null, subId: null });
+    const [selectedDeleteId, setSelectedDeleteId] = useState(null);
 
     // --- 1. Fetch Classes ---
     const fetchClasses = async () => {
@@ -96,22 +95,29 @@ const ShowClasses = () => {
     };
 
     // --- 3. Delete Class ---
-    const deleteClass = (id) => {
-        setDeleteConfig({ type: 'class', id: id, subId: null });
-        setShowDeleteModal(true);
+    const handleDeleteClass = (id) => {
+        const key = `class-${id}`;
+        if (selectedDeleteId === key) {
+            confirmDelete('class', id);
+        } else {
+            setSelectedDeleteId(key);
+            setTimeout(() => setSelectedDeleteId(prev => prev === key ? null : prev), 3000);
+        }
     };
 
     // --- 4. Delete Section ---
     const handleDeleteSection = (classId, sectionId) => {
-        setDeleteConfig({ type: 'section', id: classId, subId: sectionId });
-        setShowDeleteModal(true);
+        const key = `section-${classId}-${sectionId}`;
+        if (selectedDeleteId === key) {
+            confirmDelete('section', classId, sectionId);
+        } else {
+            setSelectedDeleteId(key);
+            setTimeout(() => setSelectedDeleteId(prev => prev === key ? null : prev), 3000);
+        }
     };
 
     // Confirm Delete
-    const confirmDelete = async () => {
-        const { type, id, subId } = deleteConfig;
-        if (!type || !id) return;
-
+    const confirmDelete = async (type, id, subId) => {
         try {
             if (type === 'class') {
                 await axios.delete(`${API_BASE}/Sclass/${id}`);
@@ -124,7 +130,7 @@ const ShowClasses = () => {
         } catch (err) {
             showToast(`Error deleting ${type}`, "error");
         }
-        setShowDeleteModal(false);
+        setSelectedDeleteId(null);
     };
 
     // --- 5. Add Section ---
@@ -181,7 +187,15 @@ const ShowClasses = () => {
                                         <p className="text-xs text-emerald-600 mt-1 font-500">📚 Incharge: {item.classIncharge.name}</p>
                                     )}
                                 </div>
-                                <button onClick={() => deleteClass(item._id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"><Trash2 className="w-5 h-5" /></button>
+                                <button
+                                    onClick={() => handleDeleteClass(item._id)}
+                                    className={`p-2 rounded-lg transition duration-150 inline-flex items-center justify-center h-9 w-9 ${selectedDeleteId === `class-${item._id}`
+                                        ? "bg-red-600 text-white hover:bg-red-700"
+                                        : "text-gray-400 hover:text-red-600 hover:bg-red-50"
+                                        }`}
+                                >
+                                    {selectedDeleteId === `class-${item._id}` ? <Check className="w-5 h-5" /> : <Trash2 className="w-5 h-5" />}
+                                </button>
                             </div>
 
                             {/* Sections List */}
@@ -192,8 +206,14 @@ const ShowClasses = () => {
                                         item.sections.map((sec) => (
                                             <span key={sec._id} className="px-2.5 py-1.5 text-sm bg-indigo-50 text-indigo-700 rounded-md font-500 flex items-center gap-1">
                                                 {sec.sectionName}
-                                                <button onClick={() => handleDeleteSection(item._id, sec._id)} className="ml-2 text-red-500 hover:text-red-700">
-                                                    <X className="w-3 h-3" />
+                                                <button
+                                                    onClick={() => handleDeleteSection(item._id, sec._id)}
+                                                    className={`ml-2 transition-colors duration-150 flex items-center ${selectedDeleteId === `section-${item._id}-${sec._id}`
+                                                        ? "text-red-600 font-bold bg-white rounded px-1"
+                                                        : "text-red-500 hover:text-red-700"
+                                                        }`}
+                                                >
+                                                    {selectedDeleteId === `section-${item._id}-${sec._id}` ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
                                                 </button>
                                             </span>
                                         ))
@@ -291,16 +311,7 @@ const ShowClasses = () => {
                 </div>
             )}
 
-            {/* Delete Confirmation Modal */}
-            <ConfirmationModal 
-                isOpen={showDeleteModal}
-                onClose={() => setShowDeleteModal(false)}
-                onConfirm={confirmDelete}
-                title={deleteConfig.type === 'class' ? "Delete Class" : "Delete Section"}
-                message={deleteConfig.type === 'class' 
-                    ? "Are you sure you want to delete this class? This will affect all students in this class." 
-                    : "Are you sure you want to delete this section?"}
-            />
+
         </div>
     );
 };

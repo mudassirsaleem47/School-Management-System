@@ -4,7 +4,7 @@ import { useToast } from '../context/ToastContext';
 import { useModalAnimation } from '../hooks/useModalAnimation';
 import axios from 'axios';
 import { Calendar, Plus, Edit, Trash2, Clock, BookOpen, FileText } from 'lucide-react';
-import ConfirmationModal from '../components/ConfirmationModal';
+
 
 const API_BASE = "http://localhost:5000";
 
@@ -19,8 +19,7 @@ const ExamSchedule = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState(null);
   const [selectedGroup, setSelectedGroup] = useState('');
-    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    const [deletingId, setDeletingId] = useState(null);
+  const [selectedDeleteId, setSelectedDeleteId] = useState(null);
   
   const { isVisible, isClosing, handleClose } = useModalAnimation(showModal, () => {
     setShowModal(false);
@@ -128,20 +127,24 @@ const ExamSchedule = () => {
   };
 
     const handleDelete = (id) => {
-        setDeletingId(id);
-        setShowDeleteConfirm(true);
+      if (selectedDeleteId === id) {
+        confirmDelete();
+      } else {
+        setSelectedDeleteId(id);
+        setTimeout(() => setSelectedDeleteId(prev => prev === id ? null : prev), 3000);
+      }
     };
 
     const confirmDelete = async () => {
+      if (!selectedDeleteId) return;
         try {
-            await axios.delete(`${API_BASE}/ExamSchedule/${deletingId}`);
+          await axios.delete(`${API_BASE}/ExamSchedule/${selectedDeleteId}`);
         showToast('Schedule deleted successfully!', 'success');
         fetchSchedules();
         } catch (error) {
         showToast(error.response?.data?.message || 'Error deleting schedule', 'error');
         }
-        setShowDeleteConfirm(false);
-        setDeletingId(null);
+      setSelectedDeleteId(null);
   };
 
   const resetForm = () => {
@@ -276,9 +279,17 @@ const ExamSchedule = () => {
                           </button>
                           <button
                             onClick={() => handleDelete(schedule._id)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                            className={`p-2 rounded-lg transition overflow-hidden ${selectedDeleteId === schedule._id
+                              ? "bg-red-600 text-white w-20 hover:bg-red-700"
+                              : "text-red-600 hover:bg-red-50"
+                              }`}
+                            title="Delete"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            {selectedDeleteId === schedule._id ? (
+                              <span className="text-xs font-bold">Sure?</span>
+                            ) : (
+                                <Trash2 className="w-4 h-4" />
+                            )}
                           </button>
                         </div>
                       </td>
@@ -459,16 +470,7 @@ const ExamSchedule = () => {
         </div>
       )}
 
-          {/* Delete Confirmation Modal */}
-          <ConfirmationModal
-              isOpen={showDeleteConfirm}
-              onClose={() => { setShowDeleteConfirm(false); setDeletingId(null); }}
-              onConfirm={confirmDelete}
-              title="Delete Exam Schedule"
-              message="Are you sure you want to delete this exam schedule? This action cannot be undone."
-              confirmText="Delete"
-              cancelText="Cancel"
-          />
+
     </div>
   );
 };

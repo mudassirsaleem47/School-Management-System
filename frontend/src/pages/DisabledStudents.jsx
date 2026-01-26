@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import ConfirmationModal from '../components/ConfirmationModal';
+
 import SearchBar from '../components/SearchBar';
 import { CheckCircle, Trash2, Eye, LayoutGrid, List as ListIcon, UserX } from 'lucide-react';
 import StudentDetailsModal from '../components/form-popup/StudentDetailsModal';
@@ -23,9 +23,7 @@ const DisabledStudents = () => {
     const [currentStudent, setCurrentStudent] = useState(null);
 
     // Confirmation State
-    const [showConfirmModal, setShowConfirmModal] = useState(false);
-    const [selectedStudentId, setSelectedStudentId] = useState(null);
-    const [actionType, setActionType] = useState(null); // 'enable' or 'delete'
+    const [selectedAction, setSelectedAction] = useState(null); // 'enable-{id}' or 'delete-{id}'
 
     // Search State
     const [searchQuery, setSearchQuery] = useState("");
@@ -58,36 +56,40 @@ const DisabledStudents = () => {
     // --- 2. Action Handlers ---
 
     const handleEnable = (id) => {
-        setSelectedStudentId(id);
-        setActionType('enable');
-        setShowConfirmModal(true);
+        const key = `enable-${id}`;
+        if (selectedAction === key) {
+            confirmAction('enable', id);
+        } else {
+            setSelectedAction(key);
+            setTimeout(() => setSelectedAction(prev => prev === key ? null : prev), 3000);
+        }
     };
 
     const handleDelete = (id) => {
-        setSelectedStudentId(id);
-        setActionType('delete');
-        setShowConfirmModal(true);
+        const key = `delete-${id}`;
+        if (selectedAction === key) {
+            confirmAction('delete', id);
+        } else {
+            setSelectedAction(key);
+            setTimeout(() => setSelectedAction(prev => prev === key ? null : prev), 3000);
+        }
     };
 
-    const confirmAction = async () => {
-        if (!selectedStudentId) return;
-        
+    const confirmAction = async (type, id) => {
         try {
-            if (actionType === 'enable') {
-                await axios.put(`${API_BASE}/Student/${selectedStudentId}`, { status: 'Active' });
+            if (type === 'enable') {
+                await axios.put(`${API_BASE}/Student/${id}`, { status: 'Active' });
                 showToast("Student enabled successfully!", "success");
-            } else if (actionType === 'delete') {
-                await axios.delete(`${API_BASE}/Student/${selectedStudentId}`);
+            } else if (type === 'delete') {
+                await axios.delete(`${API_BASE}/Student/${id}`);
                 showToast("Student deleted permanently!", "success");
             }
             fetchData();
         } catch (err) {
-            showToast(`Error ${actionType === 'enable' ? 'enabling' : 'deleting'} student`, "error");
+            showToast(`Error ${type === 'enable' ? 'enabling' : 'deleting'} student`, "error");
         }
         
-        setShowConfirmModal(false);
-        setSelectedStudentId(null);
-        setActionType(null);
+        setSelectedAction(null);
     };
 
     const handleView = (student) => {
@@ -250,17 +252,23 @@ const DisabledStudents = () => {
                                                                 </button>
                                                                 <button 
                                                                     onClick={() => handleEnable(student._id)} 
-                                                                    className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition duration-150"
+                                                                    className={`p-2 rounded-lg transition duration-150 flex items-center justify-center ${selectedAction === `enable-${student._id}`
+                                                                        ? "bg-blue-600 text-white w-20"
+                                                                        : "bg-blue-50 text-blue-600 hover:bg-blue-100"
+                                                                        }`}
                                                                     title="Enable Student"
                                                                 >
-                                                                    <CheckCircle size={16} />
+                                                                    {selectedAction === `enable-${student._id}` ? <span className="text-xs font-bold">Sure?</span> : <CheckCircle size={16} />}
                                                                 </button>
                                                                 <button 
                                                                     onClick={() => handleDelete(student._id)} 
-                                                                    className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition duration-150"
+                                                                    className={`p-2 rounded-lg transition duration-150 flex items-center justify-center ${selectedAction === `delete-${student._id}`
+                                                                        ? "bg-red-600 text-white w-20"
+                                                                        : "bg-red-50 text-red-600 hover:bg-red-100"
+                                                                        }`}
                                                                     title="Delete Permanently"
                                                                 >
-                                                                    <Trash2 size={16} />
+                                                                    {selectedAction === `delete-${student._id}` ? <span className="text-xs font-bold">Sure?</span> : <Trash2 size={16} />}
                                                                 </button>
                                                             </div>
                                                         </td>
@@ -303,15 +311,33 @@ const DisabledStudents = () => {
                                                     </button>
                                                     <button 
                                                         onClick={() => handleEnable(student._id)}
-                                                        className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium px-3 py-1.5 hover:bg-blue-50 rounded-lg transition-colors"
+                                                        className={`flex items-center gap-1 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors ${selectedAction === `enable-${student._id}`
+                                                            ? "bg-blue-600 text-white hover:bg-blue-700"
+                                                            : "text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                                            }`}
                                                     >
-                                                        <CheckCircle size={16} /> Enable
+                                                        {selectedAction === `enable-${student._id}` ? (
+                                                            <span>Sure?</span>
+                                                        ) : (
+                                                            <>
+                                                                    <CheckCircle size={16} /> Enable
+                                                            </>
+                                                        )}
                                                     </button>
                                                     <button 
                                                         onClick={() => handleDelete(student._id)}
-                                                        className="flex items-center gap-1 text-sm text-red-600 hover:text-red-700 font-medium px-3 py-1.5 hover:bg-red-50 rounded-lg transition-colors"
+                                                        className={`flex items-center gap-1 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors ${selectedAction === `delete-${student._id}`
+                                                            ? "bg-red-600 text-white hover:bg-red-700"
+                                                            : "text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                            }`}
                                                     >
-                                                        <Trash2 size={16} /> Delete
+                                                        {selectedAction === `delete-${student._id}` ? (
+                                                            <span>Sure?</span>
+                                                        ) : (
+                                                            <>
+                                                                    <Trash2 size={16} /> Delete
+                                                            </>
+                                                        )}
                                                     </button>
                                                 </div>
                                             </div>
@@ -331,20 +357,7 @@ const DisabledStudents = () => {
                 student={currentStudent}
             />
 
-            {/* Confirmation Modal */}
-            <ConfirmationModal 
-                isOpen={showConfirmModal}
-                onClose={() => {
-                    setShowConfirmModal(false);
-                    setSelectedStudentId(null);
-                    setActionType(null);
-                }}
-                onConfirm={confirmAction}
-                title={actionType === 'enable' ? "Enable Student" : "Delete Student"}
-                message={actionType === 'enable' 
-                    ? "Are you sure you want to enable this student? They will appear in the active students list." 
-                    : "Are you sure you want to permanently delete this student? This action cannot be undone."}
-            />
+
         </div>
     );
 };

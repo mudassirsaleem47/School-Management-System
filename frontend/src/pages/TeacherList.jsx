@@ -4,9 +4,9 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 
 import TeacherModal from '../components/form-popup/TeacherModal';
-import ConfirmationModal from '../components/ConfirmationModal';
+
 import SearchBar from '../components/SearchBar';
-import { Edit, Trash2, Plus } from 'lucide-react';
+import { Edit, Trash2, Plus, Check } from 'lucide-react';
 
 const API_BASE = "http://localhost:5000";
 
@@ -23,7 +23,7 @@ const TeacherList = () => {
     const [currentTeacher, setCurrentTeacher] = useState(null);
 
     // Delete Confirmation State
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
+
     const [selectedDeleteId, setSelectedDeleteId] = useState(null);
 
     // Search State
@@ -80,10 +80,17 @@ const TeacherList = () => {
         }
     };
 
-    // Delete Logic - Open Modal
+    // Delete Logic - Toggle Confirmation
     const handleDelete = (id) => {
-        setSelectedDeleteId(id);
-        setShowDeleteModal(true);
+        if (selectedDeleteId === id) {
+            confirmDelete();
+        } else {
+            setSelectedDeleteId(id);
+            // Auto-reset after 3 seconds
+            setTimeout(() => {
+                setSelectedDeleteId(prev => prev === id ? null : prev);
+            }, 3000);
+        }
     };
 
     // Actual Delete Function
@@ -96,6 +103,7 @@ const TeacherList = () => {
         } catch (err) {
             showToast("Error deleting teacher", "error");
         }
+        setSelectedDeleteId(null);
     };
 
     // Edit Button Click Logic
@@ -214,10 +222,13 @@ const TeacherList = () => {
                                                     </button>
                                                     <button 
                                                         onClick={() => handleDelete(teacher._id)} 
-                                                        className="inline-flex items-center justify-center w-9 h-9 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition duration-150"
+                                                        className={`inline-flex items-center justify-center h-9 w-9 rounded-lg transition duration-150 ${selectedDeleteId === teacher._id
+                                                            ? "bg-red-600 text-white hover:bg-red-700"
+                                                            : "bg-red-100 text-red-600 hover:bg-red-200"
+                                                            }`}
                                                         title="Delete teacher"
                                                     >
-                                                        <Trash2 className="w-4 h-4" />
+                                                        {selectedDeleteId === teacher._id ? <Check className="w-4 h-4" /> : <Trash2 className="w-4 h-4" />}
                                                     </button>
                                                 </div>
                                             </td>
@@ -238,14 +249,7 @@ const TeacherList = () => {
                 initialData={currentTeacher}
             />
 
-            {/* Delete Confirmation Modal */}
-            <ConfirmationModal 
-                isOpen={showDeleteModal}
-                onClose={() => setShowDeleteModal(false)}
-                onConfirm={confirmDelete}
-                title="Delete Teacher"
-                message="Are you sure you want to delete this teacher? This action cannot be undone."
-            />
+
         </div>
     );
 };

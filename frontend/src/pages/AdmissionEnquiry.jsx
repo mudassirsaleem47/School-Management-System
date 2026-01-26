@@ -3,9 +3,9 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import EnquiryModal from '../components/form-popup/EnquiryModal';
-import ConfirmationModal from '../components/ConfirmationModal';
+
 import SearchBar from '../components/SearchBar';
-import { Edit, Trash2, Plus, Eye } from 'lucide-react';
+import { Edit, Trash2, Plus, Eye, Check } from 'lucide-react';
 
 const API_BASE = "http://localhost:5000";
 
@@ -24,7 +24,7 @@ const AdmissionEnquiry = () => {
     const [currentEnquiry, setCurrentEnquiry] = useState(null);
     
     // Delete Confirmation State
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
+
     const [selectedDeleteId, setSelectedDeleteId] = useState(null);
 
     // Search State
@@ -87,8 +87,12 @@ const AdmissionEnquiry = () => {
 
     // Delete Logic
     const handleDelete = (id) => {
-        setSelectedDeleteId(id);
-        setShowDeleteModal(true);
+        if (selectedDeleteId === id) {
+            confirmDelete();
+        } else {
+            setSelectedDeleteId(id);
+            setTimeout(() => setSelectedDeleteId(prev => prev === id ? null : prev), 3000);
+        }
     };
 
     const confirmDelete = async () => {
@@ -97,12 +101,10 @@ const AdmissionEnquiry = () => {
             await axios.delete(`${API_BASE}/EnquiryDelete/${selectedDeleteId}`);
             fetchData();
             showToast("Enquiry deleted successfully!", "success");
-            setShowDeleteModal(false);
-            setSelectedDeleteId(null);
         } catch (err) {
             showToast("Error deleting enquiry", "error");
-            setShowDeleteModal(false);
         }
+        setSelectedDeleteId(null);
     };
 
     // View Button Click Logic
@@ -240,10 +242,17 @@ const AdmissionEnquiry = () => {
                                                     </button>
                                                     <button 
                                                         onClick={() => handleDelete(item._id)} 
-                                                        className="inline-flex items-center justify-center w-9 h-9 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition duration-150"
+                                                        className={`inline-flex items-center justify-center h-9 w-9 rounded-lg transition duration-150 ${selectedDeleteId === item._id
+                                                            ? "bg-red-600 text-white hover:bg-red-700"
+                                                            : "bg-red-100 text-red-600 hover:bg-red-200"
+                                                            }`}
                                                         title="Delete enquiry"
                                                     >
-                                                        <Trash2 className="w-4 h-4" />
+                                                        {selectedDeleteId === item._id ? (
+                                                            <Check className="w-4 h-4" />
+                                                        ) : (
+                                                                <Trash2 className="w-4 h-4" />
+                                                        )}
                                                     </button>
                                                 </div>
                                             </td>
@@ -267,14 +276,7 @@ const AdmissionEnquiry = () => {
                 viewMode={viewMode}
             />
 
-            {/* Delete Confirmation Modal */}
-            <ConfirmationModal 
-                isOpen={showDeleteModal}
-                onClose={() => setShowDeleteModal(false)}
-                onConfirm={confirmDelete}
-                title="Delete Enquiry"
-                message="Are you sure you want to delete this enquiry? This action cannot be undone."
-            />
+
         </div>
     );
 };

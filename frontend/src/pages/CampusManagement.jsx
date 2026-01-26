@@ -5,7 +5,7 @@ import { useToast } from '../context/ToastContext';
 import API_URL from '../config/api.js';
 import { Building2, Plus, Edit, Trash2, MapPin, Phone, Mail, Users, TrendingUp, CheckCircle2, XCircle } from 'lucide-react';
 import CampusModal from '../components/form-popup/CampusModal';
-import ConfirmationModal from '../components/ConfirmationModal';
+
 
 const CampusManagement = () => {
     const { currentUser } = useAuth();
@@ -14,8 +14,7 @@ const CampusManagement = () => {
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [selectedCampus, setSelectedCampus] = useState(null);
-    const [showConfirmation, setShowConfirmation] = useState(false);
-    const [campusToDelete, setCampusToDelete] = useState(null);
+    const [selectedDeleteId, setSelectedDeleteId] = useState(null);
     const [campusStats, setCampusStats] = useState({});
 
     // Fetch campuses
@@ -68,14 +67,21 @@ const CampusManagement = () => {
         setShowModal(true);
     };
 
-    const handleDeleteClick = (campus) => {
-        setCampusToDelete(campus);
-        setShowConfirmation(true);
+    const handleDeleteClick = (id) => {
+        if (selectedDeleteId === id) {
+            handleDeleteConfirm();
+        } else {
+            setSelectedDeleteId(id);
+            setTimeout(() => {
+                setSelectedDeleteId(prev => prev === id ? null : prev);
+            }, 3000);
+        }
     };
 
     const handleDeleteConfirm = async () => {
+        if (!selectedDeleteId) return;
         try {
-            const response = await axios.delete(`${API_URL}/Campus/${campusToDelete._id}`);
+            const response = await axios.delete(`${API_URL}/Campus/${selectedDeleteId}`);
             if (response.data.success) {
                 showToast('Campus deleted successfully', 'success');
                 fetchCampuses();
@@ -84,8 +90,7 @@ const CampusManagement = () => {
             const errorMsg = error.response?.data?.message || 'Failed to delete campus';
             showToast(errorMsg, 'error');
         } finally {
-            setShowConfirmation(false);
-            setCampusToDelete(null);
+            setSelectedDeleteId(null);
         }
     };
 
@@ -224,11 +229,20 @@ const CampusManagement = () => {
                                             Edit
                                         </button>
                                         <button
-                                            onClick={() => handleDeleteClick(campus)}
-                                            className="flex-1 px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition flex items-center justify-center gap-2"
+                                            onClick={() => handleDeleteClick(campus._id)}
+                                            className={`flex-1 px-3 py-2 rounded-lg transition flex items-center justify-center gap-2 ${selectedDeleteId === campus._id
+                                                ? "bg-red-600 text-white hover:bg-red-700 font-bold"
+                                                : "bg-red-50 text-red-600 hover:bg-red-100"
+                                                }`}
                                         >
-                                            <Trash2 className="w-4 h-4" />
-                                            Delete
+                                            {selectedDeleteId === campus._id ? (
+                                                <span>Sure?</span>
+                                            ) : (
+                                                <>
+                                                        <Trash2 className="w-4 h-4" />
+                                                        Delete
+                                                </>
+                                            )}
                                         </button>
                                     </div>
                                 </div>
@@ -246,16 +260,7 @@ const CampusManagement = () => {
                 />
             )}
 
-            {/* Confirmation Modal */}
-            {showConfirmation && (
-                <ConfirmationModal
-                    isOpen={showConfirmation}
-                    onClose={() => setShowConfirmation(false)}
-                    onConfirm={handleDeleteConfirm}
-                    title="Delete Campus"
-                    message={`Are you sure you want to delete ${campusToDelete?.campusName}? This action cannot be undone.`}
-                />
-            )}
+
         </div>
     );
 };
