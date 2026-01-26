@@ -190,7 +190,8 @@ const DisabledStudents = () => {
                                                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Student Name</th>
                                                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Roll No.</th>
                                                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Class</th>
-                                                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Father Name</th>
+                                                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Disable Reason</th>
+                                                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Disabled Date</th>
                                                     <th className="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">Actions</th>
                                                 </tr>
                                             </thead>
@@ -218,7 +219,26 @@ const DisabledStudents = () => {
                                                                 {student.sclassName?.sclassName || 'N/A'}
                                                             </span>
                                                         </td>
-                                                        <td className="px-6 py-4 text-sm text-gray-600">{student.father?.name || 'N/A'}</td>
+                                                        <td className="px-6 py-4">
+                                                            {student.disableInfo?.reason ? (
+                                                                <span className={`px-3 py-1 rounded-full text-xs font-600 ${student.disableInfo.reason === 'Left School' ? 'bg-blue-100 text-blue-700' :
+                                                                        student.disableInfo.reason === 'Transferred' ? 'bg-purple-100 text-purple-700' :
+                                                                            student.disableInfo.reason === 'Expelled' ? 'bg-red-100 text-red-700' :
+                                                                                student.disableInfo.reason === 'Medical' ? 'bg-green-100 text-green-700' :
+                                                                                    student.disableInfo.reason === 'Financial' ? 'bg-yellow-100 text-yellow-700' :
+                                                                                        'bg-gray-100 text-gray-700'
+                                                                    }`}>
+                                                                    {student.disableInfo.reason}
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-gray-400 text-sm">-</span>
+                                                            )}
+                                                        </td>
+                                                        <td className="px-6 py-4 text-sm text-gray-600">
+                                                            {student.disableInfo?.disabledDate
+                                                                ? new Date(student.disableInfo.disabledDate).toLocaleDateString()
+                                                                : '-'}
+                                                        </td>
                                                         <td className="px-6 py-4 text-right">
                                                             <div className="flex justify-end gap-2">
                                                                 <button 

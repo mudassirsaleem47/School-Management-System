@@ -29,6 +29,8 @@ import ExamResult from './pages/ExamResult';
 import CampusManagement from './pages/CampusManagement';
 import StaffManagement from './pages/StaffManagement';
 import DesignationManagement from './pages/DesignationManagement';
+import IdCardTemplateManagement from './pages/IdCardTemplateManagement';
+import DisableReasonPage from './pages/DisableReasonPage';
 import TeacherLoginPage from './pages/TeacherLoginPage';
 import TeacherDashboard from './pages/TeacherDashboard';
 import TeacherLayout from './components/TeacherLayout';
@@ -72,6 +74,7 @@ function App() {
               <Route path="complain" element={<ComplainPage />} />
               <Route path="admission" element={<StudentAdmission />} />
               <Route path="students/disabled" element={<DisabledStudents />} />
+                <Route path="students/disable-reasons" element={<DisableReasonPage />} />
               <Route path="settings" element={<SettingsProfile />} />
               <Route path="fee-management" element={<FeeManagement />} />
               <Route path="fee-assignment" element={<FeeAssignment />} />
@@ -87,6 +90,7 @@ function App() {
                 <Route path="campuses" element={<CampusManagement />} />
                 <Route path="staff" element={<StaffManagement />} />
                 <Route path="designations" element={<DesignationManagement />} />
+                <Route path="id-card-template" element={<IdCardTemplateManagement />} />
             </Route>
 
               {/* Teacher Protected Routes */}

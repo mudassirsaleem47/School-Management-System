@@ -41,6 +41,23 @@ const studentSchema = new mongoose.Schema({
         enum: ['Active', 'Disabled'],
         default: 'Active'
     },
+    disableInfo: {
+        reason: {
+            type: String,
+            enum: ['Left School', 'Transferred', 'Expelled', 'Medical', 'Financial', 'Other']
+        },
+        description: {
+            type: String,
+            maxlength: 500
+        },
+        disabledDate: {
+            type: Date
+        },
+        disabledBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'admin'
+        }
+    },
     // Personal Information
     firstName: String,
     lastName: String,

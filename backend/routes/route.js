@@ -22,6 +22,8 @@ const {
 const { createCampus, getCampusesBySchool, getCampusById, updateCampus, deleteCampus, getCampusStats } = require('../controllers/campus-controller.js');
 const { createStaff, getStaffBySchool, getStaffById, updateStaff, deleteStaff, resetStaffPassword, staffLogin } = require('../controllers/staff-controller.js');
 const { createDesignation, getDesignationsBySchool, updateDesignation, deleteDesignation } = require('../controllers/designation-controller.js');
+const { createIdCardTemplate, getTemplatesBySchool, getTemplateById, updateIdCardTemplate, deleteIdCardTemplate } = require('../controllers/idCardTemplate-controller.js');
+
 
 
 
@@ -183,6 +185,13 @@ router.post('/Designation', createDesignation);
 router.get('/Designations/:schoolId', getDesignationsBySchool);
 router.put('/Designation/:id', updateDesignation);
 router.delete('/Designation/:id', deleteDesignation);
+
+// --- ID Card Template Management Routes ---
+router.post('/IdCardTemplate', upload.single('templateFile'), createIdCardTemplate);
+router.get('/IdCardTemplates/:schoolId', getTemplatesBySchool);
+router.get('/IdCardTemplate/:id', getTemplateById);
+router.put('/IdCardTemplate/:id', upload.single('templateFile'), updateIdCardTemplate);
+router.delete('/IdCardTemplate/:id', deleteIdCardTemplate);
 
 
 module.exports = router;

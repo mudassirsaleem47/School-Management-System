@@ -106,7 +106,9 @@ const getDisabledStudents = async (req, res) => {
     try {
         const { schoolId } = req.params;
 
-        const students = await Student.find({ school: schoolId, status: "Disabled" }).populate('sclassName');
+        const students = await Student.find({ school: schoolId, status: "Disabled" })
+            .populate('sclassName')
+            .populate('disableInfo.disabledBy', 'schoolName');
 
         if (students.length === 0) {
             return res.status(200).json([]);
@@ -127,8 +129,38 @@ const getDisabledStudents = async (req, res) => {
 const updateStudent = async (req, res) => {
     try {
         const studentId = req.params.id;
-        // Logic to update fields
-        const result = await Student.findByIdAndUpdate(studentId, req.body, { new: true });
+        const updateData = { ...req.body };
+
+        // If status is being changed to 'Disabled', handle disable info
+        if (updateData.status === 'Disabled') {
+            if (!updateData.disableInfo || !updateData.disableInfo.reason) {
+                return res.status(400).json({
+                    message: "Disable reason is required when disabling a student"
+                });
+            }
+            if (!updateData.disableInfo.disabledDate) {
+                updateData.disableInfo.disabledDate = new Date();
+            }
+        } else if (updateData.status === 'Active') {
+            // If re-enabling student, clear disable info
+            updateData.disableInfo = {
+                reason: null,
+                description: null,
+                disabledDate: null,
+                disabledBy: null
+            };
+        }
+
+        const result = await Student.findByIdAndUpdate(
+            studentId,
+            updateData,
+            { new: true, runValidators: true }
+        ).populate('sclassName').populate('disableInfo.disabledBy', 'schoolName');
+
+        if (!result) {
+            return res.status(404).json({ message: "Student not found" });
+        }
+
         res.status(200).json(result);
     } catch (err) {
         res.status(500).json({ message: "Error updating student", error: err.message });
