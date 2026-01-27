@@ -37,6 +37,11 @@ import AttendancePage from './pages/teacher/AttendancePage';
 import TeacherStudentsPage from './pages/teacher/TeacherStudentsPage';
 import SchedulePage from './pages/teacher/SchedulePage';
 import TeacherResultsPage from './pages/teacher/TeacherResultsPage';
+import SendMessages from './pages/SendMessages';
+import MessageTemplates from './pages/MessageTemplates';
+import MessageReport from './pages/MessageReport';
+import BirthdayWish from './pages/BirthdayWish';
+import MessagingSetup from './pages/MessagingSetup';
 
 
 
@@ -89,6 +94,11 @@ function App() {
                 <Route path="campuses" element={<CampusManagement />} />
                 <Route path="staff" element={<StaffManagement />} />
                 <Route path="designations" element={<DesignationManagement />} />
+                <Route path="send-messages" element={<SendMessages />} />
+                <Route path="message-templates" element={<MessageTemplates />} />
+                <Route path="message-report" element={<MessageReport />} />
+                <Route path="birthday-wishes" element={<BirthdayWish />} />
+                <Route path="messaging-setup" element={<MessagingSetup />} />
             </Route>
 
               {/* Teacher Protected Routes */}

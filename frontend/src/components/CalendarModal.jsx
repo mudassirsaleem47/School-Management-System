@@ -138,7 +138,7 @@ const CalendarModal = ({ isOpen, onClose }) => {
             <div className={`fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`} onClick={handleClose}>
                 <div className={`bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden ${isClosing ? 'animate-scale-down' : 'animate-scale-up'}`} onClick={(e) => e.stopPropagation()}>
                     {/* Header */}
-                    <div className="bg-linear-to-r from-indigo-600 to-blue-600 text-white px-6 py-4 flex items-center justify-between">
+                    <div className="bg-blue-400 text-white px-6 py-4 flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <h2 className="text-2xl font-bold">School Calendar</h2>
                             <div className="flex items-center gap-2">

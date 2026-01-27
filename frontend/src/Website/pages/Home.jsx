@@ -253,7 +253,7 @@ function Home() {
         <div className="container mx-auto max-w-6xl relative z-10">
           <div className="text-center">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-blue-100/80 backdrop-blur-sm border border-blue-200 rounded-full mb-4 md:mb-6 text-xs md:text-sm">
+            <div className="inline-flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-blue-100/80   border border-blue-200 rounded-full mb-4 md:mb-6 text-xs md:text-sm">
               <Sparkles className="w-3 md:w-4 h-3 md:h-4 text-blue-600" />
               <span className="font-medium text-blue-700">Modern School Management Platform</span>
             </div>
@@ -282,7 +282,7 @@ function Home() {
               </button>
               <Link
                 to="/AdminRegister"
-                className="w-full sm:w-auto px-6 md:px-8 py-3 md:py-4 bg-white/80 backdrop-blur-sm border-2 border-gray-200 text-gray-900 rounded-full font-semibold text-base md:text-lg hover:bg-white hover:border-blue-300 hover:shadow-xl transition-all duration-300 hover:scale-105 text-center"
+                className="w-full sm:w-auto px-6 md:px-8 py-3 md:py-4 bg-white/80   border-2 border-gray-200 text-gray-900 rounded-full font-semibold text-base md:text-lg hover:bg-white hover:border-blue-300 hover:shadow-xl transition-all duration-300 hover:scale-105 text-center"
               >
                 Start Free Trial
               </Link>
@@ -343,7 +343,7 @@ function Home() {
 
           <div className="grid sm:grid-cols-2 gap-3 md:gap-4 px-4">
             {benefits.map((benefit, index) => (
-              <div key={index} className="group flex items-center gap-3 md:gap-4 bg-white/80 backdrop-blur-sm p-4 md:p-5 rounded-lg md:rounded-xl border border-gray-100 hover:border-blue-200 hover:shadow-lg transition-all duration-300">
+              <div key={index} className="group flex items-center gap-3 md:gap-4 bg-white/80   p-4 md:p-5 rounded-lg md:rounded-xl border border-gray-100 hover:border-blue-200 hover:shadow-lg transition-all duration-300">
                 <div className="w-7 md:w-8 h-7 md:h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
                   <CheckCircle2 className="w-4 md:w-5 h-4 md:h-5 text-white" />
                 </div>

@@ -69,7 +69,7 @@ const DesignationModal = ({ designation, onClose }) => {
     if (!isVisible) return null;
 
     return createPortal(
-        <div className={`fixed inset-0 z-[9999] overflow-y-auto bg-black/70 backdrop-blur-sm ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`}>
+        <div className={`fixed inset-0 z-[9999] overflow-y-auto bg-black/70  ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`}>
             <div className="flex min-h-full items-center justify-center p-4">
                 <div className={`bg-white rounded-2xl shadow-2xl w-full max-w-2xl relative ${isClosing ? 'animate-scale-down' : 'animate-scale-up'}`}>
                     

@@ -24,6 +24,12 @@ const { createStaff, getStaffBySchool, getStaffById, updateStaff, deleteStaff, r
 const { createDesignation, getDesignationsBySchool, updateDesignation, deleteDesignation } = require('../controllers/designation-controller.js');
 const { createEvent, getEventsBySchool, getEventById, updateEvent, deleteEvent } = require('../controllers/event-controller.js');
 const { createTask, getTasksBySchool, getTaskById, updateTask, deleteTask } = require('../controllers/task-controller.js');
+const {
+    createMessageTemplate, getMessageTemplatesBySchool, updateMessageTemplate, deleteMessageTemplate,
+    getMessageReports, sendMessages, sendBirthdayWishes,
+    getMessagingSettings, saveEmailSettings, testEmailSettings,
+    whatsappConnect, whatsappStatus, whatsappDisconnect
+} = require('../controllers/message-controller.js');
 
 
 
@@ -200,6 +206,30 @@ router.get('/Tasks/:schoolId', getTasksBySchool);
 router.get('/Task/:id', getTaskById);
 router.put('/Task/:id', updateTask);
 router.delete('/Task/:id', deleteTask);
+
+// --- Communication / Messaging Routes ---
+// Message Templates
+router.post('/MessageTemplateCreate', createMessageTemplate);
+router.get('/MessageTemplates/:schoolId', getMessageTemplatesBySchool);
+router.put('/MessageTemplate/:id', updateMessageTemplate);
+router.delete('/MessageTemplate/:id', deleteMessageTemplate);
+
+// Send Messages
+router.post('/SendMessages', sendMessages);
+router.post('/SendBirthdayWishes', sendBirthdayWishes);
+
+// Message Reports
+router.get('/MessageReports/:schoolId', getMessageReports);
+
+// Messaging Settings
+router.get('/MessagingSettings/:schoolId', getMessagingSettings);
+router.post('/EmailSettings', saveEmailSettings);
+router.post('/EmailSettings/Test', testEmailSettings);
+
+// WhatsApp
+router.post('/WhatsApp/Connect', whatsappConnect);
+router.get('/WhatsApp/Status/:schoolId', whatsappStatus);
+router.post('/WhatsApp/Disconnect', whatsappDisconnect);
 
 
 module.exports = router;

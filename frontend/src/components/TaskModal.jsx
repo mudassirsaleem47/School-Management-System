@@ -267,7 +267,7 @@ const TaskModal = () => {
                                                 {/* Checkbox-like status indicator - Clickable */}
                                                 <div 
                                                     onClick={(e) => handleStatusToggle(e, task)}
-                                                    className={`flex-shrink-0 mt-1 w-4 h-4 rounded border flex items-center justify-center transition-colors cursor-pointer ${
+                                                    className={`shrink-0 mt-1 w-4 h-4 rounded border flex items-center justify-center transition-colors cursor-pointer ${
                                                     task.status === 'Completed' ? 'bg-green-500 border-green-500 hover:bg-green-600' : 
                                                     'border-gray-300 bg-white hover:border-indigo-500'
                                                 }`}>

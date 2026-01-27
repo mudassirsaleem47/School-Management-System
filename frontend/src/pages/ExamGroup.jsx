@@ -166,7 +166,7 @@ const ExamGroup = () => {
             {groups.map((group) => (
               <div
                 key={group._id}
-                className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-6 border-2 border-indigo-100 hover:shadow-lg transition-all"
+                className="bg-linear-to-br from-indigo-50 to-purple-50 rounded-xl p-6 border-2 border-indigo-100 hover:shadow-lg transition-all"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="bg-indigo-600 p-3 rounded-lg">
@@ -220,7 +220,7 @@ const ExamGroup = () => {
 
       {/* Add/Edit Modal */}
       {isVisible && (
-        <div className={`fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 overflow-y-auto p-4 ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`}>
+        <div className={`fixed inset-0 bg-black/70 flex items-center justify-center z-50 overflow-y-auto p-4 ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`}>
           <div className={`bg-white rounded-xl shadow-2xl max-w-2xl w-full ${isClosing ? 'animate-scale-down' : 'animate-scale-up'}`}>
             <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-xl">
               <h3 className="text-2xl font-bold text-gray-900">

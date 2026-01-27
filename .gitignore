@@ -39,3 +39,9 @@ coverage/
 # Temporary files
 tmp/
 temp/
+
+# WhatsApp Sessions
+backend/whatsapp_sessions/
+whatsapp_sessions/
+backend/.wwebjs_cache/
+.wwebjs_cache/
