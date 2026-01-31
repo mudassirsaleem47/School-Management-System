@@ -1,31 +1,40 @@
 const multer = require('multer');
-const path = require('path');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const dotenv = require('dotenv');
+
+dotenv.config();
+
+// Debug logs to verify env vars
+console.log('Cloudinary Config:', {
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY ? 'Loaded' : 'Missing',
+    api_secret: process.env.CLOUDINARY_API_SECRET ? 'Loaded' : 'Missing'
+});
+
+// Configure Cloudinary
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 // Configure storage
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/');
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'school_management_system',
+        resource_type: 'auto',
     },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname));
-    }
 });
 
 // File filter
 const fileFilter = (req, file, cb) => {
-    const allowedMimes = [
-        'image/jpeg',
-        'image/jpg', 
-        'image/png',
-        'application/pdf',
-        'application/msword',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    ];
-    
-    if (allowedMimes.includes(file.mimetype)) {
+    // Accept images and pdfs
+    if (file.mimetype.startsWith('image/') || file.mimetype === 'application/pdf') {
         cb(null, true);
     } else {
-        cb(new Error('Only images (JPEG, PNG) and documents (PDF, DOC, DOCX) are allowed!'), false);
+        cb(new Error('Invalid file type, only images and PDFs are allowed!'), false);
     }
 };
 

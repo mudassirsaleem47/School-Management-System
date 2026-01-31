@@ -3,6 +3,8 @@ const bcrypt = require('bcryptjs'); // Password secure karne ke liye
 
 const adminRegister = async (req, res) => {
     try {
+        console.log("AdminReg request received:", req.body);
+
         // User se data lena
         const { name, email, schoolName, password } = req.body;
 
@@ -11,6 +13,7 @@ const adminRegister = async (req, res) => {
         const existingSchool = await Admin.findOne({ schoolName });
 
         if (existingAdmin || existingSchool) {
+            console.log("Conflict: Admin or School already exists");
             return res.status(400).json({ message: "Admin or School already exists" });
         }
 
@@ -28,13 +31,15 @@ const adminRegister = async (req, res) => {
 
         // Save karna
         const result = await admin.save();
+        console.log("Admin registered successfully:", result._id);
         
         // Password wapis nahi bhejna response mein
         result.password = undefined;
 
         res.status(200).json(result);
     } catch (err) {
-        res.status(500).json(err);
+        console.error("Error in adminRegister:", err);
+        res.status(500).json({ message: "Internal Server Error", error: err.message });
     }
 };
 
@@ -81,7 +86,10 @@ const updateAdmin = async (req, res) => {
         const updateData = { name, email, schoolName, address, phoneNumber, website };
 
         if (req.file) {
+            console.log("File uploaded:", req.file);
             updateData.schoolLogo = req.file.path;
+        } else {
+            console.log("No file uploaded in request");
         }
 
         const result = await Admin.findByIdAndUpdate(req.params.id, { $set: updateData }, { new: true });

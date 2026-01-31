@@ -42,7 +42,7 @@ const SettingsProfile = () => {
                 website: data.website || ''
             });
             if (data.schoolLogo) {
-                setLogoPreview(`${API_BASE}/${data.schoolLogo}`);
+                setLogoPreview(data.schoolLogo.startsWith('http') ? data.schoolLogo : `${API_BASE}/${data.schoolLogo}`);
             }
         } catch (err) {
             console.error("Error fetching settings:", err);

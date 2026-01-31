@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import SearchBar from '../components/SearchBar';
-import { Send, Users, MessageCircle, CheckCircle2, Clock, Filter, ChevronDown, GraduationCap, Briefcase, Mail, MessageSquare } from 'lucide-react';
+import { Send, Users, MessageCircle, CheckCircle2, Clock, Filter, ChevronDown, GraduationCap, Briefcase, Mail, MessageSquare, Search, CheckSquare, Square, Info } from 'lucide-react';
 
 const API_BASE = "http://localhost:5000";
 
@@ -22,7 +21,7 @@ const SendMessages = () => {
     const [recipientGroup, setRecipientGroup] = useState('student'); // 'student' or 'staff'
     const [selectedRecipients, setSelectedRecipients] = useState([]);
     const [selectAll, setSelectAll] = useState(false);
-    const [contentSource, setContentSource] = useState('custom'); // 'custom' or 'template' (renamed from messageType)
+    const [contentSource, setContentSource] = useState('custom'); // 'custom' or 'template'
     const [deliveryChannel, setDeliveryChannel] = useState('whatsapp'); // 'whatsapp' or 'email'
     const [selectedTemplate, setSelectedTemplate] = useState('');
     const [customMessage, setCustomMessage] = useState('');
@@ -71,15 +70,46 @@ const SendMessages = () => {
         if (currentUser) fetchData();
     }, [currentUser]);
 
+    // Filter Recipients
+    const filteredRecipients = recipientGroup === 'student'
+        ? students.filter(student => {
+            const matchesSearch = !searchQuery ||
+                student.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                student.fatherName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                student.phone?.includes(searchQuery);
+
+            const matchesClass = !classFilter || student.class?._id === classFilter;
+
+            return matchesSearch && matchesClass;
+        })
+        : staffList.filter(staff => {
+            const matchesSearch = !searchQuery ||
+                staff.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                staff.phone?.includes(searchQuery);
+
+            const matchesDesignation = !designationFilter || staff.designation?._id === designationFilter;
+
+            return matchesSearch && matchesDesignation;
+        });
+
     // Handle Select All
-    const handleSelectAll = () => {
-        if (selectAll) {
-            setSelectedRecipients([]);
-        } else {
+    const handleSelectAll = (checked) => {
+        setSelectAll(checked);
+        if (checked) {
             setSelectedRecipients(filteredRecipients.map(r => r._id));
+        } else {
+            setSelectedRecipients([]);
         }
-        setSelectAll(!selectAll);
     };
+
+    // Update select all state when filtered recipients change
+    useEffect(() => {
+        if (filteredRecipients.length > 0 && selectedRecipients.length === filteredRecipients.length) {
+            setSelectAll(true);
+        } else {
+            setSelectAll(false);
+        }
+    }, [selectedRecipients, filteredRecipients]);
 
     // Handle Individual Selection
     const handleRecipientSelect = (id) => {
@@ -140,37 +170,6 @@ const SendMessages = () => {
         }
     };
 
-    // Filter Recipients
-    const filteredRecipients = recipientGroup === 'student'
-        ? students.filter(student => {
-            const matchesSearch = !searchQuery || 
-                student.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                student.fatherName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                student.phone?.includes(searchQuery);
-                
-            const matchesClass = !classFilter || student.class?._id === classFilter;
-            
-            return matchesSearch && matchesClass;
-        })
-        : staffList.filter(staff => {
-            const matchesSearch = !searchQuery || 
-                staff.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                staff.phone?.includes(searchQuery);
-                
-            const matchesDesignation = !designationFilter || staff.designation?._id === designationFilter;
-            
-            return matchesSearch && matchesDesignation;
-        });
-
-    // Update select all state when filtered recipients change
-    useEffect(() => {
-        if (filteredRecipients.length > 0 && selectedRecipients.length === filteredRecipients.length) {
-            setSelectAll(true);
-        } else {
-            setSelectAll(false);
-        }
-    }, [selectedRecipients, filteredRecipients]);
-
     // Clear selection when switching tabs
     useEffect(() => {
         setSelectedRecipients([]);
@@ -181,309 +180,276 @@ const SendMessages = () => {
     }, [recipientGroup]);
 
     return (
-        <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 p-6 md:p-8">
+        <div className="min-h-screen bg-slate-50/50 p-6 md:p-8 space-y-8">
             
             {/* Header Section */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-4xl font-bold text-gray-900">Send Messages</h1>
-                    <p className="text-gray-600 mt-2">Send SMS/WhatsApp messages to students</p>
+                    <h1 className="text-3xl font-bold tracking-tight text-slate-900">Broadcast Messages</h1>
+                    <p className="text-slate-500 mt-1">Send campaigns via WhatsApp or Email to students and staff.</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <div className="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg flex items-center gap-2">
-                        <Users className="w-5 h-5" />
-                        <span className="font-600">{selectedRecipients.length} Selected</span>
-                    </div>
+                    <span className="bg-slate-100 text-slate-700 px-3 py-1.5 rounded-md text-sm font-medium border border-slate-200">
+                        {selectedRecipients.length} Selected
+                    </span>
                     <button 
                         onClick={handleSendMessages}
                         disabled={sending || selectedRecipients.length === 0}
-                        className="flex items-center px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-lg hover:shadow-xl transition duration-200 font-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background bg-slate-900 text-slate-50 hover:bg-slate-900/90 h-10 px-4 py-2 shadow-sm"
                     >
                         {sending ? (
                             <>
-                                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
+                                <Info className="mr-2 h-4 w-4 animate-spin" />
                                 Sending...
                             </>
                         ) : (
                             <>
-                                <Send className="w-5 h-5 mr-2" />
-                                Send Message
+                                    <Send className="mr-2 h-4 w-4" />
+                                    Send Campaign
                             </>
                         )}
                     </button>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 
-                {/* Left Side - Student Selection */}
-                <div className="lg:col-span-2">
-                    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-                        
-                        {/* Tabs */}
-                        <div className="flex border-b border-gray-200">
-                            <button
-                                onClick={() => setRecipientGroup('student')}
-                                className={`flex-1 py-4 text-center font-600 transition ${
-                                    recipientGroup === 'student'
-                                        ? 'text-indigo-600 border-b-2 border-indigo-600'
-                                        : 'text-gray-500 hover:text-gray-700'
-                                }`}
-                            >
-                                <div className="flex items-center justify-center gap-2">
-                                    <GraduationCap className="w-5 h-5" />
+                {/* Left Side - List (8/12) */}
+                <div className="lg:col-span-8 flex flex-col gap-6">
+
+                    {/* Filter Bar */}
+                    <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+
+                            {/* Tabs */}
+                            <div className="inline-flex h-9 items-center justify-center rounded-lg bg-slate-100 p-1 text-slate-500 w-full sm:w-auto">
+                                <button
+                                    onClick={() => setRecipientGroup('student')}
+                                    className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${recipientGroup === 'student' ? 'bg-white text-slate-950 shadow-sm' : ''
+                                        }`}
+                                >
+                                    <GraduationCap className="w-4 h-4 mr-2" />
                                     Students
-                                </div>
-                            </button>
-                            <button
-                                onClick={() => setRecipientGroup('staff')}
-                                className={`flex-1 py-4 text-center font-600 transition ${
-                                    recipientGroup === 'staff'
-                                        ? 'text-indigo-600 border-b-2 border-indigo-600'
-                                        : 'text-gray-500 hover:text-gray-700'
-                                }`}
-                            >
-                                <div className="flex items-center justify-center gap-2">
-                                    <Briefcase className="w-5 h-5" />
+                                </button>
+                                <button
+                                    onClick={() => setRecipientGroup('staff')}
+                                    className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${recipientGroup === 'staff' ? 'bg-white text-slate-950 shadow-sm' : ''
+                                        }`}
+                                >
+                                    <Briefcase className="w-4 h-4 mr-2" />
                                     Staff
-                                </div>
-                            </button>
-                        </div>
-                        
-                        {/* Filters */}
-                        <div className="p-4 border-b border-gray-200 bg-gray-50">
-                            <div className="flex flex-col md:flex-row gap-4">
-                                <div className="flex-1">
-                                    <SearchBar 
+                                </button>
+                            </div>
+
+                            {/* Search & Select */}
+                            <div className="flex items-center gap-2 flex-1 sm:justify-end">
+                                <div className="relative flex-1 sm:flex-initial sm:w-[280px]">
+                                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
+                                    <input
+                                        type="text"
+                                        placeholder="Search name or phone..."
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        placeholder={`Search ${recipientGroup}...`}
+                                        className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 disabled:cursor-not-allowed disabled:opacity-50 pl-9"
                                     />
                                 </div>
-                                <div className="relative">
-                                    {recipientGroup === 'student' ? (
-                                        <select
-                                            value={classFilter}
-                                            onChange={(e) => setClassFilter(e.target.value)}
-                                            className="appearance-none px-4 py-2.5 pr-10 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-full md:w-auto"
+                                {recipientGroup === 'student' ? (
+                                    <select
+                                        value={classFilter}
+                                        onChange={(e) => setClassFilter(e.target.value)}
+                                        className="flex h-9 items-center justify-between whitespace-nowrap rounded-md border border-slate-200 bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-950 disabled:cursor-not-allowed disabled:opacity-50 w-32"
+                                    >
+                                        <option value="">All Classes</option>
+                                        {classes.map(cls => (
+                                            <option key={cls._id} value={cls._id}>{cls.sclassName}</option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <select
+                                        value={designationFilter}
+                                        onChange={(e) => setDesignationFilter(e.target.value)}
+                                            className="flex h-9 items-center justify-between whitespace-nowrap rounded-md border border-slate-200 bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-950 disabled:cursor-not-allowed disabled:opacity-50 w-32"
                                         >
-                                            <option value="">All Classes</option>
-                                            {classes.map(cls => (
-                                                <option key={cls._id} value={cls._id}>{cls.className}</option>
-                                            ))}
-                                        </select>
-                                    ) : (
-                                        <select
-                                            value={designationFilter}
-                                            onChange={(e) => setDesignationFilter(e.target.value)}
-                                            className="appearance-none px-4 py-2.5 pr-10 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-full md:w-auto"
-                                        >
-                                            <option value="">All Designations</option>
+                                            <option value="">All Roles</option>
                                             {designations.map(des => (
-                                                <option key={des._id} value={des._id}>{des.name}</option>
+                                                <option key={des._id} value={des._id}>{des.title}</option>
                                             ))}
-                                        </select>
-                                    )}
-                                    <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
-                                </div>
+                                    </select>
+                                )}
                             </div>
                         </div>
+                    </div>
 
-                        {/* Select All Header */}
-                        <div className="px-6 py-3 bg-indigo-50 border-b border-indigo-100 flex items-center">
-                            <input
-                                type="checkbox"
-                                checked={selectAll}
-                                onChange={handleSelectAll}
-                                className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500"
-                            />
-                            <span className="ml-3 font-500 text-gray-700">
-                                Select All ({filteredRecipients.length} {recipientGroup}s)
-                            </span>
+                    {/* Data List */}
+                    <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden flex flex-col min-h-[500px]">
+                        {/* Table Header */}
+                        <div className="flex items-center px-6 py-3 border-b border-slate-200 bg-slate-50/50">
+                            <button
+                                onClick={() => handleSelectAll(!selectAll)}
+                                className="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+                            >
+                                {selectAll ? <CheckSquare className="w-4 h-4 text-slate-900" /> : <Square className="w-4 h-4" />}
+                                <span>Select All ({filteredRecipients.length})</span>
+                            </button>
                         </div>
 
-                        {/* Recipient List */}
-                        <div className="max-h-[500px] overflow-y-auto">
+                        {/* Valid Content */}
+                        <div className="flex-1 overflow-auto max-h-[500px]">
                             {loading ? (
-                                <div className="flex items-center justify-center py-12">
-                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                                <div className="h-full flex flex-col items-center justify-center p-8 text-slate-500">
+                                    <Info className="w-8 h-8 animate-spin mb-2" />
+                                    Loading...
                                 </div>
                             ) : filteredRecipients.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center py-12 px-4">
-                                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                                        <Users className="w-8 h-8 text-gray-400" />
-                                    </div>
-                                    <p className="text-gray-600 text-lg font-500">No {recipientGroup}s found</p>
+                                    <div className="h-full flex flex-col items-center justify-center p-8 text-slate-500">
+                                        <Users className="w-12 h-12 mb-3 opacity-20" />
+                                        <p>No recipients found matching your filter.</p>
                                 </div>
                             ) : (
-                                <div className="divide-y divide-gray-100">
-                                    {filteredRecipients.map(recipient => (
-                                        <div 
-                                            key={recipient._id}
-                                            className={`flex items-center px-6 py-4 hover:bg-gray-50 cursor-pointer transition ${
-                                                selectedRecipients.includes(recipient._id) ? 'bg-indigo-50' : ''
-                                            }`}
-                                            onClick={() => handleRecipientSelect(recipient._id)}
-                                        >
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedRecipients.includes(recipient._id)}
-                                                onChange={() => handleRecipientSelect(recipient._id)}
-                                                className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500"
-                                                onClick={(e) => e.stopPropagation()}
-                                            />
-                                            <div className="ml-4 flex-1">
-                                                <p className="font-600 text-gray-900">{recipient.name}</p>
-                                                <p className="text-sm text-gray-500">
-                                                    {recipientGroup === 'student' 
-                                                        ? `${recipient.class?.className} | Father: ${recipient.fatherName}`
-                                                        : `${recipient.designation?.name || recipient.role} | ${recipient.phone}`
-                                                    }
-                                                </p>
+                                        <div className="divide-y divide-slate-100">
+                                            {filteredRecipients.map((recipient) => {
+                                                const isSelected = selectedRecipients.includes(recipient._id);
+                                                return (
+                                                    <div
+                                                        key={recipient._id}
+                                                        onClick={() => handleRecipientSelect(recipient._id)}
+                                                        className={`flex items-center px-6 py-3 hover:bg-slate-50/80 cursor-pointer transition-colors ${isSelected ? 'bg-slate-50' : ''
+                                                            }`}
+                                                    >
+                                                        <div className={`mr-4 ${isSelected ? 'text-slate-900' : 'text-slate-400'}`}>
+                                                            {isSelected ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center justify-between">
+                                                                <p className="text-sm font-medium text-slate-900 truncate">{recipient.name}</p>
+                                                                <p className="text-xs text-slate-500 font-mono">{recipient.phone}</p>
+                                                            </div>
+                                                            <p className="text-xs text-slate-500 truncate mt-0.5">
+                                                                {recipientGroup === 'student' 
+                                                                    ? `Class: ${recipient.sclassName?.sclassName || '-'} • Father: ${recipient.fatherName || '-'}`
+                                                                    : `${recipient.designation?.title || recipient.role || 'Staff'}`
+                                                                }
+                                                            </p>
+                                                        </div>
                                             </div>
-                                            <div className="text-right hidden sm:block">
-                                                <p className="text-sm font-500 text-gray-700">{recipient.phone}</p>
-                                            </div>
-                                        </div>
-                                    ))}
+                                                );
+                                            })}
                                 </div>
                             )}
                         </div>
                     </div>
                 </div>
 
-                {/* Right Side - Message Composition */}
-                <div className="lg:col-span-1">
-                    <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 sticky top-6">
-                        <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <MessageCircle className="w-5 h-5 text-indigo-600" />
-                            Compose Message
-                        </h3>
+                {/* Right Side - Composer (4/12) */}
+                <div className="lg:col-span-4 space-y-6">
+                    <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-6 sticky top-6">
+                        <div className="flex items-center gap-2 mb-6 pb-4 border-b border-slate-100">
+                            <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center">
+                                <MessageSquare className="w-4 h-4 text-slate-600" />
+                            </div>
+                            <h2 className="text-lg font-semibold text-slate-900">Compose</h2>
+                        </div>
 
-                        {/* Delivery Channel Selector */}
-                        <div className="mb-6">
-                            <label className="block text-sm font-600 text-gray-700 mb-2">
-                                Send Via
-                            </label>
-                            <div className="grid grid-cols-2 gap-2">
+                        {/* Channel Selector */}
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-3">
                                 <button
                                     onClick={() => setDeliveryChannel('whatsapp')}
-                                    className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg font-600 transition border ${
+                                    className={`relative flex items-center justify-center gap-2 rounded-lg border px-4 py-3 shadow-sm outline-none transition-all focus-visible:ring-2 focus-visible:ring-offset-2 ${
                                         deliveryChannel === 'whatsapp'
-                                            ? 'bg-green-50 border-green-200 text-green-700 ring-2 ring-green-500 ring-offset-1'
-                                            : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                                        ? 'border-green-600 bg-green-50 text-green-700 ring-green-600 ring-offset-green-50'
+                                        : 'border-slate-200 bg-transparent text-slate-600 hover:bg-slate-50'
                                     }`}
                                 >
-                                    <MessageSquare className="w-4 h-4" />
-                                    WhatsApp
+                                    <MessageCircle className="w-4 h-4" />
+                                    <span className="text-sm font-medium">WhatsApp</span>
                                 </button>
                                 <button
                                     onClick={() => setDeliveryChannel('email')}
-                                    className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg font-600 transition border ${
+                                    className={`relative flex items-center justify-center gap-2 rounded-lg border px-4 py-3 shadow-sm outline-none transition-all focus-visible:ring-2 focus-visible:ring-offset-2 ${
                                         deliveryChannel === 'email'
-                                            ? 'bg-blue-50 border-blue-200 text-blue-700 ring-2 ring-blue-500 ring-offset-1'
-                                            : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                                        ? 'border-blue-600 bg-blue-50 text-blue-700 ring-blue-600 ring-offset-blue-50'
+                                        : 'border-slate-200 bg-transparent text-slate-600 hover:bg-slate-50'
                                     }`}
                                 >
                                     <Mail className="w-4 h-4" />
-                                    Email
+                                    <span className="text-sm font-medium">Email</span>
                                 </button>
                             </div>
-                        </div>
 
-                        {/* Content Source Toggle */}
-                        <div className="flex gap-2 mb-4">
-                            <button
-                                onClick={() => setContentSource('custom')}
-                                className={`flex-1 py-1.5 px-3 text-sm rounded-lg font-500 transition ${
-                                    contentSource === 'custom'
-                                        ? 'bg-gray-800 text-white'
-                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                }`}
-                            >
-                                Custom Message
-                            </button>
-                            <button
-                                onClick={() => setContentSource('template')}
-                                className={`flex-1 py-1.5 px-3 text-sm rounded-lg font-500 transition ${
-                                    contentSource === 'template'
-                                        ? 'bg-gray-800 text-white'
-                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                }`}
-                            >
-                                Use Template
-                            </button>
-                        </div>
-
-                        {/* Template Selection */}
-                        {contentSource === 'template' && (
-                            <div className="mb-4">
-                                <label className="block text-sm font-600 text-gray-700 mb-2">
-                                    Select Template
-                                </label>
-                                <select
-                                    value={selectedTemplate}
-                                    onChange={(e) => handleTemplateSelect(e.target.value)}
-                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            {/* Template vs Custom Switch */}
+                            <div className="flex rounded-lg border border-slate-200 p-1 bg-slate-50/50">
+                                <button
+                                    onClick={() => setContentSource('custom')}
+                                    className={`flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-all ${contentSource === 'custom'
+                                        ? 'bg-white text-slate-900 shadow-sm border border-slate-200/50'
+                                        : 'text-slate-500 hover:text-slate-900'
+                                        }`}
                                 >
-                                    <option value="">-- Select Template --</option>
-                                    {templates.map(template => (
-                                        <option key={template._id} value={template._id}>
-                                            {template.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                    Custom Message
+                                </button>
+                                <button
+                                    onClick={() => setContentSource('template')}
+                                    className={`flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-all ${contentSource === 'template'
+                                        ? 'bg-white text-slate-900 shadow-sm border border-slate-200/50'
+                                        : 'text-slate-500 hover:text-slate-900'
+                                        }`}
+                                >
+                                    Use Template
+                                </button>
                             </div>
-                        )}
 
-                        {/* Message Text Area */}
-                        <div className="mb-4">
-                            <label className="block text-sm font-600 text-gray-700 mb-2">
-                                Message
-                            </label>
-                            <textarea
-                                value={customMessage}
-                                onChange={(e) => setCustomMessage(e.target.value)}
-                                placeholder="Write your message here..."
-                                rows={6}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
-                                disabled={contentSource === 'template' && selectedTemplate}
-                            />
-                            <p className="text-xs text-gray-500 mt-1">
-                                {customMessage.length} characters
-                            </p>
-                        </div>
-
-                        {/* Quick Stats */}
-                        <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                            <div className="flex items-center justify-between mb-2">
-                                <span className="text-sm text-gray-600">Recipients</span>
-                                <span className="font-600 text-gray-900">{selectedRecipients.length}</span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm text-gray-600">Message Length</span>
-                                <span className="font-600 text-gray-900">{customMessage.length} chars</span>
-                            </div>
-                        </div>
-
-                        {/* Send Button */}
-                        <button
-                            onClick={handleSendMessages}
-                            disabled={sending || selectedRecipients.length === 0 || !customMessage}
-                            className="w-full flex items-center justify-center px-6 py-3 bg-linear-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 shadow-lg transition duration-200 font-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {sending ? (
-                                <>
-                                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
-                                    Sending...
-                                </>
-                            ) : (
-                                <>
-                                    {deliveryChannel === 'email' ? <Mail className="w-5 h-5 mr-2" /> : <Send className="w-5 h-5 mr-2" />}
-                                    Send via {deliveryChannel === 'email' ? 'Email' : 'WhatsApp'}
-                                </>
+                            {/* Template Select */}
+                            {contentSource === 'template' && (
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-medium text-slate-500">Select Template</label>
+                                    <select
+                                        value={selectedTemplate}
+                                        onChange={(e) => handleTemplateSelect(e.target.value)}
+                                        className="flex h-9 w-full items-center justify-between rounded-md border border-slate-200 bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                        <option value="">-- Choose a template --</option>
+                                        {templates.map(t => (
+                                            <option key={t._id} value={t._id}>{t.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
                             )}
-                        </button>
+
+                            {/* Text Area */}
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-medium text-slate-500">Message Content</label>
+                                <textarea
+                                    value={customMessage}
+                                    onChange={(e) => setCustomMessage(e.target.value)}
+                                    placeholder="Type your message here..."
+                                    className="flex min-h-[160px] w-full rounded-md border border-slate-200 bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 disabled:cursor-not-allowed disabled:opacity-50 resize-y"
+                                    disabled={contentSource === 'template' && selectedTemplate}
+                                />
+                                <div className="flex justify-end">
+                                    <span className="text-[10px] text-slate-400">{customMessage.length} chars</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Summary Block */}
+                        <div className="mt-6 rounded-lg bg-slate-50 border border-slate-100 p-4">
+                            <h4 className="text-xs font-semibold text-slate-900 uppercase tracking-wider mb-3">Campaign Summary</h4>
+                            <div className="space-y-2">
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-slate-500">Recipients</span>
+                                    <span className="font-medium text-slate-900">{selectedRecipients.length}</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-slate-500">Channel</span>
+                                    <span className="font-medium capitalize text-slate-900">{deliveryChannel}</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-slate-500">Est. Time</span>
+                                    <span className="font-medium text-slate-900">~{Math.ceil(selectedRecipients.length * 0.5) || 1}s</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

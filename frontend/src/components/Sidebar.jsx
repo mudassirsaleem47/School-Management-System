@@ -5,7 +5,7 @@ import { X } from 'lucide-react';
 
 import { 
     Home, BookOpen, GraduationCap, DollarSign, Briefcase,
-    ChevronDown, ChevronRight, Settings, FileText, ChevronsRight, Wallet, Users, Building2, MessageSquare, Cake, Cog
+    ChevronDown, ChevronRight, Settings, FileText, ChevronsRight, Wallet, Users, Building2, MessageSquare, Cake, Cog, IdCard
 } from 'lucide-react';
 
 const Sidebar = ({ onLogout, isOpen, onClose }) => {
@@ -109,6 +109,17 @@ const Sidebar = ({ onLogout, isOpen, onClose }) => {
                 { name: 'Message Report', path: '/admin/message-report' },
                 { name: 'Birthday Wishes', path: '/admin/birthday-wishes' },
                 { name: 'Messaging Setup', path: '/admin/messaging-setup' },
+            ]
+        },
+        {
+            name: 'Card Management',
+            icon: IdCard,
+            type: 'dropdown',
+            children: [
+                { name: 'Student ID Card', path: '/admin/card-management/student' },
+                { name: 'Staff ID Card', path: '/admin/card-management/staff' },
+                { name: 'Admit Card', path: '/admin/card-management/admit-card' },
+                { name: 'Template Designer', path: '/admin/card-management/designer' },
             ]
         },
         { name: 'Campuses', path: '/admin/campuses', icon: Building2, type: 'link' },

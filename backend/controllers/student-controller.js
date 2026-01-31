@@ -131,6 +131,13 @@ const updateStudent = async (req, res) => {
         const studentId = req.params.id;
         const updateData = { ...req.body };
 
+        if (req.files) {
+            if (req.files['studentPhoto']) updateData.studentPhoto = req.files['studentPhoto'][0].path;
+            if (req.files['fatherPhoto']) updateData.fatherPhoto = req.files['fatherPhoto'][0].path;
+            if (req.files['motherPhoto']) updateData.motherPhoto = req.files['motherPhoto'][0].path;
+            if (req.files['guardianPhoto']) updateData.guardianPhoto = req.files['guardianPhoto'][0].path;
+        }
+
         // If status is being changed to 'Disabled', handle disable info
         if (updateData.status === 'Disabled') {
             if (!updateData.disableInfo || !updateData.disableInfo.reason) {

@@ -232,4 +232,22 @@ router.get('/WhatsApp/Status/:schoolId', whatsappStatus);
 router.post('/WhatsApp/Disconnect', whatsappDisconnect);
 
 
+// --- Card Management Routes ---
+const { getStudentCardData, getStaffCardData, getAdmitCardData } = require('../controllers/card-controller.js');
+
+// Express 5 Router Fix: Define explicit routes instead of using ? for optional params
+router.get('/Card/Student/:schoolId', getStudentCardData);
+router.get('/Card/Student/:schoolId/:classId', getStudentCardData);
+router.get('/Card/Student/:schoolId/:classId/:sectionId', getStudentCardData);
+router.get('/Card/Staff/:schoolId/:type', getStaffCardData); // type: teacher, staff, all
+router.get('/Card/Admit/:schoolId/:examGroupId/:classId', getAdmitCardData);
+
+
+// --- Card Template Routes ---
+const { saveTemplate, getTemplates, deleteTemplate } = require('../controllers/card-template-controller.js');
+
+router.post('/CardTemplate/save', upload.single('backgroundImage'), saveTemplate);
+router.get('/CardTemplate/:schoolId', getTemplates);
+router.delete('/CardTemplate/:id', deleteTemplate);
+
 module.exports = router;

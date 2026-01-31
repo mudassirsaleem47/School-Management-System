@@ -30,7 +30,6 @@ const superAdminSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-// Index for faster queries
-superAdminSchema.index({ email: 1 });
+// Index removed - email already has unique:true which creates index automatically
 
 module.exports = mongoose.model("superadmin", superAdminSchema);

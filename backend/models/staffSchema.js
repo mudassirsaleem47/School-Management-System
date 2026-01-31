@@ -99,7 +99,7 @@ const staffSchema = new mongoose.Schema({
 
 // Indexes for faster queries
 staffSchema.index({ school: 1, role: 1 });
-staffSchema.index({ email: 1 });
+// email index removed - unique:true already creates index
 staffSchema.index({ campus: 1 });
 
 module.exports = mongoose.model("staff", staffSchema);
