@@ -121,7 +121,7 @@ const NotificationCenter = () => {
                                     >
                                         <div className="flex items-start gap-3">
                                             {/* Icon */}
-                                            <div className="flex-shrink-0 mt-1">
+                                            <div className="shrink-0 mt-1">
                                                 {notification.type === 'success' ? (
                                                     <CheckCircle size={18} className="text-green-500" />
                                                 ) : (
@@ -143,7 +143,7 @@ const NotificationCenter = () => {
 
                                             {/* Unread Indicator */}
                                             {!notification.read && (
-                                                <div className="flex-shrink-0">
+                                                <div className="shrink-0">
                                                     <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
                                                 </div>
                                             )}

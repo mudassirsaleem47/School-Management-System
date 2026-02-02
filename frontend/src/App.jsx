@@ -46,6 +46,10 @@ import StudentIdCard from './pages/card-design/StudentIdCard';
 import StaffIdCard from './pages/card-design/StaffIdCard';
 import CardDesigner from './pages/card-design/CardDesigner';
 import ReportCard from './pages/card-design/ReportCard';
+import SubjectManagement from './pages/SubjectManagement';
+import ClassSchedule from './pages/ClassSchedule';
+import TeacherSchedule from './pages/TeacherSchedule';
+import Promotion from './pages/Promotion';
 
 
 import { ToastProvider } from './context/ToastContext';
@@ -74,6 +78,10 @@ function App() {
               <Route path="students" element={<StudentList />} />
               <Route path="enquiry" element={<AdmissionEnquiry />} />
               <Route path="classes" element={<ShowClasses />} />
+                <Route path="subjects" element={<SubjectManagement />} />
+                <Route path="class-schedule" element={<ClassSchedule />} />
+                <Route path="teacher-schedule" element={<TeacherSchedule />} />
+                <Route path="promote" element={<Promotion />} />
               <Route path="teachers" element={<TeacherList />} />
               <Route path="visitor-book" element={<VisitorBook />} />
               <Route path="phone-calls" element={<PhoneCallLog />} />

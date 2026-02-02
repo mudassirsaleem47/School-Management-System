@@ -186,4 +186,33 @@ const deleteStudent = async (req, res) => {
     }
 };
 
-module.exports = { studentAdmission, getStudentsBySchool, updateStudent, deleteStudent, getDisabledStudents };
+const promoteStudents = async (req, res) => {
+    try {
+        const { studentIds, nextClassId } = req.body;
+
+        if (!studentIds || !nextClassId) {
+            return res.status(400).json({ message: "Student IDs and Next Class ID are required" });
+        }
+
+        const result = await Student.updateMany(
+            { _id: { $in: studentIds } },
+            { $set: { sclassName: nextClassId } }
+        );
+
+        // Auto-assign new class to teacher if applicable
+        const sclass = await Sclass.findById(nextClassId);
+        if (sclass && sclass.classIncharge) {
+            const teacher = await Teacher.findById(sclass.classIncharge);
+            if (teacher && !teacher.assignedClasses.includes(nextClassId)) {
+                teacher.assignedClasses.push(nextClassId);
+                await teacher.save();
+            }
+        }
+
+        res.send({ message: "Students promoted successfully", result });
+    } catch (err) {
+        res.status(500).json(err);
+    }
+};
+
+module.exports = { studentAdmission, getStudentsBySchool, updateStudent, deleteStudent, getDisabledStudents, promoteStudents };

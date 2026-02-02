@@ -94,6 +94,30 @@ const AdminDashboard = () => {
               >
                 View Students
               </button>
+              <button
+                onClick={() => navigate('/admin/subjects')}
+                className="w-full px-4 py-3 bg-teal-50 text-teal-700 rounded-lg hover:bg-teal-100 font-600 transition text-left"
+              >
+                Manage Subjects
+              </button>
+              <button
+                onClick={() => navigate('/admin/class-schedule')}
+                className="w-full px-4 py-3 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 font-600 transition text-left"
+              >
+                Class Schedule
+              </button>
+              <button
+                onClick={() => navigate('/admin/teacher-schedule')}
+                className="w-full px-4 py-3 bg-pink-50 text-pink-700 rounded-lg hover:bg-pink-100 font-600 transition text-left"
+              >
+                Teacher Schedule
+              </button>
+              <button
+                onClick={() => navigate('/admin/promote')}
+                className="w-full px-4 py-3 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 font-600 transition text-left"
+              >
+                Promote Students
+              </button>
             </div>
           </div>
         </div>

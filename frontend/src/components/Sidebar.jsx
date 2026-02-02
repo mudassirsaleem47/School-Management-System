@@ -56,6 +56,10 @@ const Sidebar = ({ onLogout, isOpen, onClose }) => {
             type: 'dropdown',
             children: [
                 { name: 'Classes', path: '/admin/classes' },
+                { name: 'Subjects', path: '/admin/subjects' },
+                { name: 'Class Schedule', path: '/admin/class-schedule' },
+                { name: 'Teacher Schedule', path: '/admin/teacher-schedule' },
+                { name: 'Promote Students', path: '/admin/promote' },
             ]
         },
         { 

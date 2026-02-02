@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const upload = require('../middleware/uploadMiddleware');
 const { adminRegister, adminLogin, getAdminDetail, updateAdmin } = require('../controllers/admin-controller.js');
-const { studentAdmission, getStudentsBySchool, updateStudent, deleteStudent, getDisabledStudents } = require('../controllers/student-controller.js');
+const { studentAdmission, getStudentsBySchool, updateStudent, deleteStudent, getDisabledStudents, promoteStudents } = require('../controllers/student-controller.js');
 const { enquiryCreate, enquiryList, enquiryDelete, enquiryUpdate } = require('../controllers/enquiry-controller.js');
 const { sclassCreate, getSclassesBySchool, deleteSclass, addSection, deleteSection } = require('../controllers/sclass-controller.js');
 const { addTeacher, getTeachersBySchool, updateTeacher, deleteTeacher, assignClassToTeacher, removeClassFromTeacher, teacherLogin } = require('../controllers/teacher-controller.js');
@@ -56,6 +56,7 @@ router.put('/Student/:id', upload.fields([
 ]), updateStudent);
 router.delete('/Student/:id', deleteStudent);
 router.get('/Students/Disabled/:schoolId', getDisabledStudents);
+router.put('/Students/Promote', promoteStudents);
 
 // --- SClass (Academic) Routes ---
 router.post('/SclassCreate', sclassCreate);
@@ -63,6 +64,25 @@ router.get('/Sclasses/:schoolId', getSclassesBySchool);
 router.delete('/Sclass/:id', deleteSclass);
 router.put('/Sclass/:id/Section', addSection);
 router.delete('/Sclass/:id/Section/:sectionId', deleteSection);
+
+// --- Subject Routes ---
+const { subjectCreate, classSubjects, deleteSubjectsByClass, getSubjectDetail, deleteSubject, freeClassSubjects, allSubjects, deleteSubjects } = require('../controllers/subject-controller.js');
+
+router.post('/SubjectCreate', subjectCreate);
+router.get('/AllSubjects/:id', allSubjects);
+router.get('/ClassSubjects/:id', classSubjects);
+router.get('/FreeSubjectClass/:id', freeClassSubjects);
+router.get('/Subject/:id', getSubjectDetail);
+router.delete('/Subject/:id', deleteSubject);
+router.delete('/Subjects/:id', deleteSubjects);
+router.delete('/SubjectsClass/:id', deleteSubjectsByClass);
+
+// --- Class Schedule Routes ---
+const { createSchedule, getScheduleByClassSection, getTeacherSchedule } = require('../controllers/class-schedule-controller.js');
+
+router.post('/ScheduleCreate', createSchedule);
+router.get('/Schedule/:classId/:sectionId', getScheduleByClassSection);
+router.get('/TeacherSchedule/:teacherId', getTeacherSchedule);
 
 // --- Enquiry Routes ---
 router.post('/EnquiryCreate', enquiryCreate);

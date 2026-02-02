@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { Printer, Search, Filter, Download, FileText, User, ChevronDown, Loader2, Award } from 'lucide-react';
+import { Printer, Search, Filter, Download, FileText, User, ChevronDown, Loader2, Award, Eye } from 'lucide-react';
 import CardRenderer from './CardRenderer';
 import API_URL from '../../config/api';
 import { useReactToPrint } from 'react-to-print';
@@ -36,10 +36,20 @@ const ReportCard = () => {
     const schoolId = user?.schoolName ? user._id : user?.school;
     const componentRef = useRef();
 
+    // Preview State
+    const [previewStudent, setPreviewStudent] = useState(null);
+    const [showPreviewModal, setShowPreviewModal] = useState(false);
+
     useEffect(() => {
         fetchInitialData();
         fetchTemplates();
     }, []);
+
+    const openPreview = (e, student) => {
+        e.stopPropagation(); // Prevent selection when clicking preview
+        setPreviewStudent(student);
+        setShowPreviewModal(true);
+    };
 
     const fetchInitialData = async () => {
         try {
@@ -187,8 +197,8 @@ const ReportCard = () => {
         <div className="min-h-screen bg-gray-50/50 pb-12">
             {/* Header */}
             <div className="bg-white rounded-xl shadow-md sticky top-4 z-10 mx-4 sm:mx-6 lg:mx-8 mt-4">
-                <div className="px-6 py-4">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between py-4 gap-4">
                         <div className="flex items-center gap-3">
                             <div className="bg-orange-100 p-2.5 rounded-lg">
                                 <Award className="w-6 h-6 text-orange-600" />
@@ -199,85 +209,94 @@ const ReportCard = () => {
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-3 flex-wrap justify-end">
+                        {/* Toolbar */}
+                        <div className="flex items-center gap-3 bg-gray-50 p-1.5 rounded-lg border border-gray-200 flex-wrap">
+
+                            {/* Template Selector */}
+                            {templates.length > 0 ? (
+                                <div className="relative">
+                                    <FileText className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                                    <select
+                                        value={selectedTemplate?._id || ''}
+                                        onChange={(e) => setSelectedTemplate(templates.find(t => t._id === e.target.value))}
+                                        className="pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-md text-sm focus:ring-2 focus:ring-orange-500 outline-none w-48 shadow-sm"
+                                    >
+                                        <option value="">{templates.length === 0 ? "No Report Templates" : "Select Template"}</option>
+                                        {templates.map(t => (
+                                            <option key={t._id} value={t._id}>{t.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            ) : (
+                                <div className="text-xs text-red-500 font-medium px-2">
+                                    No Templates
+                                    </div>
+                            )}
+
+                            <div className="h-6 w-px bg-gray-300 mx-1 hidden md:block"></div>
+
+                            {/* Exam Group */}
+                            <div className="relative">
+                                <Filter className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                                <select
+                                    value={selectedExamGroup}
+                                    onChange={(e) => setSelectedExamGroup(e.target.value)}
+                                    className="pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-md text-sm focus:ring-2 focus:ring-orange-500 outline-none w-40 shadow-sm"
+                                >
+                                    <option value="">Select Exam</option>
+                                    {examGroups.map((g) => (
+                                        <option key={g._id} value={g._id}>{g.groupName}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Class Filter */}
+                            <div className="relative">
+                                <Filter className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                                <select
+                                    value={selectedClass}
+                                    onChange={(e) => setSelectedClass(e.target.value)}
+                                    className="pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-md text-sm focus:ring-2 focus:ring-orange-500 outline-none w-32 shadow-sm"
+                                >
+                                    <option value="">Class</option>
+                                    {classes.map((cls) => (
+                                        <option key={cls._id} value={cls._id}>{cls.sclassName}</option>
+                                    ))}
+                                </select>
+                            </div>
+
                             <button
-                                onClick={handlePrint}
-                                disabled={selectedStudents.length === 0}
-                                className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm text-sm font-medium"
+                                onClick={handleGenerate}
+                                disabled={!selectedExamGroup || !selectedClass || loading}
+                                className="bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 disabled:opacity-50 flex items-center gap-2 text-sm font-medium transition-all shadow-sm active:scale-95"
                             >
-                                <Printer size={16} />
-                                <span>Print Selected ({selectedStudents.length})</span>
+                                {loading ? <Loader2 className="animate-spin w-4 h-4" /> : <Search className="w-4 h-4" />}
+                                Generate
                             </button>
-                        </div>
-                    </div>
 
-                     {/* Filters */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
-                        {/* Exam Group */}
-                        <div className="relative">
-                            <Filter className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                            <select
-                                value={selectedExamGroup}
-                                onChange={(e) => setSelectedExamGroup(e.target.value)}
-                                className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 outline-none appearance-none"
-                            >
-                                <option value="">Select Exam</option>
-                                {examGroups.map((g) => (
-                                    <option key={g._id} value={g._id}>{g.groupName}</option>
-                                ))}
-                            </select>
-                            <ChevronDown className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
+                            {filteredStudents.length > 0 && (
+                                <>
+                                    <div className="h-6 w-px bg-gray-300 mx-1 hidden md:block"></div>
+                                    <button
+                                        onClick={handlePrint}
+                                        disabled={selectedStudents.length === 0}
+                                        className="bg-gray-900 text-white px-4 py-2 rounded-md hover:bg-gray-800 disabled:opacity-50 flex items-center gap-2 text-sm font-medium transition-all shadow-sm active:scale-95"
+                                    >
+                                        <Printer className="w-4 h-4" />
+                                        <span>Print ({selectedStudents.length})</span>
+                                    </button>
+                                </>
+                            )}
                         </div>
-
-                         {/* Class Filter */}
-                        <div className="relative">
-                            <Filter className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                            <select
-                                value={selectedClass}
-                                onChange={(e) => setSelectedClass(e.target.value)}
-                                className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 outline-none appearance-none"
-                            >
-                                <option value="">Select Class</option>
-                                {classes.map((cls) => (
-                                    <option key={cls._id} value={cls._id}>{cls.sclassName}</option>
-                                ))}
-                            </select>
-                            <ChevronDown className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
-                        </div>
-
-                        {/* Template Selection */}
-                        <div className="relative">
-                            <FileText className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                            <select
-                                value={selectedTemplate?._id || ''}
-                                onChange={(e) => setSelectedTemplate(templates.find(t => t._id === e.target.value))}
-                                className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 outline-none appearance-none"
-                            >
-                                <option value="">{templates.length === 0 ? "No Report Templates" : "Select Template"}</option>
-                                {templates.map(t => (
-                                    <option key={t._id} value={t._id}>{t.name}</option>
-                                ))}
-                            </select>
-                            <ChevronDown className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
-                        </div>
-
-                         <button 
-                            onClick={handleGenerate}
-                            disabled={!selectedExamGroup || !selectedClass || loading}
-                            className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 disabled:opacity-50 flex items-center justify-center gap-2 text-sm font-medium transition-all shadow-sm active:scale-95 h-full"
-                        >
-                            {loading ? <Loader2 className="animate-spin w-4 h-4" /> : <Search className="w-4 h-4" />}
-                            Fetch Results
-                        </button>
                     </div>
                 </div>
             </div>
 
             {/* Content & List */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                 {filteredStudents.length > 0 ? (
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden min-h-[500px] flex flex-col">
-                        <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                {filteredStudents.length > 0 ? (
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between text-sm text-gray-500 bg-orange-50 px-4 py-2 rounded-lg border border-orange-100">
                             <label className="flex items-center gap-3 cursor-pointer select-none">
                                 <input
                                     type="checkbox"
@@ -285,14 +304,15 @@ const ReportCard = () => {
                                     onChange={handleSelectAll}
                                     className="w-4 h-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
                                 />
-                                <span className="text-sm font-medium text-gray-700">Select All Students</span>
+                                <span className="font-medium text-orange-700">Select All Students</span>
                             </label>
-                            <span className="text-xs text-gray-500 font-medium">
+                            <span className="flex items-center gap-2">
+                                <User className="w-4 h-4" />
                                 Found {filteredStudents.length} students
                             </span>
                         </div>
                         
-                        <div className="flex-1 p-4 overflow-y-auto max-h-[70vh]">
+                        <div className="bg-gray-200/80 p-8 rounded-xl border border-gray-300 overflow-y-auto max-h-[70vh] shadow-inner">
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                                 {filteredStudents.map(student => {
                                     const stats = calculateStats(student._id);
@@ -301,10 +321,10 @@ const ReportCard = () => {
                                             key={student._id}
                                             onClick={() => toggleSelection(student._id)}
                                             className={`
-                                                relative p-3 rounded-lg border transition-all cursor-pointer group select-none flex flex-col gap-3
+                                                relative p-3 rounded-lg border transition-all cursor-pointer group select-none flex flex-col gap-3 shadow-sm
                                                 ${selectedStudents.includes(student._id) 
-                                                    ? 'border-orange-500 bg-orange-50/30 ring-1 ring-orange-500' 
-                                                    : 'border-gray-200 hover:border-orange-300 hover:shadow-sm bg-white'
+                                                ? 'border-orange-500 bg-orange-50/50 ring-1 ring-orange-500'
+                                                : 'border-white hover:border-orange-300 hover:shadow-md bg-white'
                                                 }
                                             `}
                                         >
@@ -326,6 +346,14 @@ const ReportCard = () => {
                                                     <h3 className="text-sm font-semibold text-gray-900 truncate">{student.name}</h3>
                                                     <p className="text-xs text-gray-500 truncate">Roll: {student.rollNum}</p>
                                                 </div>
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        onClick={(e) => openPreview(e, student)}
+                                                        className="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:text-orange-600 hover:border-orange-300 transition shadow-sm z-10"
+                                                        title="Preview Card"
+                                                    >
+                                                        <Eye className="w-4 h-4" />
+                                                    </button>
                                                 <div className={`
                                                     w-5 h-5 rounded-full border flex items-center justify-center transition-colors
                                                     ${selectedStudents.includes(student._id)
@@ -339,6 +367,7 @@ const ReportCard = () => {
                                                         </svg>
                                                     )}
                                                 </div>
+                                            </div>
                                             </div>
                                             
                                             {/* Mini Result Stats */}
@@ -363,17 +392,18 @@ const ReportCard = () => {
                         </div>
                     </div>
                 ) : (
-                    <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl border border-dashed border-gray-300">
-                        <div className="bg-orange-50 p-4 rounded-full mb-4">
-                            <Award className="w-8 h-8 text-orange-500" />
+                        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-8 bg-white rounded-2xl border border-dashed border-gray-300 shadow-xs">
+                            <div className="bg-orange-50 p-6 rounded-full mb-4">
+                                <Award className="w-12 h-12 text-orange-400 opacity-80" />
                         </div>
-                        <h3 className="text-lg font-bold text-gray-900">Generate Report Cards</h3>
-                        <p className="text-gray-500 text-center max-w-sm mt-1 mb-6 text-sm">Select Exam and Class to fetch results and generate reports.</p>
+                            <h3 className="text-xl font-bold text-gray-900">Generate Report Cards</h3>
+                            <p className="text-gray-500 max-w-sm mt-2 mb-8">Select Exam and Class from the options above to fetch results and generate reports.</p>
+                            <div className="h-1 w-24 bg-orange-100 rounded-full"></div>
                     </div>
                 )}
 
-                 {/* Print Area - Only visible when printing */}
-                 <div style={{ display: 'none' }}>
+                {/* Print Area - Hidden off-screen but rendered for react-to-print */}
+                <div style={{ position: 'absolute', top: '-10000px', left: '-10000px' }}>
                     <div ref={componentRef}>
                         {selectedStudents.length > 0 && selectedTemplate ? (
                             <div className="print-container" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center', padding: '20px' }}>
@@ -425,9 +455,49 @@ const ReportCard = () => {
                     </div>
                 </div>
                 
-                 {!selectedTemplate && selectedStudents.length > 0 && (
+                {!selectedTemplate && selectedStudents.length > 0 && (
                     <div className="hidden print:block text-center pt-20">
                          <p className="text-xl font-bold text-red-600">Please select a Report Card Template to print.</p>
+                    </div>
+                )}
+
+                {/* Preview Modal */}
+                {showPreviewModal && previewStudent && selectedTemplate && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setShowPreviewModal(false)}>
+                        <div className="bg-white rounded-xl shadow-2xl max-w-4xl max-h-[90vh] overflow-hidden flex flex-col w-full" onClick={e => e.stopPropagation()}>
+                            <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+                                <h3 className="font-bold text-gray-900">Card Preview: {previewStudent.name}</h3>
+                                <button onClick={() => setShowPreviewModal(false)} className="text-gray-400 hover:text-gray-600">
+                                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                </button>
+                            </div>
+                            <div className="flex-1 overflow-auto p-8 bg-gray-100 flex items-center justify-center">
+                                <div className="scale-[0.8] origin-center sm:scale-100 shadow-xl">
+                                    <CardRenderer
+                                        template={selectedTemplate}
+                                        data={{
+                                            ...previewStudent,
+                                            class: classes.find(c => c._id === selectedClass)?.sclassName,
+                                            schoolName: schoolInfo?.schoolName,
+                                            address: schoolInfo?.address,
+                                            schoolLogo: schoolInfo?.schoolLogo,
+                                            examName: getExamGroupName(),
+                                            session: examDetails.session,
+                                            marksTable: calculateStats(previewStudent._id).results,
+                                            percentage: calculateStats(previewStudent._id).percentage + '%',
+                                            grade: calculateStats(previewStudent._id).grade,
+                                            status: calculateStats(previewStudent._id).status,
+                                            totalMarks: calculateStats(previewStudent._id).total,
+                                            obtainedMarks: calculateStats(previewStudent._id).obtained
+                                        }}
+                                        schoolData={schoolInfo}
+                                    />
+                                </div>
+                            </div>
+                            <div className="p-4 border-t border-gray-100 flex justify-end">
+                                <button onClick={() => setShowPreviewModal(false)} className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 text-sm font-medium">Close Preview</button>
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>

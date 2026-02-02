@@ -112,8 +112,8 @@ const StudentIdCard = () => {
         <div className="min-h-screen bg-gray-50/50 pb-12">
             {/* Header */}
             <div className="bg-white rounded-xl shadow-md sticky top-4 z-10 mx-4 sm:mx-6 lg:mx-8 mt-4">
-                <div className="px-6 py-4">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between py-4 gap-4">
                         <div className="flex items-center gap-3">
                             <div className="bg-indigo-100 p-2.5 rounded-lg">
                                 <GraduationCap className="w-6 h-6 text-indigo-600" />
@@ -124,63 +124,71 @@ const StudentIdCard = () => {
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-3 flex-wrap justify-end">
-                            <button
-                                onClick={handlePrint}
-                                disabled={selectedStudents.length === 0}
-                                className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm text-sm font-medium"
-                            >
-                                <Printer size={16} />
-                                <span>Print Selected ({selectedStudents.length})</span>
-                            </button>
-                        </div>
-                    </div>
+                        {/* Toolbar */}
+                        <div className="flex items-center gap-3 bg-gray-50 p-1.5 rounded-lg border border-gray-200 flex-wrap">
 
-                    {/* Filters */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                        {/* Class Filter */}
-                        <div className="relative">
-                            <Filter className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                            <select
-                                value={selectedClass}
-                                onChange={handleClassChange}
-                                className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none appearance-none"
-                            >
-                                <option value="">Select Class</option>
-                                {classes.map((cls) => (
-                                    <option key={cls._id} value={cls._id}>{cls.sclassName}</option>
-                                ))}
-                            </select>
-                            <ChevronDown className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
-                        </div>
+                            {/* Template Selector */}
+                            {templates.length > 0 ? (
+                                <div className="relative">
+                                    <CreditCard className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                                    <select
+                                        value={selectedTemplate?._id || ''}
+                                        onChange={(e) => setSelectedTemplate(templates.find(t => t._id === e.target.value))}
+                                        className="pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-md text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-48 shadow-sm"
+                                    >
+                                        {templates.map(t => (
+                                            <option key={t._id} value={t._id}>{t.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            ) : (
+                                <div className="text-xs text-red-500 font-medium px-2">
+                                    No Templates Found
+                                    </div>
+                            )}
 
-                        {/* Template Selection */}
-                        <div className="relative">
-                            <CreditCard className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                            <select
-                                value={selectedTemplate?._id || ''}
-                                onChange={(e) => setSelectedTemplate(templates.find(t => t._id === e.target.value))}
-                                className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none appearance-none"
-                                disabled={templates.length === 0}
-                            >
-                                <option value="">{templates.length === 0 ? "No Templates Found" : "Select Design Template"}</option>
-                                {templates.map(t => (
-                                    <option key={t._id} value={t._id}>{t.name}</option>
-                                ))}
-                            </select>
-                            <ChevronDown className="absolute right-3 top-3 w-4 h-4 text-gray-400 pointer-events-none" />
-                        </div>
+                            <div className="h-6 w-px bg-gray-300 mx-1 hidden md:block"></div>
 
-                        {/* Search */}
-                        <div className="relative">
-                            <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                            <input
-                                type="text"
-                                placeholder="Search student..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-                            />
+                            {/* Class Selector */}
+                            <div className="relative">
+                                <Filter className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                                <select
+                                    value={selectedClass}
+                                    onChange={handleClassChange}
+                                    className="pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-md text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-40 shadow-sm"
+                                >
+                                    <option value="">Select Class</option>
+                                    {classes.map((cls) => (
+                                        <option key={cls._id} value={cls._id}>{cls.sclassName}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Search */}
+                            <div className="relative">
+                                <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Search..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-md text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-40 shadow-sm"
+                                />
+                            </div>
+
+                            {/* Print Button */}
+                            {selectedStudents.length > 0 && (
+                                <>
+                                    <div className="h-6 w-px bg-gray-300 mx-1 hidden md:block"></div>
+                                    <button
+                                        onClick={handlePrint}
+                                        className="bg-gray-900 text-white px-4 py-2 rounded-md hover:bg-gray-800 flex items-center gap-2 text-sm font-medium transition-all shadow-sm active:scale-95"
+                                    >
+                                        <Printer className="w-4 h-4" />
+                                        <span>Print ({selectedStudents.length})</span>
+                                    </button>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -189,8 +197,8 @@ const StudentIdCard = () => {
             {/* Content Area */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {selectedClass ? (
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden min-h-[500px] flex flex-col">
-                        <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between text-sm text-gray-500 bg-indigo-50 px-4 py-2 rounded-lg border border-indigo-100">
                             <label className="flex items-center gap-3 cursor-pointer select-none">
                                 <input
                                     type="checkbox"
@@ -198,14 +206,15 @@ const StudentIdCard = () => {
                                     onChange={handleSelectAll}
                                     className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                                 />
-                                <span className="text-sm font-medium text-gray-700">Select All Students</span>
+                                <span className="font-medium text-indigo-700">Select All Students</span>
                             </label>
-                            <span className="text-xs text-gray-500 font-medium">
-                                Showing {filteredStudents.length} students
+                            <span className="flex items-center gap-2">
+                                <User className="w-4 h-4" />
+                                Found {filteredStudents.length} students
                             </span>
                         </div>
 
-                        <div className="flex-1 p-4 overflow-y-auto max-h-[70vh]">
+                        <div className="bg-gray-200/80 p-8 rounded-xl border border-gray-300 overflow-y-auto max-h-[70vh] shadow-inner">
                             {loading ? (
                                 <div className="h-full flex flex-col items-center justify-center text-gray-400 py-20">
                                     <Loader2 className="w-8 h-8 animate-spin mb-3 text-indigo-500" />
@@ -223,10 +232,10 @@ const StudentIdCard = () => {
                                                 key={student._id}
                                                 onClick={() => toggleSelection(student._id)}
                                                 className={`
-                                                relative p-3 rounded-lg border transition-all cursor-pointer group select-none flex items-center gap-3
+                                                relative p-3 rounded-lg border transition-all cursor-pointer group select-none flex items-center gap-3 shadow-sm
                                                 ${selectedStudents.includes(student._id)
-                                                        ? 'border-indigo-500 bg-indigo-50/30 ring-1 ring-indigo-500'
-                                                        : 'border-gray-200 hover:border-indigo-300 hover:shadow-sm bg-white'
+                                                    ? 'border-indigo-500 bg-indigo-50/50 ring-1 ring-indigo-500'
+                                                    : 'border-white hover:border-indigo-300 hover:shadow-md bg-white'
                                                     }
                                             `}
                                             >
@@ -268,17 +277,18 @@ const StudentIdCard = () => {
                         </div>
                     </div>
                 ) : (
-                    <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl border border-dashed border-gray-300">
-                        <div className="bg-indigo-50 p-4 rounded-full mb-4">
-                            <School className="w-8 h-8 text-indigo-500" />
+                        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-8 bg-white rounded-2xl border border-dashed border-gray-300 shadow-xs">
+                            <div className="bg-indigo-50 p-6 rounded-full mb-4">
+                                <School className="w-12 h-12 text-indigo-400 opacity-80" />
                             </div>
-                            <h3 className="text-lg font-bold text-gray-900">Generate Student ID Cards</h3>
-                            <p className="text-gray-500 text-center max-w-sm mt-1 mb-6 text-sm">Select a class from the options above to view students and generate ID cards.</p>
+                            <h3 className="text-xl font-bold text-gray-900">Generate Student ID Cards</h3>
+                            <p className="text-gray-500 max-w-sm mt-2 mb-8">Select a class from the options above to view students and generate ID cards.</p>
+                            <div className="h-1 w-24 bg-indigo-100 rounded-full"></div>
                         </div>
                 )}
 
-                {/* Print Area - Only visible when printing */}
-                <div style={{ display: 'none' }}>
+                {/* Print Area - Hidden off-screen but rendered for react-to-print */}
+                <div style={{ position: 'absolute', top: '-10000px', left: '-10000px' }}>
                     <div ref={componentRef}>
                         {selectedStudents.length > 0 && selectedTemplate ? (
                             <div className="print-container" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center', padding: '20px' }}>

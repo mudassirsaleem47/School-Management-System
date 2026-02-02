@@ -412,7 +412,7 @@ const ComplainModal = ({ isOpen, onClose, onSubmit, initialData = null, viewMode
             {/* Full-Size Image Viewer */}
             {showFullImage && formData.document && (
                 <div 
-                    className="fixed inset-0 z-[10000] bg-black/90 flex items-center justify-center p-4"
+                    className="fixed inset-0 z-10000 bg-black/90 flex items-center justify-center p-4"
                     onClick={() => setShowFullImage(false)}
                 >
                     <button 
