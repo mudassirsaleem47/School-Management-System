@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { GraduationCap, Menu, X } from 'lucide-react';
 import { useState } from 'react';
+import { Button } from '@/components/ui/button';
 
 function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -51,11 +52,11 @@ function Header() {
 
           {/* CTA Buttons */}
           <div className="hidden md:flex gap-3">
+
             <Link
               to="/AdminLogin"
-              className="px-5 py-2 text-gray-700 font-medium hover:text-blue-600 transition"
             >
-              Login
+              <Button>Login</Button>
             </Link>
             <Link
               to="/AdminRegister"

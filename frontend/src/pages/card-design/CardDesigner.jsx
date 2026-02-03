@@ -3,7 +3,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Draggable from 'react-draggable';
 import axios from 'axios';
-import { Maximize2, Minimize2, Upload, Save, X, Move, Plus, Image as ImageIcon, LayoutTemplate, Printer, Trash2, Edit, ChevronDown } from 'lucide-react';
+import {
+    IconMaximize, IconMinimize, IconUpload, IconDeviceFloppy, IconX,
+    IconArrowsMove, IconPlus, IconPhoto, IconLayoutCards, IconPrinter,
+    IconTrash, IconEdit, IconChevronDown
+} from '@tabler/icons-react';
 import API_URL from '../../config/api';
 import { useToast } from '../../context/ToastContext';
 import ColorPicker from '../../components/ui/ColorPicker';
@@ -292,7 +296,7 @@ const CardDesigner = () => {
         if (!el) {
             return (
                 <div className="flex flex-col items-center justify-center h-full text-gray-400 p-6 text-center">
-                    <Move className="w-12 h-12 mb-3 opacity-20" />
+                    <IconArrowsMove className="w-12 h-12 mb-3 opacity-20" />
                     <p className="text-sm">Select an element on the canvas to edit its properties</p>
                 </div>
             );
@@ -307,7 +311,7 @@ const CardDesigner = () => {
                         className="text-red-500 hover:text-red-700 p-1.5 hover:bg-red-50 rounded-lg transition"
                         title="Delete Element"
                     >
-                        <X size={16} />
+                        <IconX size={16} />
                     </button>
                 </div>
                 
@@ -391,7 +395,7 @@ const CardDesigner = () => {
             <div className="h-16 bg-white border-b rounded-lg border-gray-200 px-6 flex items-center justify-between shrink-0 z-20">
                 <div className="flex items-center gap-4">
                     <div className="bg-indigo-600 p-2 rounded-lg">
-                        <LayoutTemplate className="w-5 h-5 text-white" />
+                        <IconLayoutCards className="w-5 h-5 text-white" />
                     </div>
                     <div>
                         <div className="flex items-center gap-2">
@@ -401,7 +405,7 @@ const CardDesigner = () => {
                                     onClick={() => setFocusMode(!focusMode)}
                                     className={`p-1.5 rounded-lg transition ${focusMode ? 'text-indigo-600 bg-indigo-50' : 'text-gray-400 hover:text-indigo-600 hover:bg-indigo-50'}`}
                                 >
-                                    {focusMode ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+                                    {focusMode ? <IconMinimize size={18} /> : <IconMaximize size={18} />}
                                 </button>
                             )}
                         </div>
@@ -432,7 +436,7 @@ const CardDesigner = () => {
                                 disabled={saving}
                                 className="px-5 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 shadow-lg hover:shadow-indigo-500/30 transition flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                             >
-                                {saving ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
+                                {saving ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <IconDeviceFloppy className="w-4 h-4" />}
                                 Save Template
                             </button>
                         </>
@@ -452,7 +456,7 @@ const CardDesigner = () => {
                                     className="bg-white rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center p-8 cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/50 transition group h-64"
                                 >
                                     <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                        <Plus className="w-8 h-8 text-indigo-500" />
+                                        <IconPlus className="w-8 h-8 text-indigo-500" />
                                     </div>
                                     <h3 className="font-bold text-gray-800">Create New</h3>
                                     <p className="text-sm text-gray-500 mt-1">Design from scratch</p>
@@ -465,7 +469,7 @@ const CardDesigner = () => {
                                                 <img src={t.backgroundImage} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                                    <ImageIcon className="w-8 h-8" />
+                                                        <IconPhoto className="w-8 h-8" />
                                                 </div>
                                             )}
                                             <div className="absolute top-2 right-2 flex gap-1">
@@ -478,7 +482,7 @@ const CardDesigner = () => {
                                             <h3 className="font-bold text-gray-900 truncate" title={t.name}>{t.name}</h3>
                                             <div className="text-xs text-gray-500 mt-1 flex justify-between items-center">
                                                 <span>{new Date(t.createdAt).toLocaleDateString()}</span>
-                                                <span className="flex items-center gap-1"><LayoutTemplate size={10} /> {t.elements.length} items</span>
+                                                <span className="flex items-center gap-1"><IconLayoutCards size={10} /> {t.elements.length} items</span>
                                             </div>
                                             <div className="mt-auto pt-3 flex justify-end gap-2">
                                                 <Tooltip text="Edit Template" position="top">
@@ -486,7 +490,7 @@ const CardDesigner = () => {
                                                         onClick={() => loadTemplate(t)}
                                                         className="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition"
                                                     >
-                                                        <Edit size={16} />
+                                                        <IconEdit size={16} />
                                                     </button>
                                                 </Tooltip>
                                                 <Tooltip text="Print Cards" position="top">
@@ -494,7 +498,7 @@ const CardDesigner = () => {
                                                         onClick={() => navigateToPrint(t)}
                                                         className="p-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition"
                                                     >
-                                                        <Printer size={16} />
+                                                        <IconPrinter size={16} />
                                                     </button>
                                                 </Tooltip>
                                                 <Tooltip text="Delete Template" position="top">
@@ -502,7 +506,7 @@ const CardDesigner = () => {
                                                         onClick={(e) => { e.stopPropagation(); deleteTemplate(t._id); }}
                                                         className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition"
                                                     >
-                                                        <Trash2 size={16} />
+                                                        <IconTrash size={16} />
                                                     </button>
                                                 </Tooltip>
                                             </div>
@@ -576,7 +580,7 @@ const CardDesigner = () => {
                                                             ))}
                                                         </select>
                                                         <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-                                                            <ChevronDown size={16} className="text-gray-400" />
+                                                            <IconChevronDown size={16} className="text-gray-400" />
                                                         </div>
                                                     </div>
 
@@ -629,13 +633,13 @@ const CardDesigner = () => {
                                                             <>
                                                                 <img src={backgroundImage} className="w-full h-full object-cover" />
                                                                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                    <span className="text-white text-xs font-bold flex items-center gap-1"><Upload size={12} /> Change</span>
+                                                                    <span className="text-white text-xs font-bold flex items-center gap-1"><IconUpload size={12} /> Change</span>
                                                                 </div>
                                                             </>
                                                         ) : (
                                                             <>
                                                                 <div className="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                                                                    <Upload className="w-5 h-5 text-gray-400 group-hover:text-indigo-500" />
+                                                                        <IconUpload className="w-5 h-5 text-gray-400 group-hover:text-indigo-500" />
                                                                 </div>
                                                                 <span className="text-xs text-gray-500 font-medium group-hover:text-indigo-600">Upload Image</span>
                                                             </>
@@ -685,7 +689,7 @@ const CardDesigner = () => {
                                     >
                                         {!backgroundImage && (
                                             <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-300 pointer-events-none">
-                                                <ImageIcon className="w-16 h-16 mb-2 opacity-20" />
+                                                <IconPhoto className="w-16 h-16 mb-2 opacity-20" />
                                                 <span className="text-sm font-medium">Card Preview Area</span>
                                             </div>
                                         )}

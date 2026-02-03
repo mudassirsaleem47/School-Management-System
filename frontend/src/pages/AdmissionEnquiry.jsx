@@ -3,9 +3,40 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import EnquiryModal from '../components/form-popup/EnquiryModal';
-
-import SearchBar from '../components/SearchBar';
-import { Edit, Trash2, Plus, Eye, Check } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import {
+    Empty,
+    EmptyHeader,
+    EmptyTitle,
+    EmptyDescription,
+    EmptyContent,
+    EmptyMedia,
+} from '@/components/ui/empty';
+import {
+    IconEdit,
+    IconTrash,
+    IconPlus,
+    IconEye,
+    IconCheck,
+    IconSearch,
+    IconUserPlus,
+    IconUsers,
+    IconPhone,
+    IconCalendar,
+    IconSchool,
+    IconLoader2,
+} from '@tabler/icons-react';
 
 const API_BASE = "http://localhost:5000";
 
@@ -24,7 +55,6 @@ const AdmissionEnquiry = () => {
     const [currentEnquiry, setCurrentEnquiry] = useState(null);
     
     // Delete Confirmation State
-
     const [selectedDeleteId, setSelectedDeleteId] = useState(null);
 
     // Search State
@@ -140,130 +170,215 @@ const AdmissionEnquiry = () => {
     });
 
     return (
-        <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 p-6 md:p-8">
-            
+        <div className="p-6 space-y-6">
             {/* Header Section */}
-            <div>
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-                    <div>
-                        <h1 className="text-4xl font-bold text-gray-900">Admission Enquiries</h1>
-                        <p className="text-gray-600 mt-2">Manage and track all incoming admission enquiries</p>
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">Admission Enquiries</h1>
+                    <p className="text-muted-foreground mt-1">
+                        Manage and track all incoming admission enquiries
+                    </p>
+                </div>
+                <Button onClick={handleAdd} className="gap-2">
+                    <IconPlus className="w-4 h-4" />
+                    Add Enquiry
+                </Button>
+            </div>
+
+            {/* Stats Cards */}
+            <div className="grid gap-4 md:grid-cols-3">
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Total Enquiries</CardTitle>
+                        <IconUsers className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{enquiries.length}</div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                            Total admission enquiries
+                        </p>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Assigned</CardTitle>
+                        <IconUserPlus className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">
+                            {enquiries.filter(e => e.assigned).length}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                            Assigned to teachers
+                        </p>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Pending</CardTitle>
+                        <IconPhone className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">
+                            {enquiries.filter(e => !e.assigned).length}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                            Awaiting assignment
+                        </p>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Search and Table Card */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Enquiries List</CardTitle>
+                    <CardDescription>
+                        View and manage all admission enquiries
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {/* Search Bar */}
+                    <div className="flex items-center gap-2 mb-4">
+                        <div className="relative flex-1 max-w-sm">
+                            <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                placeholder="Search by name, phone, class..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="pl-9"
+                            />
+                        </div>
                     </div>
-                    <button onClick={handleAdd} className="flex items-center px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-lg hover:shadow-xl transition duration-200 font-600">
-                        <Plus className="w-5 h-5 mr-2" /> Add Enquiry
-                    </button>
-                </div>
 
-                {/* Search Bar */}
-                <div className="mb-6">
-                    <SearchBar 
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search by name, phone, class, or assigned teacher..."
-                        className="max-w-md"
-                    />
-                </div>
-
-                {/* Table Section */}
-                <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+                    {/* Table */}
                     {loading ? (
-                        <div className="flex items-center justify-center py-12">
-                            <div className="text-center">
-                                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
-                                <p className="text-gray-600">Loading enquiries...</p>
-                            </div>
-                        </div>
+                        <Empty>
+                            <EmptyHeader>
+                                <EmptyMedia variant="icon">
+                                    <IconLoader2 className="animate-spin" />
+                                </EmptyMedia>
+                                <EmptyTitle>Loading enquiries...</EmptyTitle>
+                                <EmptyDescription>Please wait while we fetch the data</EmptyDescription>
+                            </EmptyHeader>
+                        </Empty>
                     ) : enquiries.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-12 px-4">
-                            <div onClick={handleAdd} className="w-16 h-16 cursor-pointer bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                                <Plus className="w-8 h-8 text-gray-400" />
-                            </div>
-                            <p className="text-gray-600 text-lg font-500">No enquiries yet</p>
-                            <p className="text-gray-500 text-sm mt-1">Click "Add Enquiry" to create your first enquiry</p>
-                        </div>
+                            <Empty>
+                                <EmptyHeader>
+                                    <EmptyMedia variant="icon">
+                                        <IconUsers />
+                                    </EmptyMedia>
+                                    <EmptyTitle>No enquiries yet</EmptyTitle>
+                                    <EmptyDescription>
+                                        Get started by adding your first enquiry
+                                    </EmptyDescription>
+                                </EmptyHeader>
+                                <EmptyContent>
+                                    <Button onClick={handleAdd} className="gap-2">
+                                        <IconPlus className="w-4 h-4" />
+                                        Add Enquiry
+                                    </Button>
+                                </EmptyContent>
+                            </Empty>
                     ) : filteredEnquiries.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-12 px-4">
-                            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg>
-                            </div>
-                            <p className="text-gray-600 text-lg font-500">No record found</p>
-                            <p className="text-gray-500 text-sm mt-1">No enquiries match your search criteria</p>
-                        </div>
+                                <Empty>
+                                    <EmptyHeader>
+                                        <EmptyMedia variant="icon">
+                                            <IconSearch />
+                                        </EmptyMedia>
+                                        <EmptyTitle>No results found</EmptyTitle>
+                                        <EmptyDescription>
+                                            No enquiries match your search criteria
+                                        </EmptyDescription>
+                                    </EmptyHeader>
+                                </Empty>
                     ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full">
-                                <thead>
-                                    <tr className="bg-linear-to-r from-gray-50 to-gray-100 border-b border-gray-200">
-                                        <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Name</th>
-                                        <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Phone</th>
-                                        <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Class</th>
-                                        <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Assigned To</th>
-                                        <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Date</th>
-                                        <th className="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-200">
+                                    <div className="rounded-md border">
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead>Name</TableHead>
+                                                    <TableHead>Phone</TableHead>
+                                                    <TableHead>Class</TableHead>
+                                                    <TableHead>Assigned To</TableHead>
+                                                    <TableHead>Date</TableHead>
+                                                    <TableHead className="text-right">Actions</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
                                     {filteredEnquiries.map((item) => (
-                                        <tr key={item._id} className="hover:bg-indigo-50 transition duration-150">
-                                            <td className="px-6 py-4 text-sm font-600 text-gray-900">{item.name}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-600">{item.phone}</td>
-                                            <td className="px-6 py-4 text-sm">
-                                                <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-600">
+                                        <TableRow key={item._id}>
+                                            <TableCell className="font-medium">{item.name}</TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center gap-2">
+                                                    <IconPhone className="w-3 h-3 text-muted-foreground" />
+                                                    {item.phone}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant="secondary" className="gap-1">
+                                                    <IconSchool className="w-3 h-3" />
                                                     {item.class?.sclassName || 'N/A'}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-gray-600">
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell>
                                                 {item.assigned?.name ? (
-                                           <span className="inline-block px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-500">
+                                                    <Badge variant="outline" className="gap-1">
+                                                        <IconUserPlus className="w-3 h-3" />
                                                         {item.assigned.name}
-                                                    </span>
+                                                    </Badge>
                                                 ) : (
-                                                    <span className="text-gray-400 text-xs">Unassigned</span>
+                                                        <span className="text-xs text-muted-foreground">Unassigned</span>
                                                 )}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-gray-600">{new Date(item.date).toLocaleDateString()}</td>
-                                            <td className="px-6 py-4 text-right">
-                                                <div className="flex justify-end gap-3">
-                                                    <button 
-                                                        onClick={() => handleView(item)} 
-                                                        className="inline-flex items-center justify-center w-9 h-9 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition duration-150"
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                    <IconCalendar className="w-3 h-3" />
+                                                    {new Date(item.date).toLocaleDateString()}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <div className="flex justify-end gap-2">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() => handleView(item)}
                                                         title="View details"
                                                     >
-                                                        <Eye className="w-4 h-4" />
-                                                    </button>
-                                                    <button 
-                                                        onClick={() => handleEdit(item)} 
-                                                        className="inline-flex items-center justify-center w-9 h-9 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition duration-150"
+                                                        <IconEye className="w-4 h-4" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() => handleEdit(item)}
                                                         title="Edit enquiry"
                                                     >
-                                                        <Edit className="w-4 h-4" />
-                                                    </button>
-                                                    <button 
-                                                        onClick={() => handleDelete(item._id)} 
-                                                        className={`inline-flex items-center justify-center h-9 w-9 rounded-lg transition duration-150 ${selectedDeleteId === item._id
-                                                            ? "bg-red-600 text-white hover:bg-red-700"
-                                                            : "bg-red-100 text-red-600 hover:bg-red-200"
-                                                            }`}
-                                                        title="Delete enquiry"
+                                                        <IconEdit className="w-4 h-4" />
+                                                    </Button>
+                                                    <Button
+                                                        variant={selectedDeleteId === item._id ? "destructive" : "ghost"}
+                                                        size="icon"
+                                                        onClick={() => handleDelete(item._id)}
+                                                        title={selectedDeleteId === item._id ? "Click to confirm" : "Delete enquiry"}
                                                     >
                                                         {selectedDeleteId === item._id ? (
-                                                            <Check className="w-4 h-4" />
+                                                            <IconCheck className="w-4 h-4" />
                                                         ) : (
-                                                                <Trash2 className="w-4 h-4" />
+                                                                <IconTrash className="w-4 h-4" />
                                                         )}
-                                                    </button>
+                                                    </Button>
                                                 </div>
-                                            </td>
-                                        </tr>
+                                            </TableCell>
+                                        </TableRow>
                                     ))}
-                                </tbody>
-                            </table>
+                                            </TableBody>
+                                        </Table>
                         </div>
                     )}
-                </div>
-            </div>
+                </CardContent>
+            </Card>
 
             {/* Popup Modal Component */}
             <EnquiryModal 
@@ -275,8 +390,6 @@ const AdmissionEnquiry = () => {
                 teachersList={teachersList}
                 viewMode={viewMode}
             />
-
-
         </div>
     );
 };

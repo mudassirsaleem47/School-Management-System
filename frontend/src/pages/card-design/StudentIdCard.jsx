@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { Printer, Search, Filter, Download, CreditCard, User, ChevronDown, Loader2, GraduationCap, School } from 'lucide-react';
+import { IconPrinter, IconSearch, IconFilter, IconDownload, IconCreditCard, IconUser, IconChevronDown, IconLoader2, IconSchool, IconSchoolBell } from '@tabler/icons-react';
 import CardRenderer from './CardRenderer';
 import API_URL from '../../config/api';
 import { useReactToPrint } from 'react-to-print';
@@ -116,7 +116,7 @@ const StudentIdCard = () => {
                     <div className="flex flex-col md:flex-row md:items-center justify-between py-4 gap-4">
                         <div className="flex items-center gap-3">
                             <div className="bg-indigo-100 p-2.5 rounded-lg">
-                                <GraduationCap className="w-6 h-6 text-indigo-600" />
+                                <IconSchoolBell className="w-6 h-6 text-indigo-600" />
                             </div>
                             <div>
                                 <h1 className="text-xl font-bold text-gray-900">Student ID Cards</h1>
@@ -130,7 +130,7 @@ const StudentIdCard = () => {
                             {/* Template Selector */}
                             {templates.length > 0 ? (
                                 <div className="relative">
-                                    <CreditCard className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                                    <IconCreditCard className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
                                     <select
                                         value={selectedTemplate?._id || ''}
                                         onChange={(e) => setSelectedTemplate(templates.find(t => t._id === e.target.value))}
@@ -151,7 +151,7 @@ const StudentIdCard = () => {
 
                             {/* Class Selector */}
                             <div className="relative">
-                                <Filter className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                                <IconFilter className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
                                 <select
                                     value={selectedClass}
                                     onChange={handleClassChange}
@@ -166,7 +166,7 @@ const StudentIdCard = () => {
 
                             {/* Search */}
                             <div className="relative">
-                                <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                                <IconSearch className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
                                 <input
                                     type="text"
                                     placeholder="Search..."
@@ -184,7 +184,7 @@ const StudentIdCard = () => {
                                         onClick={handlePrint}
                                         className="bg-gray-900 text-white px-4 py-2 rounded-md hover:bg-gray-800 flex items-center gap-2 text-sm font-medium transition-all shadow-sm active:scale-95"
                                     >
-                                        <Printer className="w-4 h-4" />
+                                        <IconPrinter className="w-4 h-4" />
                                         <span>Print ({selectedStudents.length})</span>
                                     </button>
                                 </>
@@ -209,7 +209,7 @@ const StudentIdCard = () => {
                                 <span className="font-medium text-indigo-700">Select All Students</span>
                             </label>
                             <span className="flex items-center gap-2">
-                                <User className="w-4 h-4" />
+                                <IconUser className="w-4 h-4" />
                                 Found {filteredStudents.length} students
                             </span>
                         </div>
@@ -217,12 +217,12 @@ const StudentIdCard = () => {
                         <div className="bg-gray-200/80 p-8 rounded-xl border border-gray-300 overflow-y-auto max-h-[70vh] shadow-inner">
                             {loading ? (
                                 <div className="h-full flex flex-col items-center justify-center text-gray-400 py-20">
-                                    <Loader2 className="w-8 h-8 animate-spin mb-3 text-indigo-500" />
+                                    <IconLoader2 className="w-8 h-8 animate-spin mb-3 text-indigo-500" />
                                     <p className="text-sm">Loading students...</p>
                                 </div>
                             ) : filteredStudents.length === 0 ? (
                                 <div className="h-full flex flex-col items-center justify-center text-gray-400 py-20">
-                                    <User className="w-12 h-12 mb-3 opacity-20" />
+                                        <IconUser className="w-12 h-12 mb-3 opacity-20" />
                                     <p className="text-sm">No students found</p>
                                 </div>
                                 ) : (
@@ -248,7 +248,7 @@ const StudentIdCard = () => {
                                                     />
                                                 ) : (
                                                         <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                                            <User size={16} />
+                                                                <IconUser size={16} />
                                                     </div>
                                                 )}
                                             </div>
@@ -279,7 +279,7 @@ const StudentIdCard = () => {
                 ) : (
                         <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-8 bg-white rounded-2xl border border-dashed border-gray-300 shadow-xs">
                             <div className="bg-indigo-50 p-6 rounded-full mb-4">
-                                <School className="w-12 h-12 text-indigo-400 opacity-80" />
+                                <IconSchool className="w-12 h-12 text-indigo-400 opacity-80" />
                             </div>
                             <h3 className="text-xl font-bold text-gray-900">Generate Student ID Cards</h3>
                             <p className="text-gray-500 max-w-sm mt-2 mb-8">Select a class from the options above to view students and generate ID cards.</p>

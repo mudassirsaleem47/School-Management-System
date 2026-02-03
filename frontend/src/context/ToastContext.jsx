@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import Toast from '../components/Toast';
+import { toast } from 'sonner';
 import axios from 'axios';
 import { useAuth } from './AuthContext';
 import API_URL from '../config/api.js';
@@ -9,7 +9,6 @@ const ToastContext = createContext();
 export const useToast = () => useContext(ToastContext);
 
 export const ToastProvider = ({ children }) => {
-    const [toast, setToast] = useState(null);
     const [notifications, setNotifications] = useState([]);
     const [userId, setUserId] = useState(null);
     
@@ -55,7 +54,23 @@ export const ToastProvider = ({ children }) => {
     };
 
     const showToast = async (message, type = 'success') => {
-        setToast({ message, type });
+        // Use Sonner toast based on type
+        switch (type) {
+            case 'success':
+                toast.success(message);
+                break;
+            case 'error':
+                toast.error(message);
+                break;
+            case 'info':
+                toast.info(message);
+                break;
+            case 'warning':
+                toast.warning(message);
+                break;
+            default:
+                toast(message);
+        }
         
         // Add to notification history in backend
         try {
@@ -90,10 +105,6 @@ export const ToastProvider = ({ children }) => {
             };
             setNotifications(prev => [newNotification, ...prev]);
         }
-    };
-
-    const hideToast = () => {
-        setToast(null);
     };
 
     const markAsRead = async (id) => {
@@ -136,13 +147,6 @@ export const ToastProvider = ({ children }) => {
     return (
         <ToastContext.Provider value={{ showToast, notifications, markAsRead, clearNotifications, fetchNotifications }}>
             {children}
-            {toast && (
-                <Toast 
-                    message={toast.message} 
-                    type={toast.type} 
-                    onClose={hideToast} 
-                />
-            )}
         </ToastContext.Provider>
     );
 };

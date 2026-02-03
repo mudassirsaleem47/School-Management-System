@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import Sidebar from './Sidebar';
 import CampusSelector from './CampusSelector';
 import NotificationCenter from './NotificationCenter';
 import CalendarModal from './CalendarModal';
@@ -8,6 +7,10 @@ import TaskModal from './TaskModal';
 import { LogOut, User, Settings, Mail, Lock, Globe, ChevronDown, Menu, Search, Calendar } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Tooltip from './ui/Tooltip';
+import { AppSidebar } from "@/components/app-sidebar"
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
+import { ModeToggle } from "@/components/mode-toggle"
+
 
 const AdminLayout = () => {
   const { logout, currentUser } = useAuth();
@@ -81,16 +84,18 @@ const AdminLayout = () => {
   ];
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      
-      {/* 1. Sidebar - Now responsive */}
-      <Sidebar onLogout={handleLogout} isOpen={sidebarOpen} onClose={closeSidebar} />
+    <SidebarProvider>
+      <div className="flex h-screen w-full bg-gray-50">
+
+        {/* 1. Sidebar - Now responsive */}
+        {/* <Sidebar onLogout={handleLogout} isOpen={sidebarOpen} onClose={closeSidebar} /> */}
+        <AppSidebar />
 
       {/* 2. Main Content Area */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        
-        {/* Header/Navbar - Mobile responsive */}
-        <header className="bg-white border-b border-gray-100 px-4 md:px-7 py-4 md:py-5 flex items-center justify-between gap-4">
+        <div className="flex-1 flex flex-col overflow-hidden">
+
+          {/* Header/Navbar - Mobile responsive */}
+          <header className="bg-white border-b border-gray-100 px-4 md:px-7 py-4 md:py-5 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 flex-1">
             {/* Hamburger Menu for Mobile */}
             <button
@@ -122,9 +127,10 @@ const AdminLayout = () => {
           
           <div className="flex items-center gap-2 md:gap-4">
             <CampusSelector />
+            <ModeToggle />  
 
             {/* Calendar Icon */}
-            <Tooltip text="School Calendar" position="bottom">
+              <Tooltip>
             <button
               onClick={() => setShowCalendar(true)}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors relative"
@@ -297,6 +303,7 @@ const AdminLayout = () => {
       {/* Calendar Modal */}
       <CalendarModal isOpen={showCalendar} onClose={() => setShowCalendar(false)} />
     </div>
+    </SidebarProvider >
   );
 }; 
 

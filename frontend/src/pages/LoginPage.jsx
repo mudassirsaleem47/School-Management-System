@@ -1,23 +1,14 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { LoginForm } from '../components/login-form';
 import { TeacherLoginForm } from '../components/teacher-login-form';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Shield, GraduationCap } from 'lucide-react';
 
-const AdminLoginPage = () => {
-  const navigate = useNavigate();
-
-  const handleTabChange = (value) => {
-    if (value === 'teacher') {
-      navigate('/teacher/login');
-    }
-  };
-
+const LoginPage = () => {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-background text-foreground">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="w-full max-w-md">
-        <Tabs defaultValue="admin" onValueChange={handleTabChange} className="w-full">
+        <Tabs defaultValue="admin" className="w-full">
           {/* Navigation Tabs */}
           <TabsList className="grid w-full grid-cols-2 mb-6">
             <TabsTrigger value="admin" className="gap-2">
@@ -54,4 +45,4 @@ const AdminLoginPage = () => {
   );
 };
 
-export default AdminLoginPage;
+export default LoginPage;

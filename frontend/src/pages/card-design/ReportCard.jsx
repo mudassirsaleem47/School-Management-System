@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { Printer, Search, Filter, Download, FileText, User, ChevronDown, Loader2, Award, Eye } from 'lucide-react';
+import { IconPrinter, IconSearch, IconFilter, IconDownload, IconFileText, IconUser, IconChevronDown, IconLoader2, IconAward, IconEye } from '@tabler/icons-react';
 import CardRenderer from './CardRenderer';
 import API_URL from '../../config/api';
 import { useReactToPrint } from 'react-to-print';
@@ -201,7 +201,7 @@ const ReportCard = () => {
                     <div className="flex flex-col md:flex-row md:items-center justify-between py-4 gap-4">
                         <div className="flex items-center gap-3">
                             <div className="bg-orange-100 p-2.5 rounded-lg">
-                                <Award className="w-6 h-6 text-orange-600" />
+                                <IconAward className="w-6 h-6 text-orange-600" />
                             </div>
                             <div>
                                 <h1 className="text-xl font-bold text-gray-900">Result / Report Cards</h1>
@@ -215,7 +215,7 @@ const ReportCard = () => {
                             {/* Template Selector */}
                             {templates.length > 0 ? (
                                 <div className="relative">
-                                    <FileText className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                                    <IconFileText className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
                                     <select
                                         value={selectedTemplate?._id || ''}
                                         onChange={(e) => setSelectedTemplate(templates.find(t => t._id === e.target.value))}
@@ -237,7 +237,7 @@ const ReportCard = () => {
 
                             {/* Exam Group */}
                             <div className="relative">
-                                <Filter className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                                <IconFilter className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
                                 <select
                                     value={selectedExamGroup}
                                     onChange={(e) => setSelectedExamGroup(e.target.value)}
@@ -270,7 +270,7 @@ const ReportCard = () => {
                                 disabled={!selectedExamGroup || !selectedClass || loading}
                                 className="bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 disabled:opacity-50 flex items-center gap-2 text-sm font-medium transition-all shadow-sm active:scale-95"
                             >
-                                {loading ? <Loader2 className="animate-spin w-4 h-4" /> : <Search className="w-4 h-4" />}
+                                {loading ? <IconLoader2 className="animate-spin w-4 h-4" /> : <IconSearch className="w-4 h-4" />}
                                 Generate
                             </button>
 
@@ -282,7 +282,7 @@ const ReportCard = () => {
                                         disabled={selectedStudents.length === 0}
                                         className="bg-gray-900 text-white px-4 py-2 rounded-md hover:bg-gray-800 disabled:opacity-50 flex items-center gap-2 text-sm font-medium transition-all shadow-sm active:scale-95"
                                     >
-                                        <Printer className="w-4 h-4" />
+                                        <IconPrinter className="w-4 h-4" />
                                         <span>Print ({selectedStudents.length})</span>
                                     </button>
                                 </>
@@ -307,7 +307,7 @@ const ReportCard = () => {
                                 <span className="font-medium text-orange-700">Select All Students</span>
                             </label>
                             <span className="flex items-center gap-2">
-                                <User className="w-4 h-4" />
+                                <IconUser className="w-4 h-4" />
                                 Found {filteredStudents.length} students
                             </span>
                         </div>
@@ -338,7 +338,7 @@ const ReportCard = () => {
                                                         />
                                                     ) : (
                                                         <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                                            <User size={16} />
+                                                                <IconUser size={16} />
                                                         </div>
                                                     )}
                                                 </div>
@@ -352,7 +352,7 @@ const ReportCard = () => {
                                                         className="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:text-orange-600 hover:border-orange-300 transition shadow-sm z-10"
                                                         title="Preview Card"
                                                     >
-                                                        <Eye className="w-4 h-4" />
+                                                        <IconEye className="w-4 h-4" />
                                                     </button>
                                                 <div className={`
                                                     w-5 h-5 rounded-full border flex items-center justify-center transition-colors

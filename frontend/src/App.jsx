@@ -50,87 +50,94 @@ import SubjectManagement from './pages/SubjectManagement';
 import ClassSchedule from './pages/ClassSchedule';
 import TeacherSchedule from './pages/TeacherSchedule';
 import Promotion from './pages/Promotion';
+import ToastTest from './pages/ToastTest';
 
 
 import { ToastProvider } from './context/ToastContext';
 import { CampusProvider } from './context/CampusContext';
+import { ThemeProvider } from "./components/theme-provider"
+import { Toaster } from "@/components/ui/sonner"
 
 function App() {
   return (
     <div className="App">
       <ToastProvider>
         <CampusProvider>
-          <Routes>
-            {/* Public Website Route */}
-            <Route path="/" element={<Home />} />
+          <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+            <Routes>
+              {/* Public Website Route */}
+              <Route path="/" element={<Home />} />
 
-            {/* Admin Auth Routes */}
-          <Route path="/AdminLogin" element={<AdminLoginPage />} />
-            <Route path="/AdminRegister" element={<AdminRegisterPage />} />
+              {/* Admin Auth Routes */}
+              <Route path="/AdminLogin" element={<AdminLoginPage />} />
+              <Route path="/AdminRegister" element={<AdminRegisterPage />} />
 
-            {/* Teacher Auth Routes */}
-            <Route path="/teacher/login" element={<TeacherLoginPage />} />
+              {/* Teacher Auth Routes */}
+              <Route path="/teacher/login" element={<TeacherLoginPage />} />
 
-          <Route element={<ProtectedRoute />}>
-            <Route path="/admin" element={<AdminLayout />}> {/* <--- Layout Wrapper */}
-              <Route index element={<AdminDashboard />} />
-              <Route path="dashboard" element={<AdminDashboard />} />
-              <Route path="students" element={<StudentList />} />
-              <Route path="enquiry" element={<AdmissionEnquiry />} />
-              <Route path="classes" element={<ShowClasses />} />
-                <Route path="subjects" element={<SubjectManagement />} />
-                <Route path="class-schedule" element={<ClassSchedule />} />
-                <Route path="teacher-schedule" element={<TeacherSchedule />} />
-                <Route path="promote" element={<Promotion />} />
-              <Route path="teachers" element={<TeacherList />} />
-              <Route path="visitor-book" element={<VisitorBook />} />
-              <Route path="phone-calls" element={<PhoneCallLog />} />
-              <Route path="complain" element={<ComplainPage />} />
-              <Route path="admission" element={<StudentAdmission />} />
-              <Route path="students/disabled" element={<DisabledStudents />} />
-                <Route path="students/disable-reasons" element={<DisableReasonPage />} />
-              <Route path="settings" element={<SettingsProfile />} />
-              <Route path="fee-management" element={<FeeManagement />} />
-              <Route path="fee-assignment" element={<FeeAssignment />} />
-              <Route path="fee-collection" element={<FeeCollection />} />
-              <Route path="fee-reports" element={<FeeReports />} />
-              <Route path="income" element={<IncomeManagement />} />
-              <Route path="expense" element={<ExpenseManagement />} />
-              <Route path="exam-groups" element={<ExamGroup />} />
-              <Route path="marks-grade" element={<MarksGrade />} />
-              <Route path="exam-schedule" element={<ExamSchedule />} />
-              <Route path="marks-division" element={<MarksDivision />} />
-              <Route path="exam-result" element={<ExamResult />} />
-                <Route path="campuses" element={<CampusManagement />} />
-                <Route path="staff" element={<StaffManagement />} />
-                <Route path="designations" element={<DesignationManagement />} />
-                <Route path="send-messages" element={<SendMessages />} />
-                <Route path="message-templates" element={<MessageTemplates />} />
-                <Route path="message-report" element={<MessageReport />} />
-                <Route path="birthday-wishes" element={<BirthdayWish />} />
-                <Route path="messaging-setup" element={<MessagingSetup />} />
+              <Route element={<ProtectedRoute />}>
+                <Route path="/admin" element={<AdminLayout />}> {/* <--- Layout Wrapper */}
+                  <Route index element={<AdminDashboard />} />
+                  <Route path="dashboard" element={<AdminDashboard />} />
+                  <Route path="students" element={<StudentList />} />
+                  <Route path="enquiry" element={<AdmissionEnquiry />} />
+                  <Route path="classes" element={<ShowClasses />} />
+                  <Route path="subjects" element={<SubjectManagement />} />
+                  <Route path="class-schedule" element={<ClassSchedule />} />
+                  <Route path="teacher-schedule" element={<TeacherSchedule />} />
+                  <Route path="promote" element={<Promotion />} />
+                  <Route path="teachers" element={<TeacherList />} />
+                  <Route path="visitor-book" element={<VisitorBook />} />
+                  <Route path="phone-calls" element={<PhoneCallLog />} />
+                  <Route path="complain" element={<ComplainPage />} />
+                  <Route path="admission" element={<StudentAdmission />} />
+                  <Route path="students/disabled" element={<DisabledStudents />} />
+                  <Route path="students/disable-reasons" element={<DisableReasonPage />} />
+                  <Route path="settings" element={<SettingsProfile />} />
+                  <Route path="toast-test" element={<ToastTest />} />
+                  <Route path="fee-management" element={<FeeManagement />} />
+                  <Route path="fee-assignment" element={<FeeAssignment />} />
+                  <Route path="fee-collection" element={<FeeCollection />} />
+                  <Route path="fee-reports" element={<FeeReports />} />
+                  <Route path="income" element={<IncomeManagement />} />
+                  <Route path="expense" element={<ExpenseManagement />} />
+                  <Route path="exam-groups" element={<ExamGroup />} />
+                  <Route path="marks-grade" element={<MarksGrade />} />
+                  <Route path="exam-schedule" element={<ExamSchedule />} />
+                  <Route path="marks-division" element={<MarksDivision />} />
+                  <Route path="exam-result" element={<ExamResult />} />
+                  <Route path="campuses" element={<CampusManagement />} />
+                  <Route path="staff" element={<StaffManagement />} />
+                  <Route path="designations" element={<DesignationManagement />} />
+                  <Route path="send-messages" element={<SendMessages />} />
+                  <Route path="message-templates" element={<MessageTemplates />} />
+                  <Route path="message-report" element={<MessageReport />} />
+                  <Route path="birthday-wishes" element={<BirthdayWish />} />
+                  <Route path="messaging-setup" element={<MessagingSetup />} />
 
-                {/* Card Management Routes */}
-                <Route path="card-management" element={<Navigate to="card-management/student" />} />
-                <Route path="card-management/student" element={<StudentIdCard />} />
-                <Route path="card-management/staff" element={<StaffIdCard />} />
-                <Route path="card-management/designer" element={<CardDesigner />} />
-                <Route path="/admin/report-card" element={<ReportCard />} />
+                  {/* Card Management Routes */}
+                  <Route path="card-management" element={<Navigate to="card-management/student" />} />
+                  <Route path="card-management/student" element={<StudentIdCard />} />
+                  <Route path="card-management/staff" element={<StaffIdCard />} />
+                  <Route path="card-management/designer" element={<CardDesigner />} />
+                  <Route path="/admin/report-card" element={<ReportCard />} />
 
-                {/* Exam Management */}
-            </Route>
+                  {/* Exam Management */}
+                </Route>
 
-              {/* Teacher Protected Routes */}
-              <Route path="/teacher" element={<TeacherLayout />}>
-                <Route path="dashboard" element={<TeacherDashboard />} />
-                <Route path="attendance" element={<AttendancePage />} />
-                <Route path="students" element={<TeacherStudentsPage />} />
-                <Route path="results" element={<TeacherResultsPage />} />
-                <Route path="schedule" element={<SchedulePage />} />
-                <Route path="settings" element={<SettingsProfile />} />
+                {/* Teacher Protected Routes */}
+                <Route path="/teacher" element={<TeacherLayout />}>
+                  <Route path="dashboard" element={<TeacherDashboard />} />
+                  <Route path="attendance" element={<AttendancePage />} />
+                  <Route path="students" element={<TeacherStudentsPage />} />
+                  <Route path="results" element={<TeacherResultsPage />} />
+                  <Route path="schedule" element={<SchedulePage />} />
+                  <Route path="settings" element={<SettingsProfile />} />
+                </Route>
               </Route>
-          </Route>
-        </Routes>
+            </Routes>
+            <Toaster />
+          </ThemeProvider>
         </CampusProvider>
       </ToastProvider>
     </div>

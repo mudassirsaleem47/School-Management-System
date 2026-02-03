@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useReactToPrint } from 'react-to-print';
-import { Printer, Loader2, Search, Filter, Briefcase, Building2, LayoutTemplate } from 'lucide-react';
+import { IconPrinter, IconLoader2, IconSearch, IconFilter, IconBriefcase, IconBuilding, IconLayoutCards } from '@tabler/icons-react';
 import API_URL from '../../config/api';
 import CardRenderer from './CardRenderer';
 
@@ -65,7 +65,7 @@ const StaffIdCard = () => {
                     <div className="flex flex-col md:flex-row md:items-center justify-between py-4 gap-4">
                         <div className="flex items-center gap-3">
                             <div className="bg-emerald-100 p-2.5 rounded-lg">
-                                <Briefcase className="w-6 h-6 text-emerald-600" />
+                                <IconBriefcase className="w-6 h-6 text-emerald-600" />
                             </div>
                             <div>
                                 <h1 className="text-xl font-bold text-gray-900">Staff ID Cards</h1>
@@ -79,7 +79,7 @@ const StaffIdCard = () => {
                             {/* Template Selector */}
                             {templates.length > 0 ? (
                                 <div className="relative">
-                                    <LayoutTemplate className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                                    <IconLayoutCards className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
                                     <select
                                         value={selectedTemplate?._id || ''}
                                         onChange={(e) => {
@@ -102,7 +102,7 @@ const StaffIdCard = () => {
                             <div className="h-6 w-px bg-gray-300 mx-1 hidden md:block"></div>
 
                             <div className="relative">
-                                <Filter className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                                <IconFilter className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
                                 <select 
                                     value={staffType} 
                                     onChange={(e) => setStaffType(e.target.value)}
@@ -119,7 +119,7 @@ const StaffIdCard = () => {
                                 disabled={loading}
                                 className="bg-emerald-600 text-white px-4 py-2 rounded-md hover:bg-emerald-700 disabled:opacity-50 flex items-center gap-2 text-sm font-medium transition-all shadow-sm active:scale-95"
                             >
-                                {loading ? <Loader2 className="animate-spin w-4 h-4" /> : <Search className="w-4 h-4" />}
+                                {loading ? <IconLoader2 className="animate-spin w-4 h-4" /> : <IconSearch className="w-4 h-4" />}
                                 Generate
                             </button>
 
@@ -132,7 +132,7 @@ const StaffIdCard = () => {
                                     onClick={handlePrint}
                                     className="bg-gray-900 text-white px-4 py-2 rounded-md hover:bg-gray-800 flex items-center gap-2 text-sm font-medium transition-all shadow-sm active:scale-95"
                                 >
-                                    <Printer className="w-4 h-4" /> Print
+                                    <IconPrinter className="w-4 h-4" /> Print
                                 </button>
                             )}
                         </div>
@@ -146,7 +146,7 @@ const StaffIdCard = () => {
                     <div className="space-y-4">
                         <div className="flex items-center justify-between text-sm text-gray-500 bg-emerald-50 px-4 py-2 rounded-lg border border-emerald-100">
                             <span className="flex items-center gap-2">
-                                <Building2 className="w-4 h-4" />
+                                <IconBuilding className="w-4 h-4" />
                                 Found {staffList.length} staff members
                             </span>
                             {selectedTemplate && (
@@ -181,7 +181,7 @@ const StaffIdCard = () => {
                 ) : (
                    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-8 bg-white rounded-2xl border border-dashed border-gray-300 shadow-xs">
                         <div className="bg-emerald-50 p-6 rounded-full mb-4">
-                            <Briefcase className="w-12 h-12 text-emerald-400 opacity-80" />
+                                <IconBriefcase className="w-12 h-12 text-emerald-400 opacity-80" />
                         </div>
                         <h3 className="text-xl font-bold text-gray-900">Generate Staff ID Cards</h3>
                         <p className="text-gray-500 max-w-sm mt-2 mb-8">Generate professional Identity cards for your teaching and non-teaching staff.</p>
