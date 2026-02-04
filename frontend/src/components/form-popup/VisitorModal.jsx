@@ -1,7 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import { X } from 'lucide-react';
-import { useModalAnimation } from '../../hooks/useModalAnimation';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+    IconUser,
+    IconUsers,
+    IconCalendar,
+    IconClock,
+    IconFileText
+} from '@tabler/icons-react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 
@@ -32,7 +56,6 @@ const VisitorModal = ({ isOpen, onClose, onSubmit, initialData, viewMode = false
     const [staffList, setStaffList] = useState([]);
     const [classesList, setClassesList] = useState([]);
     const [studentsList, setStudentsList] = useState([]);
-    const { isVisible, isClosing, handleClose } = useModalAnimation(isOpen, onClose);
     
     // Fetch staff, classes when modal opens
     useEffect(() => {
@@ -118,22 +141,29 @@ const VisitorModal = ({ isOpen, onClose, onSubmit, initialData, viewMode = false
                 document: ''
             });
         }
-    }, [initialData]);
+    }, [initialData, isOpen]);
     
-    if (!isVisible) return null;
-
+    // Updated handleChange to work with regular inputs
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
-        
-        // Reset dependent fields when meetingWith changes
-        if (name === 'meetingWith') {
-            if (value === 'Staff') {
-                setFormData(prev => ({ ...prev, class: '', section: '', student: '' }));
-            } else {
-                setFormData(prev => ({ ...prev, staff: '' }));
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    // Custom handler for Shadcn Select components
+    const handleSelectChange = (name, value) => {
+        setFormData(prev => {
+            const newData = { ...prev, [name]: value };
+
+            // Logic handled here instead of handleChange
+            if (name === 'meetingWith') {
+                if (value === 'Staff') {
+                    return { ...newData, class: '', section: '', student: '' };
+                } else {
+                    return { ...newData, staff: '' };
+                }
             }
-        }
+            return newData;
+        });
     };
 
     const handleSubmit = (e) => {
@@ -141,410 +171,326 @@ const VisitorModal = ({ isOpen, onClose, onSubmit, initialData, viewMode = false
         onSubmit(formData);
     };
 
-    return createPortal(
-        <div className={`fixed inset-0 z-[9999] overflow-y-auto bg-black/70 ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`}>
-            <div className="flex min-h-full items-center justify-center p-4">
-                <div className={`bg-white rounded-2xl shadow-2xl w-full max-w-6xl relative ${isClosing ? 'animate-scale-down' : 'animate-scale-up'}`}>
-                
-                {/* Header */}
-                <div className="p-7 rounded-t-2xl flex justify-between items-start gap-4">
-                    <div className="flex-1">
-                        <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
-                            {viewMode ? 'View Visitor Details' : (initialData ? 'Edit Visitor' : 'Add Visitor')}
-                        </h2>
-                        <p className="text-gray-600 text-sm mt-2">
-                            {viewMode ? 'Read-only view of visitor information' : (initialData ? 'Update the visitor details below' : 'Fill in the details to add a new visitor')}
-                        </p>
-                    </div>
-                    <button 
-                        onClick={handleClose} 
-                        className="text-red-600 bg-gray-50 cursor-pointer hover:bg-gray-100 p-2 rounded-lg transition duration-150 shrink-0"
-                    >
-                        <X size={24} />
-                    </button>
-                </div>
+    return (
+        <Dialog open={isOpen} onOpenChange={onClose}>
+            <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0 gap-0">
+                <DialogHeader className="p-6 pb-2">
+                    <DialogTitle>
+                        {viewMode ? 'View Visitor Details' : (initialData ? 'Edit Visitor' : 'Add Visitor')}
+                    </DialogTitle>
+                    <DialogDescription>
+                        {viewMode
+                            ? 'Details of the selected visitor record.'
+                            : 'Enter the details of the visitor below.'}
+                    </DialogDescription>
+                </DialogHeader>
 
-                {/* Content - Conditional Rendering */}
-                {viewMode ? (
-                    /* VIEW MODE - Card-based Display */
-                    <div className="p-6 md:p-8">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            {/* Visitor Information Card */}
-                            <div className="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-lg p-6 border border-indigo-100">
-                                <h3 className="text-lg font-bold text-indigo-900 mb-4 flex items-center">
-                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                    </svg>
-                                    Visitor Information
-                                </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <p className="text-xs font-600 text-gray-500 uppercase mb-1">Visitor Name</p>
-                                        <p className="text-base font-600 text-gray-900">{formData.visitorName || '-'}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs font-600 text-gray-500 uppercase mb-1">Purpose</p>
-                                        <p className="text-base font-600 text-gray-900">{formData.purpose || '-'}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs font-600 text-gray-500 uppercase mb-1">Phone</p>
-                                        <p className="text-base font-600 text-gray-900">{formData.phone || '-'}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs font-600 text-gray-500 uppercase mb-1">ID Card</p>
-                                        <p className="text-base font-600 text-gray-900">{formData.idCard || '-'}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs font-600 text-gray-500 uppercase mb-1">Number of Persons</p>
-                                        <p className="text-base font-600 text-gray-900">{formData.numberOfPerson || '-'}</p>
-                                    </div>
+                <ScrollArea className="flex-1 p-6 pt-2">
+                    {viewMode ? (
+                        /* VIEW MODE */
+                        <div className="grid gap-6">
+                            {/* Visitor Info */}
+                            <div className="space-y-4 rounded-lg border p-4 bg-muted/40">
+                                <h4 className="flex items-center gap-2 font-semibold text-primary">
+                                    <IconUser size={18} /> Visitor Information
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                    <div><span className="text-muted-foreground">Name:</span> <span className="font-medium">{formData.visitorName}</span></div>
+                                    <div><span className="text-muted-foreground">Purpose:</span> <span className="font-medium">{formData.purpose}</span></div>
+                                    <div><span className="text-muted-foreground">Phone:</span> <span className="font-medium">{formData.phone || '-'}</span></div>
+                                    <div><span className="text-muted-foreground">ID Card:</span> <span className="font-medium">{formData.idCard || '-'}</span></div>
+                                    <div><span className="text-muted-foreground">Persons:</span> <span className="font-medium">{formData.numberOfPerson}</span></div>
                                 </div>
                             </div>
 
-                            {/* Meeting Details Card */}
-                            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-6 border border-purple-100">
-                                <h3 className="text-lg font-bold text-purple-900 mb-4 flex items-center">
-                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                    </svg>
-                                    Meeting Details
-                                </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <p className="text-xs font-600 text-gray-500 uppercase mb-1">Meeting With</p>
-                                        <span className="inline-block px-3 py-1 bg-purple-200 text-purple-800 rounded-full text-sm font-600">
-                                            {formData.meetingWith}
-                                        </span>
-                                    </div>
-                                    {formData.meetingWith === 'Staff' && formData.staff && (
+                            {/* Meeting Info */}
+                            <div className="space-y-4 rounded-lg border p-4 bg-muted/40">
+                                <h4 className="flex items-center gap-2 font-semibold text-primary">
+                                    <IconUsers size={18} /> Meeting Details
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                    <div><span className="text-muted-foreground">Meeting With:</span> <Badge>{formData.meetingWith}</Badge></div>
+                                    {formData.meetingWith === 'Staff' && (
                                         <div>
-                                            <p className="text-xs font-600 text-gray-500 uppercase mb-1">Staff Member</p>
-                                            <p className="text-base font-600 text-gray-900">
+                                            <span className="text-muted-foreground">Staff Member:</span>
+                                            <span className="font-medium ml-2">
                                                 {staffList.find(s => s._id === formData.staff)?.name || '-'}
-                                            </p>
+                                            </span>
                                         </div>
                                     )}
                                     {formData.meetingWith === 'Student' && (
                                         <>
                                             <div>
-                                                <p className="text-xs font-600 text-gray-500 uppercase mb-1">Class</p>
-                                                <p className="text-base font-600 text-gray-900">
+                                                <span className="text-muted-foreground">Class:</span>
+                                                <span className="font-medium ml-2">
                                                     {classesList.find(c => c._id === formData.class)?.sclassName || '-'}
-                                                </p>
+                                                </span>
                                             </div>
+                                            <div><span className="text-muted-foreground">Section:</span> <span className="font-medium ml-2">{formData.section || '-'}</span></div>
                                             <div>
-                                                <p className="text-xs font-600 text-gray-500 uppercase mb-1">Section</p>
-                                                <p className="text-base font-600 text-gray-900">{formData.section || '-'}</p>
-                                            </div>
-                                            <div>
-                                                <p className="text-xs font-600 text-gray-500 uppercase mb-1">Student</p>
-                                                <p className="text-base font-600 text-gray-900">
+                                                <span className="text-muted-foreground">Student:</span>
+                                                <span className="font-medium ml-2">
                                                     {studentsList.find(s => s._id === formData.student)?.name || '-'}
-                                                </p>
+                                                </span>
                                             </div>
                                         </>
                                     )}
                                 </div>
                             </div>
 
-                            {/* Visit Schedule Card */}
-                            <div className="bg-gradient-to-r from-green-50 to-teal-50 rounded-lg p-6 border border-green-100">
-                                <h3 className="text-lg font-bold text-green-900 mb-4 flex items-center">
-                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                    Visit Schedule
-                                </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div>
-                                        <p className="text-xs font-600 text-gray-500 uppercase mb-1">Date</p>
-                                        <p className="text-base font-600 text-gray-900">
-                                            {formData.date ? new Date(formData.date).toLocaleDateString() : '-'}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs font-600 text-gray-500 uppercase mb-1">In Time</p>
-                                        <p className="text-base font-600 text-gray-900">{formData.inTime || '-'}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs font-600 text-gray-500 uppercase mb-1">Out Time</p>
-                                        <p className="text-base font-600 text-gray-900">{formData.outTime || '-'}</p>
+                            {/* Schedule & Notes */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-4 rounded-lg border p-4 bg-muted/40">
+                                    <h4 className="flex items-center gap-2 font-semibold text-primary">
+                                        <IconClock size={18} /> Schedule
+                                    </h4>
+                                    <div className="space-y-2 text-sm">
+                                        <div><span className="text-muted-foreground">Date:</span> <span className="font-medium">{new Date(formData.date).toLocaleDateString()}</span></div>
+                                        <div><span className="text-muted-foreground">In Time:</span> <span className="font-medium">{formData.inTime}</span></div>
+                                        <div><span className="text-muted-foreground">Out Time:</span> <span className="font-medium">{formData.outTime || '-'}</span></div>
                                     </div>
                                 </div>
+                                {formData.note && (
+                                    <div className="space-y-4 rounded-lg border p-4 bg-muted/40">
+                                        <h4 className="flex items-center gap-2 font-semibold text-primary">
+                                            <IconFileText size={18} /> Notes
+                                        </h4>
+                                        <p className="text-sm">{formData.note}</p>
+                                    </div>
+                                )}
                             </div>
-
-                            {/* Notes Card */}
-                            {formData.note && (
-                                <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg p-6 border border-amber-100">
-                                    <h3 className="text-lg font-bold text-amber-900 mb-3 flex items-center">
-                                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                                        </svg>
-                                        Notes
-                                    </h3>
-                                    <p className="text-base text-gray-700 whitespace-pre-wrap">{formData.note}</p>
-                                </div>
-                            )}
                         </div>
-
-                        {/* Close Button */}
-                        <div className="flex justify-end mt-8 pt-6 border-t border-gray-200">
-                            <button 
-                                type="button" 
-                                onClick={handleClose} 
-                                className="cursor-pointer px-6 py-2.5 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 font-600 transition duration-150"
-                            >
-                                Close
-                            </button>
-                        </div>
-                    </div>
-                ) : (
-                    /* EDIT/ADD MODE - Form */
-                    <form onSubmit={handleSubmit} className="p-6 md:p-8">
-                        <div className="space-y-5">
+                    ) : (
+                            /* EDIT/ADD FORM */
+                            <form id="visitor-form" onSubmit={handleSubmit} className="grid gap-5 py-4">
                             
-                            {/* Row 1: Purpose, Meeting With, Staff/Class */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                                <div>
-                                    <label className="block text-sm font-600 text-gray-700 mb-2">Purpose *</label>
-                                    <input 
-                                        name="purpose" 
-                                        placeholder="Enter purpose" 
+                                {/* Row 1 */}
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div className="space-y-2">
+                                        <Label>Purpose *</Label>
+                                        <Input 
+                                            name="purpose" 
                                         value={formData.purpose} 
                                         onChange={handleChange} 
-                                        required 
-                                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                            placeholder="Reason for visit" 
+                                            required 
                                     />
                                 </div>
 
-                                <div>
-                                    <label className="block text-sm font-600 text-gray-700 mb-2">Meeting With *</label>
-                                    <select 
-                                        name="meetingWith" 
+                                    <div className="space-y-2">
+                                        <Label>Meeting With *</Label>
+                                        <Select 
                                         value={formData.meetingWith} 
-                                        onChange={handleChange} 
-                                        required 
-                                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                            onValueChange={(val) => handleSelectChange('meetingWith', val)}
                                     >
-                                        <option value="Staff">Staff</option>
-                                        <option value="Student">Student</option>
-                                    </select>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select type" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="Staff">Staff</SelectItem>
+                                                <SelectItem value="Student">Student</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                 </div>
 
-                                {/* Conditional: Staff dropdown */}
                                 {formData.meetingWith === 'Staff' && (
-                                    <div>
-                                        <label className="block text-sm font-600 text-gray-700 mb-2">Staff *</label>
-                                        <select 
-                                            name="staff" 
+                                        <div className="space-y-2">
+                                            <Label>Staff Member *</Label>
+                                            <Select 
                                             value={formData.staff} 
-                                            onChange={handleChange} 
-                                            required 
-                                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                                onValueChange={(val) => handleSelectChange('staff', val)}
                                         >
-                                            <option value="">Select</option>
-                                            {staffList.map((staff) => (
-                                                <option key={staff._id} value={staff._id}>{staff.name}</option>
-                                            ))}
-                                        </select>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select staff" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {staffList.map((staff) => (
+                                                    <SelectItem key={staff._id} value={staff._id}>{staff.name}</SelectItem>
+                                                ))}
+                                                </SelectContent>
+                                            </Select>
                                     </div>
                                 )}
 
-                                {/* Conditional: Class dropdown */}
                                 {formData.meetingWith === 'Student' && (
-                                    <div>
-                                        <label className="block text-sm font-600 text-gray-700 mb-2">Class *</label>
-                                        <select 
-                                            name="class" 
+                                        <div className="space-y-2">
+                                            <Label>Class *</Label>
+                                            <Select 
                                             value={formData.class} 
-                                            onChange={handleChange} 
-                                            required 
-                                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                                onValueChange={(val) => handleSelectChange('class', val)}
                                         >
-                                            <option value="">Select</option>
-                                            {classesList.map((cls) => (
-                                                <option key={cls._id} value={cls._id}>{cls.sclassName}</option>
-                                            ))}
-                                        </select>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select class" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {classesList.map((cls) => (
+                                                    <SelectItem key={cls._id} value={cls._id}>{cls.sclassName}</SelectItem>
+                                                ))}
+                                                </SelectContent>
+                                            </Select>
                                     </div>
                                 )}
                             </div>
 
-                            {/* Row 2: Section and Student (only for Student meeting) */}
+                                {/* Row 2 - Student Specific */}
                             {formData.meetingWith === 'Student' && (
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                                    <div>
-                                        <label className="block text-sm font-600 text-gray-700 mb-2">Section *</label>
-                                        <input 
-                                            name="section" 
-                                            placeholder="Enter section" 
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div className="space-y-2">
+                                            <Label>Section *</Label>
+                                            <Input 
+                                                name="section" 
                                             value={formData.section} 
                                             onChange={handleChange} 
-                                            required 
-                                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                                placeholder="Section" 
+                                                required 
                                         />
                                     </div>
-
-                                    <div>
-                                        <label className="block text-sm font-600 text-gray-700 mb-2">Student *</label>
-                                        <select 
-                                            name="student" 
+                                        <div className="space-y-2">
+                                            <Label>Student *</Label>
+                                            <Select 
                                             value={formData.student} 
-                                            onChange={handleChange} 
-                                            required 
-                                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                                onValueChange={(val) => handleSelectChange('student', val)}
                                         >
-                                            <option value="">Select</option>
-                                            {studentsList.map((student) => (
-                                                <option key={student._id} value={student._id}>{student.name}</option>
-                                            ))}
-                                        </select>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select student" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {studentsList.map((student) => (
+                                                    <SelectItem key={student._id} value={student._id}>{student.name}</SelectItem>
+                                                ))}
+                                                </SelectContent>
+                                            </Select>
                                     </div>
-
-                                    <div>
-                                        <label className="block text-sm font-600 text-gray-700 mb-2">Visitor Name *</label>
-                                        <input 
-                                            name="visitorName" 
-                                            placeholder="Enter visitor name" 
+                                        <div className="space-y-2">
+                                            <Label>Visitor Name *</Label>
+                                            <Input 
+                                                name="visitorName" 
                                             value={formData.visitorName} 
                                             onChange={handleChange} 
-                                            required 
-                                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                                placeholder="Visitor Name" 
+                                                required 
                                         />
                                     </div>
                                 </div>
                             )}
 
-                            {/* Row 3: Visitor Name (for Staff) and Phone */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                                {/* Row 3 */}
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 {formData.meetingWith === 'Staff' && (
-                                    <div>
-                                        <label className="block text-sm font-600 text-gray-700 mb-2">Visitor Name *</label>
-                                        <input 
-                                            name="visitorName" 
-                                            placeholder="Enter visitor name" 
+                                        <div className="space-y-2">
+                                            <Label>Visitor Name *</Label>
+                                            <Input 
+                                                name="visitorName" 
                                             value={formData.visitorName} 
                                             onChange={handleChange} 
-                                            required 
-                                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                                placeholder="Visitor Name" 
+                                                required 
                                         />
                                     </div>
                                 )}
-
-                                <div>
-                                    <label className="block text-sm font-600 text-gray-700 mb-2">Phone</label>
-                                    <input 
-                                        name="phone" 
-                                        type="tel"
-                                        placeholder="Enter phone number" 
+                                    <div className="space-y-2">
+                                        <Label>Phone</Label>
+                                        <Input 
+                                            name="phone" 
                                         value={formData.phone} 
                                         onChange={handleChange} 
-                                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                            placeholder="Phone Number"
+                                            type="tel"
                                     />
                                 </div>
-
-                                <div>
-                                    <label className="block text-sm font-600 text-gray-700 mb-2">ID Card</label>
-                                    <input 
-                                        name="idCard" 
-                                        placeholder="Enter ID card number" 
+                                    <div className="space-y-2">
+                                        <Label>ID Card</Label>
+                                        <Input 
+                                            name="idCard" 
                                         value={formData.idCard} 
                                         onChange={handleChange} 
-                                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                            placeholder="ID Card Number" 
                                     />
                                 </div>
                             </div>
 
-                            {/* Row 4: Number of Person, Date */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                                <div>
-                                    <label className="block text-sm font-600 text-gray-700 mb-2">Number Of Person</label>
-                                    <input 
+                                {/* Row 4 */}
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div className="space-y-2">
+                                        <Label>Number of Persons</Label>
+                                        <Input 
                                         name="numberOfPerson" 
-                                        type="number"
+                                            type="number" 
                                         min="1"
                                         value={formData.numberOfPerson} 
-                                        onChange={handleChange} 
-                                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                            onChange={handleChange} 
                                     />
                                 </div>
-
-                                <div>
-                                    <label className="block text-sm font-600 text-gray-700 mb-2">Date *</label>
-                                    <input 
+                                    <div className="space-y-2">
+                                        <Label>Date *</Label>
+                                        <Input 
                                         name="date" 
-                                        type="date"
+                                            type="date" 
                                         value={formData.date} 
                                         onChange={handleChange} 
-                                        required 
-                                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                            required
                                     />
                                 </div>
                             </div>
 
-                            {/* Row 5: In Time, Out Time */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                                <div>
-                                    <label className="block text-sm font-600 text-gray-700 mb-2">In Time *</label>
-                                    <input 
+                                {/* Row 5 */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label>In Time *</Label>
+                                        <Input 
                                         name="inTime" 
-                                        type="time"
+                                            type="time" 
                                         value={formData.inTime} 
                                         onChange={handleChange} 
-                                        required 
-                                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                            required
                                     />
                                 </div>
-
-                                <div>
-                                    <label className="block text-sm font-600 text-gray-700 mb-2">Out Time</label>
-                                    <input 
+                                    <div className="space-y-2">
+                                        <Label>Out Time</Label>
+                                        <Input 
                                         name="outTime" 
-                                        type="time"
+                                            type="time" 
                                         value={formData.outTime} 
-                                        onChange={handleChange} 
-                                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                                            onChange={handleChange} 
                                     />
                                 </div>
                             </div>
 
-                            {/* Row 6: Note (Full Width) */}
-                            <div>
-                                <label className="block text-sm font-600 text-gray-700 mb-2">Note</label>
-                                <textarea 
-                                    name="note" 
-                                    placeholder="Enter any notes" 
+                                {/* Row 6 */}
+                                <div className="space-y-2">
+                                    <Label>Note</Label>
+                                    <Textarea 
+                                        name="note" 
                                     value={formData.note} 
                                     onChange={handleChange} 
-                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition resize-none" 
-                                    rows="2"
-                                ></textarea>
+                                    placeholder="Enter any additional notes..."
+                                    className="resize-none"
+                                />
                             </div>
-                        </div>
+                        </form>
+                    )}
+                </ScrollArea>
 
-                        {/* Buttons */}
-                        <div className="flex justify-end gap-3 mt-8 pt-6 border-t border-gray-200">
-                            <button 
-                                type="button" 
-                                onClick={handleClose} 
-                                className="cursor-pointer px-6 py-2.5 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 font-600 transition duration-150"
-                            >
-                                Cancel
-                            </button>
-                            <button 
-                                type="submit" 
-                                className="cursor-pointer px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-600 transition duration-150 shadow-lg hover:shadow-xl"
-                            >
-                                {initialData ? 'Update Visitor' : 'Save'}
-                            </button>
-                        </div>
-                    </form>
-                )}
-            </div>
-            </div>
-        </div>,
-        document.body
+                <DialogFooter className="p-6 border-t bg-gray-50/50">
+                    <Button variant="outline" onClick={onClose}>
+                        Close
+                    </Button>
+                    {!viewMode && (
+                        <Button type="submit" form="visitor-form">
+                            {initialData ? 'Update Visitor' : 'Save Visitor'}
+                        </Button>
+                    )}
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 };
+
+// Simple Badge component for View Mode
+const Badge = ({ children }) => (
+    <span className="inline-flex items-center rounded-full border border-gray-200 px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-gray-950 focus:ring-offset-2 bg-gray-100 text-gray-900">
+        {children}
+    </span>
+);
 
 export default VisitorModal;

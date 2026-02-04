@@ -38,6 +38,8 @@ import {
   IconClipboardList
 } from "@tabler/icons-react";
 
+
+
 const AdminLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -70,30 +72,6 @@ const AdminLayout = () => {
       group: "Academic",
       items: [
         { name: "Subjects", icon: IconBook, path: "/admin/subjects" },
-        { name: "Class Schedule", icon: IconCalendar, path: "/admin/class-schedule" },
-        { name: "Teacher Schedule", icon: IconCalendar, path: "/admin/teacher-schedule" },
-        { name: "Attendance", icon: IconClipboardList, path: "/admin/attendance" },
-      ]
-    },
-    {
-      group: "Admissions",
-      items: [
-        { name: "Student Admission", icon: IconUserPlus, path: "/admin/admissions" },
-        { name: "Enquiry", icon: IconFileText, path: "/admin/enquiry" },
-        { name: "Promote Students", icon: IconUsers, path: "/admin/promote" },
-      ]
-    },
-    {
-      group: "Finance",
-      items: [
-        { name: "Fee Collection", icon: IconCurrencyDollar, path: "/admin/fees" },
-        { name: "Expenses", icon: IconCurrencyDollar, path: "/admin/expenses" },
-      ]
-    },
-    {
-      group: "Settings",
-      items: [
-        { name: "School Settings", icon: IconSettings, path: "/admin/settings" },
       ]
     }
   ];
@@ -172,48 +150,11 @@ const AdminLayout = () => {
             </BreadcrumbList>
           </Breadcrumb>
 
+
           {/* Search Bar Trigger */}
-          <div className="ml-auto">
-            <button
-              onClick={() => setOpen(true)}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm text-muted-foreground border border-input rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
-            >
-              <IconSearch className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Search...</span>
-              <kbd className="hidden sm:inline pointer-events-none h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100">
-                <span className="text-xs">⌘</span>K
-              </kbd>
-            </button>
-          </div>
+        
         </header>
 
-        {/* Command Palette Dialog */}
-        <CommandDialog open={open} onOpenChange={setOpen}>
-          <CommandInput placeholder="Type a command or search..." />
-          <CommandList>
-            <CommandEmpty>No results found.</CommandEmpty>
-
-            {navigationItems.map((section) => (
-              <React.Fragment key={section.group}>
-                <CommandGroup heading={section.group}>
-                  {section.items.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <CommandItem
-                        key={item.path}
-                        onSelect={() => handleSelect(item.path)}
-                      >
-                        <Icon className="mr-2 h-3.5 w-3.5" />
-                        <span>{item.name}</span>
-                      </CommandItem>
-                    );
-                  })}
-                </CommandGroup>
-                <CommandSeparator />
-              </React.Fragment>
-            ))}
-          </CommandList>
-        </CommandDialog>
 
         {/* Main Content */}
         <div className="flex flex-1 flex-col gap-6 p-4">

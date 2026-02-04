@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '../context/ToastContext';
 import { toast } from 'sonner';
 import { CheckCircle2, XCircle, Info, AlertTriangle, Sparkles } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const ToastTest = () => {
   const { showToast } = useToast();
@@ -23,6 +24,16 @@ const ToastTest = () => {
           <CardTitle>Shadcn Color Variables</CardTitle>
           <CardDescription>
             All theme color variables with their current values
+            <Select>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a color" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="red">Red</SelectItem>
+                <SelectItem value="green">Green</SelectItem>
+                <SelectItem value="blue">Blue</SelectItem>
+              </SelectContent>
+            </Select>
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">

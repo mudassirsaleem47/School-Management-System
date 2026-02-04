@@ -16,6 +16,7 @@ import {
     SelectItem,
     SelectTrigger,
     SelectValue,
+    SelectGroup,
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -32,6 +33,15 @@ import {
     IconInfoCircle,
     IconUsers,
 } from '@tabler/icons-react';
+import { format } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { Field, FieldLabel } from "@/components/ui/field";
 
 const EnquiryModal = ({ isOpen, onClose, onSubmit, initialData, classesList, teachersList, viewMode = false }) => {
     const [formData, setFormData] = useState({
@@ -247,13 +257,10 @@ const EnquiryModal = ({ isOpen, onClose, onSubmit, initialData, classesList, tea
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Personal Information Section */}
                     <div className="space-y-4">
-                        <h3 className="text-sm font-semibold flex items-center gap-2">
-                            <IconUser className="w-4 h-4" />
-                            Personal Information
-                        </h3>
+                        {/* Row 1: Name, Phone, Email */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="name">Full Name *</Label>
+                            <Field>
+                                <FieldLabel htmlFor="name">Full Name *</FieldLabel>
                                 <Input
                                     id="name"
                                     name="name"
@@ -262,9 +269,9 @@ const EnquiryModal = ({ isOpen, onClose, onSubmit, initialData, classesList, tea
                                     onChange={handleChange}
                                     required
                                 />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="phone">Phone *</Label>
+                            </Field>
+                            <Field>
+                                <FieldLabel htmlFor="phone">Phone *</FieldLabel>
                                 <Input
                                     id="phone"
                                     name="phone"
@@ -273,9 +280,9 @@ const EnquiryModal = ({ isOpen, onClose, onSubmit, initialData, classesList, tea
                                     onChange={handleChange}
                                     required
                                 />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="email">Email</Label>
+                            </Field>
+                            <Field>
+                                <FieldLabel htmlFor="email">Email</FieldLabel>
                                 <Input
                                     id="email"
                                     name="email"
@@ -284,79 +291,79 @@ const EnquiryModal = ({ isOpen, onClose, onSubmit, initialData, classesList, tea
                                     value={formData.email}
                                     onChange={handleChange}
                                 />
-                            </div>
+                            </Field>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="address">Address</Label>
-                                <Input
-                                    id="address"
-                                    name="address"
-                                    placeholder="Enter address"
-                                    value={formData.address}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="date">Date *</Label>
-                                <Input
-                                    id="date"
-                                    name="date"
-                                    type="date"
-                                    value={formData.date}
-                                    onChange={handleChange}
-                                    required
-                                />
-                            </div>
-                        </div>
-                    </div>
 
-                    {/* Admission Details Section */}
-                    <div className="space-y-4">
-                        <h3 className="text-sm font-semibold flex items-center gap-2">
-                            <IconSchool className="w-4 h-4" />
-                            Admission Details
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="class">Select Class *</Label>
+                        {/* Row 2: Date, Class, Teacher, Children */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <Field>
+                                <FieldLabel htmlFor="date">Date *</FieldLabel>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant={"outline"}
+                                            className={cn(
+                                                "w-full justify-start text-left font-normal h-8 px-2.5",
+                                                !formData.date && "text-muted-foreground"
+                                            )}
+                                        >
+                                            <IconCalendar className="mr-2 h-4 w-4" />
+                                            {formData.date ? format(new Date(formData.date), "PPP") : <span>Pick a date</span>}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar
+                                            mode="single"
+                                            selected={formData.date ? new Date(formData.date) : undefined}
+                                            onSelect={(date) => setFormData(prev => ({ ...prev, date: date ? date.toISOString().split('T')[0] : '' }))}
+                                            initialFocus
+                                        />
+                                    </PopoverContent>
+                                </Popover>
+                            </Field>
+                            <Field>
+                                <FieldLabel htmlFor="class">Select Class *</FieldLabel>
                                 <Select
                                     value={formData.class}
                                     onValueChange={(value) => handleSelectChange('class', value)}
                                     required
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger id="class">
                                         <SelectValue placeholder="Choose a class" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {classesList.map((cls) => (
-                                            <SelectItem key={cls._id} value={cls._id}>
-                                                {cls.sclassName}
-                                            </SelectItem>
-                                        ))}
+                                        <SelectGroup>
+                                            {classesList.map((cls) => (
+                                                <SelectItem key={cls._id} value={cls._id}>
+                                                    {cls.sclassName}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectGroup>
                                     </SelectContent>
                                 </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="assigned">Assign Teacher</Label>
+                            </Field>
+                            <Field>
+                                <FieldLabel htmlFor="assigned">Assign Teacher</FieldLabel>
                                 <Select
                                     value={formData.assigned}
                                     onValueChange={(value) => handleSelectChange('assigned', value)}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger id="assigned">
                                         <SelectValue placeholder="Select teacher" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {teachersList.map((teacher) => (
-                                            <SelectItem key={teacher._id} value={teacher._id}>
-                                                {teacher.name}
-                                            </SelectItem>
-                                        ))}
+                                        <SelectGroup>
+                                            {teachersList.map((teacher) => (
+                                                <SelectItem key={teacher._id} value={teacher._id}>
+                                                    {teacher.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectGroup>
                                     </SelectContent>
                                 </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="noOfChild">Number of Children</Label>
+                            </Field>
+                            <Field>
+                                <FieldLabel htmlFor="noOfChild">Number of Children</FieldLabel>
                                 <Input
                                     id="noOfChild"
                                     name="noOfChild"
@@ -366,19 +373,30 @@ const EnquiryModal = ({ isOpen, onClose, onSubmit, initialData, classesList, tea
                                     value={formData.noOfChild}
                                     onChange={handleChange}
                                 />
-                            </div>
+                            </Field>
+                        </div>
+
+                        {/* Row 3: Address (Full Width) */}
+                        <div className="space-y-4">
+                            <Field>
+                                <FieldLabel htmlFor="address">Address</FieldLabel>
+                                <Textarea
+                                    id="address"
+                                    name="address"
+                                    placeholder="Enter address"
+                                    value={formData.address}
+                                    onChange={handleChange}
+                                    rows={3}
+                                />
+                            </Field>
                         </div>
                     </div>
 
-                    {/* Additional Information Section */}
                     <div className="space-y-4">
-                        <h3 className="text-sm font-semibold flex items-center gap-2">
-                            <IconNotes className="w-4 h-4" />
-                            Additional Information
-                        </h3>
+                        {/* Other Full Width Fields */}
                         <div className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="description">Description</Label>
+                            <Field>
+                                <FieldLabel htmlFor="description">Description</FieldLabel>
                                 <Textarea
                                     id="description"
                                     name="description"
@@ -387,12 +405,11 @@ const EnquiryModal = ({ isOpen, onClose, onSubmit, initialData, classesList, tea
                                     onChange={handleChange}
                                     rows={3}
                                 />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="note" className="flex items-center gap-2">
-                                    <IconLock className="w-3 h-3" />
+                            </Field>
+                            <Field>
+                                <FieldLabel htmlFor="note" className="flex items-center gap-2">
                                     Admin Note (Private)
-                                </Label>
+                                </FieldLabel>
                                 <Textarea
                                     id="note"
                                     name="note"
@@ -402,9 +419,9 @@ const EnquiryModal = ({ isOpen, onClose, onSubmit, initialData, classesList, tea
                                     rows={2}
                                     className="border-amber-200 bg-amber-50/50"
                                 />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="reference">Reference (Optional)</Label>
+                            </Field>
+                            <Field>
+                                <FieldLabel htmlFor="reference">Reference (Optional)</FieldLabel>
                                 <Textarea
                                     id="reference"
                                     name="reference"
@@ -413,7 +430,7 @@ const EnquiryModal = ({ isOpen, onClose, onSubmit, initialData, classesList, tea
                                     onChange={handleChange}
                                     rows={2}
                                 />
-                            </div>
+                            </Field>
                         </div>
                     </div>
 
