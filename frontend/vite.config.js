@@ -32,7 +32,7 @@ export default defineConfig({
       interval: 1000, // Check for changes every 1 second
     },
     hmr: {
-      host: 'localhost', // Hot Module Replacement host
+      host: '192.168.10.21', // Hot Module Replacement host
     }
   }
 })

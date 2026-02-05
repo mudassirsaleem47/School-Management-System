@@ -10,7 +10,7 @@ import StudentDetailsModal from '../components/form-popup/StudentDetailsModal';
 import SearchBar from '../components/SearchBar';
 import { Edit, Trash2, Plus, Eye, LayoutGrid, List as ListIcon, Filter, X, GraduationCap, Users, ChevronRight, ArrowLeft, Check } from 'lucide-react';
 
-const API_BASE = "http://localhost:5000";
+const API_BASE = import.meta.env.VITE_API_URL;
 
 const StudentList = () => {
     const { currentUser } = useAuth();
@@ -425,7 +425,7 @@ const StudentList = () => {
                                                             <div className="flex items-center">
                                                                 <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold mr-3 overflow-hidden border border-indigo-200">
                                                                     {student.studentPhoto ? (
-                                                                        <img src={`http://localhost:5000/${student.studentPhoto}`} alt={student.name} className="w-full h-full object-cover" />
+                                                                        <img src={`${API_BASE}/${student.studentPhoto}`} alt={student.name} className="w-full h-full object-cover" />
                                                                     ) : (
                                                                         student.name.charAt(0)
                                                                     )}
@@ -486,7 +486,7 @@ const StudentList = () => {
                                         <div key={student._id} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-200 overflow-hidden group flex flex-col items-center p-6">
                                             <div className="h-32 w-32 rounded-full border-4 border-indigo-50 bg-white shadow-lg overflow-hidden flex items-center justify-center mb-4">
                                                 {student.studentPhoto ? (
-                                                    <img src={`http://localhost:5000/${student.studentPhoto}`} alt={student.name} className="w-full h-full object-cover" />
+                                                    <img src={`${API_BASE}/${student.studentPhoto}`} alt={student.name} className="w-full h-full object-cover" />
                                                 ) : (
                                                     <div className="text-4xl font-bold text-indigo-600">{student.name.charAt(0)}</div>
                                                 )}

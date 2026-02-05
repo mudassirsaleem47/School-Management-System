@@ -32,7 +32,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 
-const API_BASE = "http://localhost:5000";
+const API_BASE = import.meta.env.VITE_API_URL;
 
 const VisitorBook = () => {
     const { currentUser } = useAuth();
@@ -158,11 +158,9 @@ const VisitorBook = () => {
                         <CardTitle className="text-2xl font-bold tracking-tight text-foreground">Visitor Book</CardTitle>
                         <p className="text-sm text-muted-foreground mt-1">Manage visitor records and history</p>
                     </div>
-                    <Button
-                        onClick={handleAdd}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg transition-all duration-300 hover:shadow-indigo-500/20 w-full sm:w-auto"
-                    >
-                        <IconPlus className="w-4 h-4 mr-2" /> Add Visitor
+                    <Button onClick={handleAdd}>
+                        <IconPlus className="w-4 h-4" />
+                        Add Visitor
                     </Button>
                 </CardHeader>
                 <CardContent>

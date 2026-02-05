@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { Send, Users, MessageCircle, CheckCircle2, Clock, Filter, ChevronDown, GraduationCap, Briefcase, Mail, MessageSquare, Search, CheckSquare, Square, Info } from 'lucide-react';
 
-const API_BASE = "http://localhost:5000";
+const API_BASE = import.meta.env.VITE_API_URL;
 
 const SendMessages = () => {
     const { currentUser } = useAuth();

@@ -29,7 +29,7 @@ import {
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 
-const API_BASE = "http://localhost:5000";
+const API_BASE = import.meta.env.VITE_API_URL;
 
 const VisitorModal = ({ isOpen, onClose, onSubmit, initialData, viewMode = false }) => {
     const { currentUser } = useAuth();

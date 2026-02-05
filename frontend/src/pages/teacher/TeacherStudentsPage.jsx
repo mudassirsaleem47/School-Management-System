@@ -4,7 +4,7 @@ import { useToast } from '../../context/ToastContext';
 import axios from 'axios';
 import { Search, Filter, Eye, Mail, Phone, Calendar, Users } from 'lucide-react';
 
-const API_BASE = "http://localhost:5000";
+const API_BASE = import.meta.env.VITE_API_URL;
 
 const TeacherStudentsPage = () => {
   const { currentUser } = useAuth();

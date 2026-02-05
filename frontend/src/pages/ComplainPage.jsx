@@ -6,7 +6,7 @@ import { useToast } from '../context/ToastContext';
 import ComplainModal from '../components/form-popup/ComplainModal';
 
 
-const API_BASE = "http://localhost:5000";
+const API_BASE = import.meta.env.VITE_API_URL;
 
 const ComplainPage = () => {
     const { currentUser } = useAuth();

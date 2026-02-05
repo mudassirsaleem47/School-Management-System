@@ -5,7 +5,7 @@ import { useToast } from '../context/ToastContext';
 import { useModalAnimation } from '../hooks/useModalAnimation';
 import { Trash2, Plus, X, Search, BookOpen, Clock, Hash } from 'lucide-react';
 
-const API_BASE = "http://localhost:5000";
+const API_BASE = import.meta.env.VITE_API_URL;
 
 const SubjectManagement = () => {
     const { currentUser } = useAuth();

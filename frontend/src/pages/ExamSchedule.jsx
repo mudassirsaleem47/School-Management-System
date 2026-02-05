@@ -6,7 +6,7 @@ import axios from 'axios';
 import { Calendar, Plus, Edit, Trash2, Clock, BookOpen, FileText } from 'lucide-react';
 
 
-const API_BASE = "http://localhost:5000";
+const API_BASE = import.meta.env.VITE_API_URL;
 
 const ExamSchedule = () => {
   const { currentUser } = useAuth();

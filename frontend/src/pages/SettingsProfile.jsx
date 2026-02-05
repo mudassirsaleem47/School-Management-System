@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { Upload, Save, Building, Mail, Phone, MapPin, Globe, User } from 'lucide-react';
 
-const API_BASE = "http://localhost:5000";
+const API_BASE = import.meta.env.VITE_API_URL;
 
 const SettingsProfile = () => {
     const { currentUser, setCurrentUser } = useAuth(); 

@@ -35,7 +35,7 @@ const StudentDetailsModal = ({ isOpen, onClose, student }) => {
                     <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-full border-2 border-white/30 overflow-hidden bg-white/10 backdrop-blur-md">
                             {student.studentPhoto ? (
-                                <img src={`http://localhost:5000/${student.studentPhoto}`} alt={student.name} className="w-full h-full object-cover" />
+                                <img src={`${import.meta.env.VITE_API_URL}/${student.studentPhoto}`} alt={student.name} className="w-full h-full object-cover" />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center text-white font-bold text-xl">
                                     {student.name?.charAt(0)}

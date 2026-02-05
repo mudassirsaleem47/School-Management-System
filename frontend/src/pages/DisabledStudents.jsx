@@ -7,7 +7,7 @@ import SearchBar from '../components/SearchBar';
 import { CheckCircle, Trash2, Eye, LayoutGrid, List as ListIcon, UserX } from 'lucide-react';
 import StudentDetailsModal from '../components/form-popup/StudentDetailsModal';
 
-const API_BASE = "http://localhost:5000";
+const API_BASE = import.meta.env.VITE_API_URL;
 
 const DisabledStudents = () => {
     const { currentUser } = useAuth();
@@ -207,7 +207,7 @@ const DisabledStudents = () => {
                                                             <div className="flex items-center">
                                                                 <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-bold mr-3 overflow-hidden border border-gray-200 grayscale">
                                                                     {student.studentPhoto ? (
-                                                                        <img src={`http://localhost:5000/${student.studentPhoto}`} alt={student.name} className="w-full h-full object-cover" />
+                                                                        <img src={`${API_BASE}/${student.studentPhoto}`} alt={student.name} className="w-full h-full object-cover" />
                                                                     ) : (
                                                                         student.name.charAt(0)
                                                                     )}
@@ -287,7 +287,7 @@ const DisabledStudents = () => {
                                         <div key={student._id} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-200 overflow-hidden group flex flex-col items-center p-6 opacity-75 hover:opacity-100">
                                             <div className="h-32 w-32 rounded-full border-4 border-gray-100 bg-white shadow-lg overflow-hidden flex items-center justify-center mb-4 grayscale">
                                                 {student.studentPhoto ? (
-                                                    <img src={`http://localhost:5000/${student.studentPhoto}`} alt={student.name} className="w-full h-full object-cover" />
+                                                    <img src={`${API_BASE}/${student.studentPhoto}`} alt={student.name} className="w-full h-full object-cover" />
                                                 ) : (
                                                     <div className="text-4xl font-bold text-gray-400">{student.name.charAt(0)}</div>
                                                 )}

@@ -194,7 +194,7 @@ const ComplainModal = ({ isOpen, onClose, onSubmit, initialData = null, viewMode
                                         const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(formData.document);
                                             const fileUrl = formData.document.startsWith('http')
                                                 ? formData.document
-                                                : `http://localhost:5000/${formData.document}`;
+                                                : `${import.meta.env.VITE_API_URL}/${formData.document}`;
                                         
                                         if (isImage) {
                                             return (
@@ -422,7 +422,7 @@ const ComplainModal = ({ isOpen, onClose, onSubmit, initialData = null, viewMode
                         <X size={32} />
                     </button>
                     <img 
-                        src={formData.document.startsWith('http') ? formData.document : `http://localhost:5000/${formData.document}`}
+                        src={formData.document.startsWith('http') ? formData.document : `${import.meta.env.VITE_API_URL}/${formData.document}`}
                         alt="Full size view"
                         className="max-w-full max-h-full object-contain"
                         onClick={(e) => e.stopPropagation()}
