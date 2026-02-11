@@ -53,6 +53,7 @@ const navMainData = [
       items: [
           { title: 'Classes', url: '/admin/classes' },
           { title: 'Subjects', url: '/admin/subjects' },
+        { title: 'Subject Groups', url: '/admin/subject-groups' },
           { title: 'Class Schedule', url: '/admin/class-schedule' },
           { title: 'Teacher Schedule', url: '/admin/teacher-schedule' },
           { title: 'Promote Students', url: '/admin/promote' },
@@ -118,15 +119,7 @@ const navMainData = [
   },
   { title: 'Campuses', url: '/admin/campuses', icon: IconBuildingSkyscraper },
   { title: 'Reports', url: '/admin/reports', icon: IconFileText },
-  { 
-    title: 'Settings', 
-    icon: IconSettings,
-    items: [
-      { title: 'Profile Settings', url: '/admin/settings' },
-      { title: 'Toast Test', url: '/admin/toast-test' },
-      { title: 'Component Test', url: '/admin/component-test' },
-    ]
-  },
+  { title: 'Settings', url: '/admin/settings', icon: IconSettings },
 ]
 
 export function AppSidebar({

@@ -8,6 +8,27 @@
   </head>
   <body class="bg-background text-foreground">
     <div id="root"></div>
+    <script>
+      // Apply saved appearance settings BEFORE React renders to avoid flash
+      (function() {
+        try {
+          var accent = localStorage.getItem('sms_accentColor');
+          if (accent) {
+            accent = JSON.parse(accent);
+            var isDark = document.documentElement.classList.contains('dark');
+            document.documentElement.style.setProperty('--primary', isDark ? accent.hslDark : accent.hsl);
+            document.documentElement.style.setProperty('--ring', accent.ring);
+            document.documentElement.style.setProperty('--sidebar-primary', isDark ? accent.hslDark : accent.hsl);
+          }
+          var radius = localStorage.getItem('sms_borderRadius');
+          if (radius) document.documentElement.style.setProperty('--radius', radius);
+          var font = localStorage.getItem('sms_fontSize');
+          if (font) document.documentElement.style.fontSize = font;
+          var anim = localStorage.getItem('sms_animations');
+          if (anim === 'false') document.documentElement.classList.add('no-animations');
+        } catch(e) {}
+      })();
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

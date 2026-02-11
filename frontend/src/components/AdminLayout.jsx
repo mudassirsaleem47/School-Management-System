@@ -57,6 +57,7 @@ const AdminLayout = () => {
       group: "Academic",
       items: [
         { name: "Subjects", icon: IconBook, path: "/admin/subjects" },
+        { name: "Subject Groups", icon: IconBook, path: "/admin/subject-groups" },
       ]
     }
   ];

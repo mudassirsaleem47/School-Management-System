@@ -57,9 +57,7 @@ const SubjectManagement = () => {
     
     // State
     const [subjects, setSubjects] = useState([]);
-    const [classes, setClasses] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [selectedClassId, setSelectedClassId] = useState("all");
     const [searchQuery, setSearchQuery] = useState("");
     
     // Add Subject Form State
@@ -71,35 +69,17 @@ const SubjectManagement = () => {
     const [formData, setFormData] = useState({
         subName: "",
         subCode: "",
-        sessions: "",
-        sclass: ""
+        sessions: ""
     });
 
-    // Fetch Classes
-    useEffect(() => {
-        const fetchClasses = async () => {
-            try {
-                if (currentUser?._id) {
-                    const result = await axios.get(`${API_BASE}/Sclasses/${currentUser._id}`);
-                    setClasses(result.data);
-                }
-            } catch (err) {
-                console.error("Error fetching classes:", err);
-            }
-        };
-        fetchClasses();
-    }, [currentUser]);
+
 
     // Fetch Subjects
     const fetchSubjects = async () => {
         if (!currentUser?._id) return;
         setLoading(true);
         try {
-            let url = `${API_BASE}/AllSubjects/${currentUser._id}`;
-            if (selectedClassId !== "all") {
-                url = `${API_BASE}/ClassSubjects/${selectedClassId}`;
-            }
-            const result = await axios.get(url);
+            const result = await axios.get(`${API_BASE}/AllSubjects/${currentUser._id}`);
             if (Array.isArray(result.data)) {
                 setSubjects(result.data);
             } else {
@@ -115,7 +95,7 @@ const SubjectManagement = () => {
 
     useEffect(() => {
         fetchSubjects();
-    }, [currentUser, selectedClassId]);
+    }, [currentUser]);
 
     // Handle Add Subject
     const handleAddSubject = async (e) => {
@@ -130,11 +110,10 @@ const SubjectManagement = () => {
                 // If the user didn't implement updateSubject in backend, this might fail, but I must try.
                 // Wait, I saw deleteSubject but I didn't verify an update endpoint in previous turns.
                 // I will assume one exists or just skip if fail.
-                const updatePayload = { // Flat structure usually for update
+                const updatePayload = {
                     subName: formData.subName,
                     subCode: formData.subCode,
-                    sessions: formData.sessions,
-                    sclass: formData.sclass
+                    sessions: formData.sessions
                 };
                 await axios.put(`${API_BASE}/Subject/${currentSubjectId}`, updatePayload); // Guessing route
                 toast.success("Subject updated successfully!");
@@ -146,14 +125,13 @@ const SubjectManagement = () => {
                         subCode: formData.subCode,
                         sessions: formData.sessions
                     }],
-                    sclass: formData.sclass,
                     adminID: currentUser._id
                 };
                 await axios.post(`${API_BASE}/SubjectCreate`, payload);
                 toast.success("Subject added successfully!");
             }
 
-            setFormData({ subName: "", subCode: "", sessions: "", sclass: "" });
+            setFormData({ subName: "", subCode: "", sessions: "" });
             setShowAddModal(false);
             setIsEditing(false);
             setCurrentSubjectId(null);
@@ -170,8 +148,7 @@ const SubjectManagement = () => {
         setFormData({
             subName: sub.subName,
             subCode: sub.subCode,
-            sessions: sub.sessions,
-            sclass: sub.sclass?._id || ""
+            sessions: sub.sessions
         });
         setCurrentSubjectId(sub._id);
         setIsEditing(true);
@@ -213,9 +190,10 @@ const SubjectManagement = () => {
         return true;
     });
 
+    const activeSubjects = subjects.filter(s => s.status !== 'Disabled').length;
     const stats = {
         totalSubjects: subjects.length,
-        totalClasses: classes.length, // approximation based on available classes
+        activeSubjects,
         avgSessions: subjects.length > 0 ? Math.round(subjects.reduce((acc, curr) => acc + parseInt(curr.sessions || 0), 0) / subjects.length) : 0
     };
 
@@ -252,11 +230,11 @@ const SubjectManagement = () => {
                     </Card>
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Active Classes</CardTitle>
+                            <CardTitle className="text-sm font-medium">Active Subjects</CardTitle>
                             <Hash className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{stats.totalClasses}</div>
+                            <div className="text-2xl font-bold">{stats.activeSubjects}</div>
                         </CardContent>
                     </Card>
                 </div>
@@ -274,24 +252,12 @@ const SubjectManagement = () => {
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-                    <Select value={selectedClassId} onValueChange={setSelectedClassId}>
-                        <SelectTrigger className="w-[180px]">
-                            <Filter className="w-4 h-4 mr-2 text-muted-foreground" />
-                            <SelectValue placeholder="Filter Class" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All Classes</SelectItem>
-                            {classes.map(cls => (
-                                <SelectItem key={cls._id} value={cls._id}>{cls.sclassName}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
                 </div>
 
                 <div className="flex items-center gap-2">
                     <Button onClick={() => {
                         setIsEditing(false);
-                        setFormData({ subName: "", subCode: "", sessions: "", sclass: "" });
+                        setFormData({ subName: "", subCode: "", sessions: "" });
                         setShowAddModal(true);
                     }} className="bg-primary hover:bg-primary/90 text-primary-foreground">
                         <Plus className="mr-2 h-4 w-4" /> Add Subject
@@ -313,12 +279,12 @@ const SubjectManagement = () => {
                     </div>
                     <h3 className="text-xl font-medium">No Subjects Found</h3>
                         <p className="text-muted-foreground mt-2 max-w-sm">
-                            {searchQuery || selectedClassId !== "all"
-                                ? "No matches found for your current filters."
+                            {searchQuery
+                                ? "No matches found for your search."
                                 : "Get started by adding subjects to your curriculum."}
                         </p>
-                        {(searchQuery || selectedClassId !== "all") && (
-                            <Button variant="outline" className="mt-6" onClick={() => { setSearchQuery(""); setSelectedClassId("all"); }}>
+                        {searchQuery && (
+                            <Button variant="outline" className="mt-6" onClick={() => setSearchQuery("")}>
                                 Clear Filters
                             </Button>
                         )}
@@ -360,9 +326,6 @@ const SubjectManagement = () => {
                                     </div>
 
                                     <CardHeader className="pb-2">
-                                        <Badge variant="secondary" className="w-fit mb-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-200">
-                                            {sub.sclass?.sclassName || "No Class"}
-                                        </Badge>
                                         <CardTitle className="text-xl font-bold text-foreground">{sub.subName}</CardTitle>
                             </CardHeader>
                                     <CardContent className="space-y-4 pb-4">
@@ -438,23 +401,7 @@ const SubjectManagement = () => {
                             </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="class">Assign Class <span className="text-destructive">*</span></Label>
-                            <Select
-                                value={formData.sclass} 
-                                onValueChange={(val) => setFormData({ ...formData, sclass: val })}
-                                required
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select Class" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {classes.map(cls => (
-                                        <SelectItem key={cls._id} value={cls._id}>{cls.sclassName}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
+
 
                         <DialogFooter>
                             <Button type="button" variant="outline" onClick={() => setShowAddModal(false)}>Cancel</Button>

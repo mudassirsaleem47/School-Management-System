@@ -15,10 +15,12 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { useNavigate } from "react-router-dom"
 import { useCampus } from "../context/CampusContext"
 
 export function TeamSwitcher() {
   const { isMobile } = useSidebar()
+  const navigate = useNavigate()
   const { campuses, selectedCampus, changeCampus } = useCampus()
 
   // Helper to get display name
@@ -67,22 +69,35 @@ export function TeamSwitcher() {
             
             <DropdownMenuSeparator />
 
-            {campuses.map((campus, index) => (
-              <DropdownMenuItem key={campus._id} onClick={() => changeCampus(campus)} className="gap-2 p-2">
-                <div className="flex size-6 items-center justify-center rounded-sm border">
-                   <IconBuildingSkyscraper className="size-4 shrink-0" />
-                </div>
-                {campus.campusName}
-                {selectedCampus?._id === campus._id && <IconCheck className="ml-auto size-4" />}
-              </DropdownMenuItem>
-            ))}
+            {campuses.length === 0 ? (
+              <div className="p-2 text-xs text-muted-foreground text-center">No campuses found</div>
+            ) : (
+              campuses.map((campus) => (
+                <DropdownMenuItem
+                  key={campus._id}
+                  onSelect={() => changeCampus(campus)}
+                  className="gap-2 p-2 cursor-pointer"
+                >
+                  <div className="flex size-6 items-center justify-center rounded-sm border">
+                    <IconBuildingSkyscraper className="size-4 shrink-0" />
+                  </div>
+                  {campus.campusName}
+                  {selectedCampus?._id === campus._id && <IconCheck className="ml-auto size-4" />}
+                </DropdownMenuItem>
+                ))
+            )}
             
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-2 p-2">
+            <DropdownMenuItem
+              className="gap-2 p-2 cursor-pointer bg-muted/50 focus:bg-muted"
+              onSelect={() => {
+                navigate('/admin/campuses?action=new');
+              }}
+            >
               <div className="flex size-6 items-center justify-center rounded-md border bg-background">
                 <IconPlus className="size-4" />
               </div>
-              <div className="font-medium text-muted-foreground">Add Campus</div>
+              <div className="font-medium">Add Campus</div>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

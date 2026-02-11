@@ -66,17 +66,22 @@ router.put('/Sclass/:id/Section', addSection);
 router.delete('/Sclass/:id/Section/:sectionId', deleteSection);
 
 // --- Subject Routes ---
-const { subjectCreate, classSubjects, deleteSubjectsByClass, getSubjectDetail, deleteSubject, freeClassSubjects, allSubjects, deleteSubjects, updateSubject } = require('../controllers/subject-controller.js');
+const { subjectCreate, getSubjectDetail, deleteSubject, allSubjects, deleteSubjects, updateSubject } = require('../controllers/subject-controller.js');
 
 router.post('/SubjectCreate', subjectCreate);
 router.get('/AllSubjects/:id', allSubjects);
-router.get('/ClassSubjects/:id', classSubjects);
-router.get('/FreeSubjectClass/:id', freeClassSubjects);
 router.get('/Subject/:id', getSubjectDetail);
 router.delete('/Subject/:id', deleteSubject);
 router.delete('/Subjects/:id', deleteSubjects);
-router.delete('/SubjectsClass/:id', deleteSubjectsByClass);
 router.put('/Subject/:id', updateSubject);
+
+// --- Subject Group Routes ---
+const { createSubjectGroup, getSubjectGroupsBySchool, updateSubjectGroup, deleteSubjectGroup } = require('../controllers/subject-group-controller.js');
+
+router.post('/SubjectGroupCreate', createSubjectGroup);
+router.get('/SubjectGroups/:schoolId', getSubjectGroupsBySchool);
+router.put('/SubjectGroup/:id', updateSubjectGroup);
+router.delete('/SubjectGroup/:id', deleteSubjectGroup);
 
 // --- Class Schedule Routes ---
 const { createSchedule, getScheduleByClassSection, getTeacherSchedule } = require('../controllers/class-schedule-controller.js');

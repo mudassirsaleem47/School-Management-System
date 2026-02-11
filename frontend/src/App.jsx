@@ -39,19 +39,19 @@ import SchedulePage from './pages/teacher/SchedulePage';
 import TeacherResultsPage from './pages/teacher/TeacherResultsPage';
 import SendMessages from './pages/SendMessages';
 import MessageTemplates from './pages/MessageTemplates';
-import MessageReport from './pages/MessageReport';
 import BirthdayWish from './pages/BirthdayWish';
-import MessagingSetup from './pages/MessagingSetup';
+
 import StudentIdCard from './pages/card-design/StudentIdCard';
 import StaffIdCard from './pages/card-design/StaffIdCard';
 import CardDesigner from './pages/card-design/CardDesigner';
 import ReportCard from './pages/card-design/ReportCard';
 import SubjectManagement from './pages/SubjectManagement';
+import SubjectGroupPage from './pages/SubjectGroupPage';
 import ClassSchedule from './pages/ClassSchedule';
 import TeacherSchedule from './pages/TeacherSchedule';
 import Promotion from './pages/Promotion';
-import ToastTest from './pages/ToastTest';
-import ComponentTest from './pages/ComponentTest';
+import ReportsPage from './pages/ReportsPage';
+
 
 
 import { ToastProvider } from './context/ToastContext';
@@ -84,6 +84,7 @@ function App() {
                   <Route path="enquiry" element={<AdmissionEnquiry />} />
                   <Route path="classes" element={<ShowClasses />} />
                   <Route path="subjects" element={<SubjectManagement />} />
+                  <Route path="subject-groups" element={<SubjectGroupPage />} />
                   <Route path="class-schedule" element={<ClassSchedule />} />
                   <Route path="teacher-schedule" element={<TeacherSchedule />} />
                   <Route path="promote" element={<Promotion />} />
@@ -95,8 +96,7 @@ function App() {
                   <Route path="students/disabled" element={<DisabledStudents />} />
                   <Route path="students/disable-reasons" element={<DisableReasonPage />} />
                   <Route path="settings" element={<SettingsProfile />} />
-                  <Route path="toast-test" element={<ToastTest />} />
-                  <Route path="component-test" element={<ComponentTest />} />
+
                   <Route path="fee-management" element={<FeeManagement />} />
                   <Route path="fee-assignment" element={<FeeAssignment />} />
                   <Route path="fee-collection" element={<FeeCollection />} />
@@ -109,13 +109,14 @@ function App() {
                   <Route path="marks-division" element={<MarksDivision />} />
                   <Route path="exam-result" element={<ExamResult />} />
                   <Route path="campuses" element={<CampusManagement />} />
+                  <Route path="reports" element={<ReportsPage />} />
                   <Route path="staff" element={<StaffManagement />} />
                   <Route path="designations" element={<DesignationManagement />} />
                   <Route path="send-messages" element={<SendMessages />} />
                   <Route path="message-templates" element={<MessageTemplates />} />
-                  <Route path="message-report" element={<MessageReport />} />
+
                   <Route path="birthday-wishes" element={<BirthdayWish />} />
-                  <Route path="messaging-setup" element={<MessagingSetup />} />
+
 
                   {/* Card Management Routes */}
                   <Route path="card-management" element={<Navigate to="card-management/student" />} />

@@ -145,7 +145,7 @@ const CardDesigner = () => {
     const [backgroundFile, setBackgroundFile] = useState(null);
     const [saving, setSaving] = useState(false);
     const [focusMode, setFocusMode] = useState(false);
-    const [zoom, setZoom] = useState(1);
+    const [zoom, setZoom] = useState(1.7);
 
     // Delete Dialog State
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
