@@ -40,6 +40,17 @@ import TeacherResultsPage from './pages/teacher/TeacherResultsPage';
 import SendMessages from './pages/SendMessages';
 import MessageTemplates from './pages/MessageTemplates';
 import BirthdayWish from './pages/BirthdayWish';
+import TransportPickupPage from './pages/Transport/TransportPickupPage';
+import TransportRoutesPage from './pages/Transport/TransportRoutesPage';
+import TransportVehiclesPage from './pages/Transport/TransportVehiclesPage';
+import TransportStopsPage from './pages/Transport/TransportStopsPage';
+import TransportStudentsPage from './pages/Transport/TransportStudentsPage';
+import StudentAttendancePage from './pages/Attendance/StudentAttendancePage';
+import ApproveLeavePage from './pages/Attendance/ApproveLeavePage';
+import AttendanceByDatePage from './pages/Attendance/AttendanceByDatePage';
+import LessonTopics from './pages/LessonPlan/LessonTopics';
+import PlanManager from './pages/LessonPlan/PlanManager';
+import SyllabusTracker from './pages/LessonPlan/SyllabusTracker';
 
 import StudentIdCard from './pages/card-design/StudentIdCard';
 import StaffIdCard from './pages/card-design/StaffIdCard';
@@ -114,6 +125,18 @@ function App() {
                   <Route path="designations" element={<DesignationManagement />} />
                   <Route path="send-messages" element={<SendMessages />} />
                   <Route path="message-templates" element={<MessageTemplates />} />
+                  <Route path="transport/pickup" element={<TransportPickupPage />} />
+                  <Route path="transport/routes" element={<TransportRoutesPage />} />
+                  <Route path="transport/vehicles" element={<TransportVehiclesPage />} />
+                  <Route path="transport/stops" element={<TransportStopsPage />} />
+                  <Route path="transport/assignments" element={<TransportStudentsPage />} />
+                  <Route path="attendance/student" element={<StudentAttendancePage />} />
+                  <Route path="attendance/approve-leave" element={<ApproveLeavePage />} />
+                  <Route path="attendance/by-date" element={<AttendanceByDatePage />} />
+
+                  <Route path="lesson-plan/topics" element={<LessonTopics />} />
+                  <Route path="lesson-plan/manage" element={<PlanManager />} />
+                  <Route path="lesson-plan/status" element={<SyllabusTracker />} />
 
                   <Route path="birthday-wishes" element={<BirthdayWish />} />
 

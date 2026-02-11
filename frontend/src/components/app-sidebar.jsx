@@ -11,6 +11,8 @@ import {
   IconSettings,
   IconUsers,
   IconWallet,
+  IconBus,
+  IconCalendar,
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -46,6 +48,24 @@ const navMainData = [
           { title: 'Disabled Students', url: '/admin/students/disabled' },
           { title: 'Disable Reasons', url: '/admin/students/disable-reasons' },
       ]
+  },
+  { 
+    title: 'Lesson Plan',
+    icon: IconBook,
+    items: [
+      { title: 'Lessons & Topics', url: '/admin/lesson-plan/topics' },
+      { title: 'Manage Lesson Plan', url: '/admin/lesson-plan/manage' },
+      { title: 'Syllabus Status', url: '/admin/lesson-plan/status' },
+    ]
+  },
+  {
+    title: 'Attendance',
+    icon: IconCalendar,
+    items: [
+      { title: 'Student Attendance', url: '/admin/attendance/student' },
+      { title: 'Approve Leave', url: '/admin/attendance/approve-leave' },
+      { title: 'Attendance By Date', url: '/admin/attendance/by-date' },
+    ]
   },
   { 
       title: 'Academics', 
@@ -104,8 +124,18 @@ const navMainData = [
           { title: 'Message Templates', url: '/admin/message-templates' },
           { title: 'Message Report', url: '/admin/message-report' },
           { title: 'Birthday Wishes', url: '/admin/birthday-wishes' },
-          { title: 'Messaging Setup', url: '/admin/messaging-setup' },
-      ]
+    ]
+  },
+  {
+    title: 'Transport',
+    icon: IconBus,
+    items: [
+      { title: 'Pickup Points', url: '/admin/transport/pickup' },
+      { title: 'Routes', url: '/admin/transport/routes' },
+      { title: 'Vehicles', url: '/admin/transport/vehicles' },
+      { title: 'Stops', url: '/admin/transport/stops' },
+      { title: 'Assign Students', url: '/admin/transport/assignments' },
+    ]
   },
   {
       title: 'Card Management',

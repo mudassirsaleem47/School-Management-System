@@ -30,6 +30,15 @@ app.get("/", (req, res) => {
 
 app.use('/', routes);
 
+const transportRoutes = require("./routes/transportRoutes");
+app.use('/Transport', transportRoutes);
+
+const lessonPlanRoutes = require("./routes/lessonPlanRoutes");
+app.use('/LessonPlan', lessonPlanRoutes);
+
+const attendanceRoutes = require("./routes/attendanceRoutes");
+app.use('/Attendance', attendanceRoutes);
+
 // Database Connection aur Server Start
 mongoose
     .connect(process.env.MONGO_URL)
