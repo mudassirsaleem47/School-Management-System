@@ -5,7 +5,9 @@ const saveTemplate = async (req, res) => {
         let { school, name, cardType, elements, dimensions, orientation } = req.body;
         let { backgroundImage } = req.body;
 
+        console.log("Saving Template - Request Body:", req.body);
         if (req.file) {
+            console.log("Saving Template - File Path:", req.file.path);
             backgroundImage = req.file.path;
         }
         

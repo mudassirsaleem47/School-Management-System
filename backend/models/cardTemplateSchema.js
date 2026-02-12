@@ -12,7 +12,7 @@ const cardTemplateSchema = new mongoose.Schema({
     },
     backgroundImage: {
         type: String, // URL of the uploaded template image
-        required: true
+        required: false
     },
     cardType: {
         type: String,

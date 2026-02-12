@@ -130,7 +130,7 @@ const DraggableElement = ({ element, isSelected, onSelect, onUpdate, scale }) =>
 const CardDesigner = () => {
     const { showToast } = useToast();
     const user = JSON.parse(localStorage.getItem('currentUser'));
-    const schoolId = user?.schoolName ? user._id : user?.school;
+    const schoolId = user?.schoolName ? user._id : (user?.school?._id || user?.school);
 
     // --- State ---
     const [view, setView] = useState('list'); // 'list' | 'design'
