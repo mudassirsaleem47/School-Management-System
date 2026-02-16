@@ -1,8 +1,9 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { LoginForm } from '../components/login-form';
 import { TeacherLoginForm } from '../components/teacher-login-form';
+import { ParentLoginForm } from '../components/parent-login-form';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Shield, GraduationCap } from 'lucide-react';
+import { Shield, GraduationCap, Users } from 'lucide-react';
 
 const AdminLoginPage = () => {
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ const AdminLoginPage = () => {
         {/* Existing Admin/Teacher Tabs */}
         <Tabs defaultValue="admin" className="w-full">
           {/* Navigation Tabs */}
-          <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsList className="grid w-full grid-cols-3 mb-6">
             <TabsTrigger value="admin" className="gap-2">
               <Shield className="w-4 h-4" />
               Admin
@@ -21,6 +22,10 @@ const AdminLoginPage = () => {
             <TabsTrigger value="teacher" className="gap-2">
               <GraduationCap className="w-4 h-4" />
               Teacher
+            </TabsTrigger>
+            <TabsTrigger value="parent" className="gap-2">
+              <Users className="w-4 h-4" />
+              Parent
             </TabsTrigger>
           </TabsList>
 
@@ -31,6 +36,10 @@ const AdminLoginPage = () => {
 
           <TabsContent value="teacher" className="mt-0">
             <TeacherLoginForm />
+          </TabsContent>
+
+          <TabsContent value="parent" className="mt-0">
+            <ParentLoginForm />
           </TabsContent>
         </Tabs>
 

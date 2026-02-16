@@ -57,6 +57,18 @@ router.get('/ForClass/:schoolId/:classId/:date', async (req, res) => {
     } catch (err) {
         res.status(500).json(err);
     }
+
+});
+
+// Get Attendance for a Specific Student
+router.get('/Student/:studentId', async (req, res) => {
+    try {
+        const { studentId } = req.params;
+        const result = await Attendance.find({ student: studentId }).sort({ date: -1 });
+        res.send(result);
+    } catch (err) {
+        res.status(500).json(err);
+    }
 });
 
 // Get Attendance Report (By Date Range for a Class/Section)

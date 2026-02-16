@@ -190,6 +190,28 @@ const teacherNavData = [
   },
 ]
 
+
+const parentNavData = [
+  { title: 'Dashboard', url: '/parent/dashboard', icon: IconSchool },
+  {
+    title: 'Academics',
+    icon: IconBook,
+    items: [
+      { title: 'Attendance', url: '/parent/attendance' },
+      { title: 'Report Card', url: '/parent/report-card' },
+      { title: 'Homework', url: '/parent/homework' },
+    ]
+  },
+  {
+    title: 'Fees',
+    icon: IconCurrencyDollar,
+    items: [
+      { title: 'Fee Status', url: '/parent/fees' },
+      { title: 'History', url: '/parent/fees/history' },
+    ]
+  },
+]
+
 const teacherFooterData = [
   { title: 'Settings', url: '/teacher/settings', icon: IconSettings },
 ]
@@ -199,15 +221,16 @@ export function AppSidebar({
 }) {
   const { currentUser } = useAuth();
   const isTeacher = currentUser?.userType === 'teacher';
+  const isParent = currentUser?.userType === 'parent';
 
   // Select nav data based on role
-  const navData = isTeacher ? teacherNavData : adminNavData;
-  const footerData = isTeacher ? teacherFooterData : adminFooterData;
+  const navData = isTeacher ? teacherNavData : (isParent ? parentNavData : adminNavData);
+  const footerData = isTeacher ? teacherFooterData : adminFooterData; // Parent can share footer for now
 
   // Prepare user data for NavUser component
   const userData = {
-    name: currentUser?.name || (isTeacher ? "Teacher" : "Admin"),
-    email: currentUser?.email || (isTeacher ? "teacher@school.com" : "admin@school.com"),
+    name: currentUser?.name || (isTeacher ? "Teacher" : (isParent ? "Parent" : "Admin")),
+    email: currentUser?.email || (isTeacher ? "teacher@school.com" : (isParent ? "parent@school.com" : "admin@school.com")),
     avatar: currentUser?.avatar || "/avatars/admin.png",
   };
 

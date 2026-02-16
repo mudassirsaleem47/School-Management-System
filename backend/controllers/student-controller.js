@@ -77,6 +77,30 @@ const studentAdmission = async (req, res) => {
     }
 };
 
+const studentLogin = async (req, res) => {
+    if (req.body.rollNum && req.body.studentName && req.body.password) {
+        let student = await Student.findOne({ rollNum: req.body.rollNum, name: req.body.studentName });
+        if (student) {
+            if (req.body.password === student.password) { // Plain text fallback (for legacy/testing)
+                student.password = undefined;
+                res.send(student);
+            } else {
+                const validPassword = await bcrypt.compare(req.body.password, student.password);
+                if (validPassword) {
+                    student.password = undefined;
+                    res.send(student);
+                } else {
+                    res.status(400).json({ message: "Invalid Password" });
+                }
+            }
+        } else {
+            res.status(404).json({ message: "Student not found" });
+        }
+    } else {
+        res.status(400).json({ message: "All fields are required (Name, Roll Number, Password)" });
+    }
+};
+
 // 2. Student List Fetch karna (School ID ke hisab se)
 const getStudentsBySchool = async (req, res) => {
     try {
@@ -215,4 +239,4 @@ const promoteStudents = async (req, res) => {
     }
 };
 
-module.exports = { studentAdmission, getStudentsBySchool, updateStudent, deleteStudent, getDisabledStudents, promoteStudents };
+module.exports = { studentAdmission, studentLogin, getStudentsBySchool, updateStudent, deleteStudent, getDisabledStudents, promoteStudents };

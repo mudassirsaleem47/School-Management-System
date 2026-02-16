@@ -179,13 +179,13 @@ const StudentModal = ({ isOpen, onClose, onSubmit, initialData }) => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="password">
-                                Password {!initialData && <span className="text-destructive">*</span>}
+                                Login Password (for Student & Parent Portal) {!initialData && <span className="text-destructive">*</span>}
                             </Label>
                             <Input
                                 id="password"
                                 name="password"
                                 type="password"
-                                placeholder={initialData ? "Leave blank to keep current" : "Temporary password"}
+                                placeholder={initialData ? "Leave blank to keep current password" : "Set password for login"}
                                 value={formData.password}
                                 onChange={handleChange}
                                 required={!initialData}

@@ -59,6 +59,11 @@ import TeacherSchedule from './pages/TeacherSchedule';
 import Promotion from './pages/Promotion';
 import ReportsPage from './pages/ReportsPage';
 import TeacherDashboard from './pages/TeacherDashboard';
+import ParentDashboard from './pages/ParentDashboard';
+import ParentAttendance from './pages/Parent/ParentAttendance';
+import ParentFees from './pages/Parent/ParentFees';
+import ParentHomework from './pages/Parent/ParentHomework';
+import ParentReportCard from './pages/Parent/ParentReportCard';
 
 
 
@@ -162,6 +167,18 @@ function App() {
                   <Route path="promote" element={<Promotion />} />
                   <Route path="attendance" element={<StudentAttendancePage />} />
                   <Route path="settings" element={<SettingsProfile />} />
+                </Route>
+
+
+                {/* Parent Protected Routes - reuses AdminLayout */}
+                <Route path="/parent" element={<AdminLayout />}>
+                  <Route index element={<ParentDashboard />} />
+                  <Route path="dashboard" element={<ParentDashboard />} />
+                  <Route path="attendance" element={<ParentAttendance />} />
+                  <Route path="report-card" element={<ParentReportCard />} />
+                  <Route path="homework" element={<ParentHomework />} />
+                  <Route path="fees" element={<ParentFees />} />
+                  <Route path="fees/history" element={<ParentFees />} />
                 </Route>
 
               </Route>

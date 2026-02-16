@@ -35,7 +35,8 @@ const AdminLayout = () => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const isTeacher = currentUser?.userType === 'teacher';
-  const basePath = isTeacher ? '/teacher' : '/admin';
+  const isParent = currentUser?.userType === 'parent';
+  const basePath = isTeacher ? '/teacher' : (isParent ? '/parent' : '/admin');
   const [extraBreadcrumb, setExtraBreadcrumb] = useState(null);
   const [showCalendar, setShowCalendar] = useState(false);
 

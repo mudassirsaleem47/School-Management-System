@@ -72,6 +72,23 @@ export const AuthContextProvider = ({ children }) => {
         }
     };
 
+    // Parent/Student Login
+    const parentLogin = async (credentials) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const res = await axios.post(`${API_URL}/StudentLogin`, credentials);
+            const userData = { ...res.data, userType: 'parent' }; // Treat student login as parent view
+            setCurrentUser(userData);
+            setLoading(false);
+            return userData;
+        } catch (err) {
+            setError(err.response?.data?.message || "Login failed. Check server status.");
+            setLoading(false);
+            throw err;
+        }
+    };
+
     const logout = () => {
         const userType = currentUser?.userType;
         setCurrentUser(null);
@@ -89,7 +106,7 @@ export const AuthContextProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ currentUser, setCurrentUser, loading, error, login, teacherLogin, logout }}>
+        <AuthContext.Provider value={{ currentUser, setCurrentUser, loading, error, login, teacherLogin, parentLogin, logout }}>
             {children}
         </AuthContext.Provider>
     );

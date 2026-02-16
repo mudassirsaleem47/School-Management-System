@@ -447,14 +447,17 @@ const StudentAdmissionForm = ({ onSuccess, onCancel }) => {
                 <CardHeader>
                     <div className="flex items-center gap-2">
                         <Check className="h-5 w-5 text-gray-600" />
-                        <CardTitle>Account Security</CardTitle>
+                        <CardTitle>Login Credentials</CardTitle>
                     </div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                        Set a password for the student to access the dashboard. Parents will also use this password for the Parent Portal.
+                    </p>
                 </CardHeader>
                 <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                            <Label htmlFor="password">Login Password <span className="text-destructive">*</span></Label>
-                            <Input id="password" name="password" type="password" value={formData.password} onChange={handleInputChange} required placeholder="Set a strong password" />
+                            <Label htmlFor="password">Login Password (for Student & Parent Portal) <span className="text-destructive">*</span></Label>
+                            <Input id="password" name="password" type="password" value={formData.password} onChange={handleInputChange} required placeholder="Set a strong password for login" />
                         </div>
                     </div>
                 </CardContent>
