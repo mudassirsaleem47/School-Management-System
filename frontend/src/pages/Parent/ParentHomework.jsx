@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import {
   Card,
@@ -10,9 +10,8 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { format } from 'date-fns';
-import { BookOpen, Calendar, CheckCircle, Clock } from 'lucide-react';
+import { BookOpen, Calendar } from 'lucide-react';
 
 // Mock Data until backend "Homework" module is created
 const MOCK_HOMEWORK = [

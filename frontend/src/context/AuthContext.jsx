@@ -6,6 +6,7 @@ export const AuthContext = createContext();
 
 const LOGIN_URL = `${API_URL}/AdminLogin`; 
 const TEACHER_LOGIN_URL = `${API_URL}/TeacherLogin`;
+const STUDENT_LOGIN_URL = `${API_URL}/StudentLogin`;
 
 // Local Storage se data load karne ka function
 const getInitialUser = () => {
@@ -16,7 +17,7 @@ const getInitialUser = () => {
         console.warn("LocalStorage access denied:", error);
         return null;
     }
-};
+};      
 
 export const AuthContextProvider = ({ children }) => {
     // Initial state Local Storage se load kiya
