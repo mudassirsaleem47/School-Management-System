@@ -1,4 +1,19 @@
-const { Client, LocalAuth } = require('whatsapp-web.js');
+let Client, LocalAuth;
+try {
+    // Only load whatsapp-web.js if not running in a serverless environment (basic check)
+    // Or just try-catch it. Vercel installation might succeed, but running it crashes.
+    // We'll rely on class methods to check if Client is available.
+    if (!process.env.VERCEL) {
+        const pkg = require('whatsapp-web.js');
+        Client = pkg.Client;
+        LocalAuth = pkg.LocalAuth;
+    } else {
+        console.log("Running on Vercel: WhatsApp Web JS disabled");
+    }
+} catch (err) {
+    console.warn("Could not load whatsapp-web.js:", err.message);
+}
+
 const QRCode = require('qrcode');
 const path = require('path');
 const fs = require('fs');
