@@ -72,17 +72,15 @@ const useMongoDBAuthState = async (collection) => {
     };
 
     const creds = (await readData('creds')) || (await (async () => {
-        const { state } = await useMultiFileAuthState('temp'); // Values will be overwritten
-        return state.creds;
-        // We actually need to initialize empty creds if not found.
-        // Baileys 'initAuthCreds' is not directly exported but useMultiFileAuthState does it.
-        // Let's rely on makeWASocket to init if we pass null? No.
-        // We can import initAuthCreds from baileys/lib/Utils/auth-utils if needed, 
-        // but easier to just let a local temp state init it once?
-        // Actually, let's just use the init function if available or empty object?
-        // Better:
-        const { initAuthCreds } = require('@whiskeysockets/baileys');
-        return initAuthCreds();
+        try {
+            // Use /tmp for serverless environments (Vercel)
+            const tempDir = process.platform === 'win32' ? './temp_auth' : '/tmp/baileys_auth';
+            const { state } = await useMultiFileAuthState(tempDir);
+            return state.creds; 
+        } catch (e) {
+            console.error("Failed to init auth state in /tmp, trying memory", e);
+            return {}; // Fallback, might fail but better than crash
+        }
     })());
 
     return {
