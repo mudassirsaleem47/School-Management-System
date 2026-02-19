@@ -4,7 +4,18 @@ const MessagingSettings = require('../models/messagingSettingsSchema');
 const Student = require('../models/studentSchema');
 const Staff = require('../models/staffSchema');
 const EmailService = require('../services/emailService');
-const WhatsAppService = require('../services/whatsappService');
+let WhatsAppService;
+try {
+    WhatsAppService = require('../services/whatsappService');
+} catch (error) {
+    console.error("Failed to load WhatsAppService:", error);
+    WhatsAppService = class {
+        static async connect() { return { success: false, error: "WhatsApp Service Unavailable: " + error.message }; }
+        static async getStatus() { return { connected: false, error: "Service Unavailable" }; }
+        static async disconnect() { return { success: false }; }
+        static async sendMessage() { return { success: false, error: "Service Unavailable" }; }
+    };
+}
 
 // ==================== MESSAGE TEMPLATES ====================
 

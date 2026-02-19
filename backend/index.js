@@ -45,10 +45,12 @@ mongoose
     .connect(process.env.MONGO_URL)
     .then(() => {
         console.log("✅ MongoDB Connected Successfully");
-        app.listen(PORT, '0.0.0.0', () => {
-            console.log(`🚀 Server started on port ${PORT}`);
-            console.log(`📱 Access from other devices: http://192.168.10.4:${PORT}`);
-        });
+        if (require.main === module) {
+            app.listen(PORT, '0.0.0.0', () => {
+                console.log(`🚀 Server started on port ${PORT}`);
+                console.log(`📱 Access from other devices: http://192.168.10.4:${PORT}`);
+            });
+        }
     })
     .catch((err) => {
         console.log("❌ Database Connection Error:", err);
