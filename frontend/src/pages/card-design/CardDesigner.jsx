@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import API_URL from '../../config/api';
 import { useToast } from '../../context/ToastContext';
-import ColorPicker from '../../components/ui/colorPicker';
+import ColorPicker from '../../components/ui/ColorPicker';
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
