@@ -11,17 +11,30 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware (Data samajhne ke liye)
 app.use(express.json());
-// CORS configuration for local network access
+// CORS configuration for local network + Vercel deployments
 app.use(cors({
-    origin: [
-        'http://localhost:5173',
-        'http://127.0.0.1:5173',
-        'http://192.168.10.4:5173',  // Current Network IP
-        'http://192.168.10.21:5173',  // Your local network IP
-        process.env.FRONTEND_URL      // Deployed Frontend URL
-    ],
+    origin: function (origin, callback) {
+        const allowedOrigins = [
+            'http://localhost:5173',
+            'http://127.0.0.1:5173',
+            'http://192.168.10.4:5173',
+            'http://192.168.10.21:5173',
+            process.env.FRONTEND_URL,       // Deployed Frontend URL (from env)
+        ].filter(Boolean);
+
+        // Allow requests with no origin (mobile apps, curl, Postman, etc.)
+        if (!origin) return callback(null, true);
+
+        // Allow any *.vercel.app URL (production + preview deployments)
+        if (origin.endsWith('.vercel.app') || allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+
+        callback(new Error('Not allowed by CORS'));
+    },
     credentials: true
 }));
+
 app.use('/uploads', express.static('uploads'));
 
 // Basic Route (Check karne ke liye ke server chal raha hai ya nahi)

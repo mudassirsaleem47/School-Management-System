@@ -131,7 +131,7 @@ const StudentIdCard = () => {
     };
 
     const handlePrint = useReactToPrint({
-        content: () => componentRef.current,
+        contentRef: componentRef,
         documentTitle: `Student_ID_Cards_${classes.find(c => c._id === selectedClass)?.sclassName || 'Export'}`,
     });
 
@@ -346,7 +346,7 @@ const StudentIdCard = () => {
             )}
 
             {/* Print Area - Hidden off-screen */}
-            <div style={{ display: "none" }}>
+            <div style={{ position: 'absolute', top: '-9999px', left: '-9999px' }}>
                 <div ref={componentRef}>
                     {selectedStudents.length > 0 && selectedTemplate ? (
                         <div className="print-container" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center', padding: '20px' }}>
