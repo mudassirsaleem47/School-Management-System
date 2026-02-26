@@ -33,10 +33,8 @@ const sclassCreate = async (req, res) => {
 const getSclassesBySchool = async (req, res) => {
     try {
         const { schoolId } = req.params;
-        console.log("Fetching classes for School ID:", schoolId);
         
         const sclasses = await Sclass.find({ school: schoolId }).populate('classIncharge', 'name email');
-        console.log("Classes found:", sclasses.length);
 
         if (sclasses.length === 0) {
             return res.status(200).json([]);
@@ -45,7 +43,6 @@ const getSclassesBySchool = async (req, res) => {
         res.status(200).json(sclasses);
 
     } catch (err) {
-        console.error("Error fetching classes:", err);
         res.status(500).json({ message: "Internal Server Error while fetching classes.", error: err.message });
     }
 };

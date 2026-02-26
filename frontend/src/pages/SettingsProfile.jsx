@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useTheme } from '../components/theme-provider';
 import {
-    Upload, Save, Building, Mail, Phone, MapPin, Globe, User,
+    Upload, Banknote, Save, Building, Mail, Phone, MapPin, Globe, User,
     PanelLeft, Check, Pipette, Plus, ChevronRight, Settings2,
     MessageSquare, Smartphone, QrCode, Wifi, WifiOff, XCircle, RefreshCw, Send,
     Shield, Bell, Palette, Loader2, Eye, EyeOff, CheckCircle2, Info, Monitor, Lock,
@@ -1213,8 +1213,8 @@ const SettingsProfile = () => {
                                                 <Select value={preferences.timeFormat || '12h'} onValueChange={(v) => handlePrefChange('timeFormat', v)}>
                                                     <SelectTrigger><SelectValue /></SelectTrigger>
                                                     <SelectContent>
-                                                        <SelectItem value="12h">12-hour (4:30 PM)</SelectItem>
-                                                        <SelectItem value="24h">24-hour (16:30)</SelectItem>
+                                                        <SelectItem value="12h">12-hour</SelectItem>
+                                                        <SelectItem value="24h">24-hour</SelectItem>
                                                     </SelectContent>
                                                 </Select>
                                             </div>
@@ -1270,7 +1270,7 @@ const SettingsProfile = () => {
                                                 </Select>
                                             </div>
                                             <div className="space-y-2">
-                                                <Label>Currency</Label>
+                                                <Label className="flex items-center gap-2"><Banknote className="h-4 w-4 text-muted-foreground" /> Currency</Label>
                                                 <Select value={preferences.currency} onValueChange={(v) => handlePrefChange('currency', v)}>
                                                     <SelectTrigger><SelectValue /></SelectTrigger>
                                                     <SelectContent>

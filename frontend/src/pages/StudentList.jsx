@@ -788,6 +788,12 @@ const StudentList = () => {
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-3 gap-2 text-sm">
+                                        <div className="font-medium text-gray-500">Academic Year</div>
+                                        <div className="col-span-2">
+                                            {drawerData.academicYear || 'N/A'}
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-3 gap-2 text-sm">
                                         <div className="font-medium text-gray-500">Current Status</div>
                                         <div className="col-span-2">
                                             <Badge className={drawerData.status === 'Active' || !drawerData.status ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-700'}>

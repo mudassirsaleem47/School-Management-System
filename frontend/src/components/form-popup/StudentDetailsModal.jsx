@@ -1,4 +1,4 @@
-import API_URL from '';
+import API_URL from '@/config/api';
 import React from 'react';
 import { formatDateTime } from '../../utils/formatDateTime';
 import {

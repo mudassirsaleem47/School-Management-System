@@ -3,6 +3,9 @@ const Sclass = require('../models/sclassSchema.js');
 const Teacher = require('../models/teacherSchema.js');
 const Fee = require('../models/feeSchema.js');
 const FeeStructure = require('../models/feeStructureSchema.js');
+const MessageTemplate = require('../models/messageTemplateSchema.js');
+const MessageLog = require('../models/messageLogSchema.js');
+const EmailService = require('../services/emailService.js');
 const bcrypt = require('bcryptjs');
 
 // 1. New Student ka Admission
@@ -62,6 +65,58 @@ const studentAdmission = async (req, res) => {
         });
 
         const result = await newStudent.save();
+
+        // --- Admission Confirmation Email Logic ---
+        try {
+            const template = await MessageTemplate.findOne({ school: school, category: 'admission' });
+
+            // Try to find an email address to send to
+            const recipientEmail = result.email || result.father?.email || result.guardian?.email || result.mother?.email;
+
+            if (template && recipientEmail) {
+                let message = template.content;
+                message = message.replace(/\{\{name\}\}/g, result.name || '');
+                message = message.replace(/\{\{father\}\}/g, result.father?.name || '');
+                message = message.replace(/\{\{class\}\}/g, sclass.sclassName || '');
+                message = message.replace(/\{\{section\}\}/g, result.section || '');
+                message = message.replace(/\{\{phone\}\}/g, result.mobileNumber || result.father?.phone || '');
+                message = message.replace(/\{\{email\}\}/g, recipientEmail || '');
+                message = message.replace(/\{\{password\}\}/g, password || '');
+                message = message.replace(/\{\{roll_number\}\}/g, result.rollNum || '');
+                message = message.replace(/\{\{login_url\}\}/g, 'http://localhost:5173/login');
+                message = message.replace(/\{\{school\}\}/g, sclass.school?.schoolName || 'Your School');
+
+                const emailResult = await EmailService.sendEmail(school, {
+                    to: recipientEmail,
+                    subject: template.name || 'Admission Confirmation',
+                    text: message
+                });
+
+                const log = new MessageLog({
+                    recipient: {
+                        studentId: result._id,
+                        name: result.name,
+                        phone: result.mobileNumber || result.father?.phone,
+                        email: recipientEmail,
+                        group: 'student'
+                    },
+                    content: message,
+                    messageType: 'email',
+                    templateId: template._id,
+                    status: emailResult.success ? 'sent' : 'failed',
+                    error: emailResult.success ? null : emailResult.error,
+                    school: school
+                });
+
+                if (emailResult.success) {
+                    log.deliveredAt = new Date();
+                }
+                await log.save();
+                console.log(`✅ Admission confirmation email sent to ${recipientEmail}`);
+            }
+        } catch (emailErr) {
+            console.error(`❌ Error sending admission email:`, emailErr.message);
+        }
 
         // --- Fee Assignment Logic ---
         const feeStructureIds = req.body.feeStructureIds ? JSON.parse(req.body.feeStructureIds) : [];

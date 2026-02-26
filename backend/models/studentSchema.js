@@ -74,6 +74,11 @@ const studentSchema = new mongoose.Schema({
 
     // Admission Details
     admissionDate: Date,
+    academicYear: {
+        type: String,
+        required: true,
+        default: () => new Date().getFullYear().toString()
+    },
     studentPhoto: String,
     bloodGroup: String,
     house: String,

@@ -11,7 +11,7 @@ const messageTemplateSchema = new mongoose.Schema({
     },
     category: {
         type: String,
-        enum: ['general', 'fee', 'attendance', 'exam', 'event', 'holiday', 'other'],
+        enum: ['general', 'admission', 'fee', 'attendance', 'exam', 'event', 'holiday', 'other'],
         default: 'general'
     },
     school: {

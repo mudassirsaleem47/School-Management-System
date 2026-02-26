@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, Plus, Trash2, User, BookOpen, Users, Bus, Save, X, Check, Calendar as CalendarIcon, DollarSign } from 'lucide-react';
+import { Upload, Plus, Trash2, User, BookOpen, Users, Bus, Save, Check, Calendar as DollarSign } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { useCampus } from '../../context/CampusContext';
@@ -20,6 +20,7 @@ import {
     SelectValue
 } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from '@/components/ui/checkbox';
 
 import API_URL from '@/config/api';
 const API_BASE = API_URL;
@@ -59,6 +60,7 @@ const StudentAdmissionForm = ({ onSuccess, onCancel }) => {
         email: '',
 
         admissionDate: new Date().toISOString(),
+        academicYear: new Date().getFullYear().toString(),
         bloodGroup: '',
         house: '',
         height: '',
@@ -91,15 +93,7 @@ const StudentAdmissionForm = ({ onSuccess, onCancel }) => {
         guardianPhoto: null
     });
 
-    // --- Effects ---
-    useEffect(() => {
-        if (currentUser) {
-            fetchClasses();
-            fetchNextAdmissionNum();
-            fetchRoutes();
-        }
-    }, [currentUser, fetchClasses, fetchNextAdmissionNum, fetchRoutes]);
-
+    // --- Effects & Fetchers ---
     const fetchNextAdmissionNum = React.useCallback(async () => {
         try {
             const res = await axios.get(`${API_BASE}/Students/${currentUser._id}`);
@@ -162,6 +156,14 @@ const StudentAdmissionForm = ({ onSuccess, onCancel }) => {
             console.error("Failed to fetch fees", err);
         }
     }, [currentUser._id]);
+
+    useEffect(() => {
+        if (currentUser) {
+            fetchClasses();
+            fetchNextAdmissionNum();
+            fetchRoutes();
+        }
+    }, [currentUser, fetchClasses, fetchNextAdmissionNum, fetchRoutes]);
 
     // --- Handlers ---
     const handleInputChange = (e, section = null, index = null) => {
@@ -467,6 +469,11 @@ const StudentAdmissionForm = ({ onSuccess, onCancel }) => {
                         </div>
 
                         <div className="space-y-2">
+                            <Label htmlFor="academicYear">Academic Year <span className="text-destructive">*</span></Label>
+                            <Input id="academicYear" name="academicYear" value={formData.academicYear} onChange={handleInputChange} placeholder="e.g. 2024" required />
+                        </div>
+
+                        <div className="space-y-2">
                             <Label>Blood Group</Label>
                             <Select value={formData.bloodGroup} onValueChange={(val) => handleSelectChange('bloodGroup', val)}>
                                 <SelectTrigger>
@@ -757,10 +764,12 @@ const StudentAdmissionForm = ({ onSuccess, onCancel }) => {
                                         }
                                     }}
                                 >
-                                    <Checkbox
+                                    <input
+                                        type="checkbox"
                                         id={`fee-${fee._id}`}
                                         checked={selectedFees.includes(fee._id)}
-                                        onCheckedChange={() => { }} // Handled by div click
+                                        onChange={() => { }} // Handled by div click
+                                        className="h-4 w-4 shrink-0 rounded-sm border border-primary text-primary focus:ring-primary"
                                     />
                                     <div className="grid gap-0.5 leading-none">
                                         <label

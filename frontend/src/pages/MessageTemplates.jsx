@@ -76,7 +76,8 @@ const MessageTemplates = () => {
         { value: 'exam', label: 'Exam/Result' },
         { value: 'event', label: 'Events' },
         { value: 'holiday', label: 'Holiday' },
-        { value: 'other', label: 'Other' }
+        { value: 'other', label: 'Other' },
+        { value: 'admission', label: 'Admission Confirmation' }
     ];
 
     // Fetch Templates
@@ -199,6 +200,7 @@ const MessageTemplates = () => {
             case 'exam': return 'secondary';
             case 'event': return 'outline';
             case 'holiday': return 'secondary';
+            case 'admission': return 'success';
             default: return 'outline';
         }
     };
@@ -353,7 +355,11 @@ const MessageTemplates = () => {
                                         { tag: '{{phone}}', label: 'Phone' },
                                         { tag: '{{fee_amount}}', label: 'Fee Amount' },
                                         { tag: '{{due_date}}', label: 'Due Date' },
-                                        { tag: '{{school}}', label: 'School Name' }
+                                        { tag: '{{school}}', label: 'School Name' },
+                                        { tag: '{{email}}', label: 'Email' },
+                                        { tag: '{{password}}', label: 'Password' },
+                                        { tag: '{{roll_number}}', label: 'Roll Number' },
+                                        { tag: '{{login_url}}', label: 'Login URL' }
                                     ].map(item => (
                                         <Badge
                                             key={item.tag}

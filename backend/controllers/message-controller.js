@@ -94,11 +94,15 @@ const replaceDynamicTags = (content, recipient, type = 'student', additionalData
     if (type === 'student') {
         // Student related tags
         message = message.replace(/\{\{name\}\}/g, recipient.name || '');
-        message = message.replace(/\{\{father\}\}/g, recipient.fatherName || '');
-        message = message.replace(/\{\{class\}\}/g, recipient.class?.className || '');
+        message = message.replace(/\{\{father\}\}/g, recipient.father?.name || '');
+        message = message.replace(/\{\{class\}\}/g, recipient.sclassName?.sclassName || '');
         message = message.replace(/\{\{section\}\}/g, recipient.section || '');
-        message = message.replace(/\{\{phone\}\}/g, recipient.phone || recipient.fatherPhone || '');
-        message = message.replace(/\{\{roll\}\}/g, recipient.rollNo || '');
+        message = message.replace(/\{\{phone\}\}/g, recipient.mobileNumber || recipient.father?.phone || '');
+        message = message.replace(/\{\{roll\}\}/g, recipient.rollNum || '');
+        message = message.replace(/\{\{roll_number\}\}/g, recipient.rollNum || '');
+        message = message.replace(/\{\{email\}\}/g, recipient.email || recipient.father?.email || '');
+        message = message.replace(/\{\{password\}\}/g, '********');
+        message = message.replace(/\{\{login_url\}\}/g, 'http://localhost:5173/login');
         
         // Additional data tags
         message = message.replace(/\{\{fee_amount\}\}/g, additionalData.feeAmount || '');
@@ -150,7 +154,7 @@ const sendMessages = async (req, res) => {
             recipients = await Student.find({ 
                 _id: { $in: targetIds },
                 school: school
-            }).populate('class');
+            }).populate('sclassName');
         } else if (recipientGroup === 'staff') {
             recipients = await Staff.find({
                 _id: { $in: targetIds },
@@ -170,8 +174,8 @@ const sendMessages = async (req, res) => {
             let phone, email, recipientName;
             
             if (recipientGroup === 'student') {
-                phone = recipient.phone || recipient.fatherPhone;
-                email = recipient.email;
+                phone = recipient.mobileNumber || recipient.father?.phone;
+                email = recipient.email || recipient.father?.email;
                 recipientName = recipient.name;
             } else {
                 phone = recipient.phone;

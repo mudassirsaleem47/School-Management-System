@@ -15,6 +15,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Label } from "@/components/ui/label";
 import API_URL from '@/config/api';
 const API_BASE = API_URL;
 
@@ -60,9 +61,9 @@ const SendMessages = () => {
             
             const [stuRes, staffRes, tempRes, classesRes, designationsRes] = await Promise.all([
                 axios.get(`${API_BASE}/Students/${schoolId}`),
-                axios.get(`${API_BASE}/Staff/school/${schoolId}`),
+                axios.get(`${API_BASE}/Staff/${schoolId}`),
                 axios.get(`${API_BASE}/MessageTemplates/${schoolId}`),
-                axios.get(`${API_BASE}/showClasses/${schoolId}`),
+                axios.get(`${API_BASE}/Sclasses/${schoolId}`),
                 axios.get(`${API_BASE}/Designations/${schoolId}`)
             ]);
             
