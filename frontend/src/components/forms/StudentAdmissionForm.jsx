@@ -26,7 +26,7 @@ import API_URL from '@/config/api';
 const API_BASE = API_URL;
 
 const StudentAdmissionForm = ({ onSuccess, onCancel }) => {
-    const { currentUser } = useAuth();
+    const { currentUser, activeSession } = useAuth();
     const { campuses, selectedCampus } = useCampus();
 
     // --- State ---
@@ -60,7 +60,7 @@ const StudentAdmissionForm = ({ onSuccess, onCancel }) => {
         email: '',
 
         admissionDate: new Date().toISOString(),
-        academicYear: new Date().getFullYear().toString(),
+        session: activeSession?._id || '', // Will be set in useEffect based on activeSession
         bloodGroup: '',
         house: '',
         height: '',
@@ -164,6 +164,12 @@ const StudentAdmissionForm = ({ onSuccess, onCancel }) => {
             fetchRoutes();
         }
     }, [currentUser, fetchClasses, fetchNextAdmissionNum, fetchRoutes]);
+
+    useEffect(() => {
+        if (activeSession) {
+            setFormData(prev => ({ ...prev, session: activeSession._id }));
+        }
+    }, [activeSession]);
 
     // --- Handlers ---
     const handleInputChange = (e, section = null, index = null) => {

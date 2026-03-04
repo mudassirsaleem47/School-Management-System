@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
 import PhoneCallModal from '../components/form-popup/PhoneCallModal';
+import { TablePagination } from '@/components/TablePagination';
 
 // Icons
 import {
@@ -92,6 +93,10 @@ const PhoneCallLog = () => {
     // Filter/Search State
     const [searchQuery, setSearchQuery] = useState("");
     const [typeFilter, setTypeFilter] = useState("all");
+
+    // Pagination states
+    const [currentPage, setCurrentPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
 
     // --- 1. Data Fetching ---
     const fetchData = async () => {
@@ -196,11 +201,20 @@ const PhoneCallLog = () => {
         return matchesSearch && matchesType;
     });
 
+    // Reset pagination on search change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, typeFilter]);
+
+    // Compute paginated data
+    const totalPages = Math.ceil(filteredCalls.length / rowsPerPage);
+    const paginatedCalls = filteredCalls.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+
     return (
         <div className="flex-1 space-y-4 p-8 pt-6">
             <div className="flex items-center justify-between space-y-2">
                 <div>
-                    <h2 className="text-3xl font-bold tracking-tight">Phone Call Log</h2>
+                    <h2 className="text-3xl font-bold tracking-tight text-primary/90">Phone Call Log</h2>
                     <p className="text-muted-foreground">
                         Track and manage incoming and outgoing phone calls.
                     </p>
@@ -267,7 +281,7 @@ const PhoneCallLog = () => {
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                    {filteredCalls.map((call) => (
+                                            {paginatedCalls.map((call) => (
                                         <TableRow key={call._id}>
                                             <TableCell className="font-medium">
                                                 <span
@@ -331,6 +345,14 @@ const PhoneCallLog = () => {
                                     ))}
                                         </TableBody>
                                     </Table>
+                                    <TablePagination
+                                        currentPage={currentPage}
+                                        totalPages={totalPages}
+                                        onPageChange={setCurrentPage}
+                                        rowsPerPage={rowsPerPage}
+                                        onRowsPerPageChange={(v) => { setRowsPerPage(v); setCurrentPage(1); }}
+                                        totalRows={filteredCalls.length}
+                                    />
                         </div>
                     )}
                 </CardContent>

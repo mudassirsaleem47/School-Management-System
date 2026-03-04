@@ -58,6 +58,22 @@ const feeTransactionSchema = new mongoose.Schema({
     remarks: {
         type: String,
         default: ""
+    },
+    status: {
+        type: String,
+        enum: ['Active', 'Reverted'],
+        default: 'Active'
+    },
+    revertedAt: {
+        type: Date
+    },
+    revertedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'admin'
+    },
+    revertReason: {
+        type: String,
+        default: ""
     }
 }, { timestamps: true });
 

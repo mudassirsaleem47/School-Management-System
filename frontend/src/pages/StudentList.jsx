@@ -2,13 +2,13 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { formatDateTime } from '../utils/formatDateTime';
 import { useNavigate, useOutletContext, useSearchParams, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 import API_URL from '@/config/api';
 import { motion, AnimatePresence } from 'framer-motion';
-import StudentModal from '../components/form-popup/StudentModal';
-import StudentDetailsModal from '../components/form-popup/StudentDetailsModal';
-import ConfirmDeleteModal from '../components/form-popup/ConfirmDeleteModal';
+import StudentModal from '@/components/form-popup/StudentModal';
+import StudentDetailsModal from '@/components/form-popup/StudentDetailsModal';
+import ConfirmDeleteModal from '@/components/form-popup/ConfirmDeleteModal';
 
 import {
     Users,
@@ -64,7 +64,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 const API_BASE = API_URL;
 
 const StudentList = () => {
-    const { currentUser } = useAuth();
+    const { currentUser, activeSession } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const { setExtraBreadcrumb } = useOutletContext() || {};
@@ -115,7 +115,7 @@ const StudentList = () => {
         if (currentUser) {
             fetchInitialData();
         }
-    }, [currentUser]);
+    }, [currentUser, activeSession]);
 
     const fetchInitialData = async () => {
         try {

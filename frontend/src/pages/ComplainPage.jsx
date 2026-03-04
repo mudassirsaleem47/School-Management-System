@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
 import ComplainModal from '../components/form-popup/ComplainModal';
+import { TablePagination } from '@/components/TablePagination';
 import {
     Search,
     Plus,
@@ -68,6 +69,10 @@ const ComplainPage = () => {
     const [complains, setComplains] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+
+    // Pagination states
+    const [currentPage, setCurrentPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
 
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -181,6 +186,15 @@ const ComplainPage = () => {
         complain.assigned?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    // Reset pagination on search change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm]);
+
+    // Compute paginated data
+    const totalPages = Math.ceil(filteredComplains.length / rowsPerPage);
+    const paginatedComplains = filteredComplains.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+
     return (
         <div className="flex-1 space-y-4 p-8 pt-6">
             <div className="flex items-center justify-between space-y-2">
@@ -237,7 +251,7 @@ const ComplainPage = () => {
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {filteredComplains.map((complain) => (
+                                            {paginatedComplains.map((complain) => (
                                                 <TableRow key={complain._id}>
                                                     <TableCell className="font-medium">
                                                         <span
@@ -288,6 +302,14 @@ const ComplainPage = () => {
                                             ))}
                                 </TableBody>
                             </Table>
+                                    <TablePagination
+                                        currentPage={currentPage}
+                                        totalPages={totalPages}
+                                        onPageChange={setCurrentPage}
+                                        rowsPerPage={rowsPerPage}
+                                        onRowsPerPageChange={(v) => { setRowsPerPage(v); setCurrentPage(1); }}
+                                        totalRows={filteredComplains.length}
+                                    />
                         </div>
                     )}
                 </CardContent>

@@ -29,7 +29,7 @@ import DashboardCalendar from '@/components/DashboardCalendar';
 
 
 const AdminDashboard = () => {
-  const { currentUser } = useAuth();
+  const { currentUser, activeSession } = useAuth();
   const { selectedCampus, campuses } = useCampus();
   const navigate = useNavigate();
   const isTeacher = currentUser?.userType === 'teacher';
@@ -54,13 +54,18 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     if (currentUser) {
-      fetchDashboardData();
+      if (!isTeacher) { // Wait for active session only if admin, or if standard, etc
+        fetchDashboardData();
+      } else {
+        fetchDashboardData();
+      }
     }
-  }, [currentUser, selectedCampus, campuses]);
+  }, [currentUser, selectedCampus, campuses, activeSession]);
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
+      const sessionQuery = activeSession ? `?session=${activeSession._id}` : '';
 
       let studentCount = 0;
       let teacherCount = 0;
@@ -133,7 +138,7 @@ const AdminDashboard = () => {
       let revenue = 0;
       if (!isTeacher) {
         try {
-          const incomeRes = await axios.get(`${API_URL}/IncomeStatistics/${schoolId}`);
+          const incomeRes = await axios.get(`${API_URL}/IncomeStatistics/${schoolId}${sessionQuery}`);
           revenue = incomeRes.data?.totalIncome?.amount || 0;
         } catch { }
       }
@@ -146,9 +151,9 @@ const AdminDashboard = () => {
         axios.get(`${API_URL}/Events/${schoolId}`),
         ...(isTeacher ? [] : [
           axios.get(`${API_URL}/Students/${schoolId}`),
-          axios.get(`${API_URL}/FeeStatistics/${schoolId}`),
-          axios.get(`${API_URL}/IncomeStatistics/${schoolId}`),
-          axios.get(`${API_URL}/ExpenseStatistics/${schoolId}`),
+          axios.get(`${API_URL}/FeeStatistics/${schoolId}${sessionQuery}`),
+          axios.get(`${API_URL}/IncomeStatistics/${schoolId}${sessionQuery}`),
+          axios.get(`${API_URL}/ExpenseStatistics/${schoolId}${sessionQuery}`),
           axios.get(`${API_URL}/Sclasses/${schoolId}`),
         ]),
       ];
@@ -375,8 +380,13 @@ const AdminDashboard = () => {
           <h2 className="text-3xl font-bold tracking-tight text-foreground">
             {isTeacher ? `Welcome, ${currentUser?.name || 'Teacher'}` : 'Dashboard'}
           </h2>
-          <p className="text-muted-foreground mt-0.5">
+          <p className="text-muted-foreground mt-0.5 flex items-center gap-2">
             {isTeacher ? `${currentUser?.subject || ''} Teacher` : "Overview of your institute's performance."}
+            {activeSession && (
+              <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary">
+                Session: {activeSession.sessionYear}
+              </Badge>
+            )}
           </p>
         </div>
         <div className="flex items-center space-x-2">

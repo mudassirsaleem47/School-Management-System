@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const upload = require('../middleware/uploadMiddleware');
-const { adminRegister, adminLogin, getAdminDetail, updateAdmin } = require('../controllers/admin-controller.js');
+const { adminRegister, adminLogin, getAdminDetail, updateAdmin, updateAdminSettings } = require('../controllers/admin-controller.js');
 const { studentAdmission, studentLogin, getStudentsBySchool, getStudentById, updateStudent, deleteStudent, getDisabledStudents, promoteStudents } = require('../controllers/student-controller.js');
 const { enquiryCreate, enquiryList, enquiryDelete, enquiryUpdate } = require('../controllers/enquiry-controller.js');
 const { sclassCreate, getSclassesBySchool, deleteSclass, addSection, deleteSection } = require('../controllers/sclass-controller.js');
@@ -9,7 +9,7 @@ const { visitorCreate, visitorList, visitorUpdate, visitorDelete } = require('..
 const { createComplain, getComplains, getComplainById, updateComplain, deleteComplain } = require('../controllers/complain-controller.js');
 const { createPhoneCall, getPhoneCalls, getPhoneCallById, updatePhoneCall, deletePhoneCall } = require('../controllers/phonecall-controller.js');
 const { getNotifications, createNotification, markAsRead, markAllAsRead, deleteNotification, clearAllNotifications, getUnreadCount } = require('../controllers/notification-controller.js');
-const { createFeeStructure, getFeeStructuresBySchool, updateFeeStructure, deleteFeeStructure, assignFeeToStudents, getStudentFees, getPendingFees, collectFee, getFeeTransactions, getReceiptDetails, getFeeStatistics } = require('../controllers/fee-controller.js');
+const { createFeeStructure, getFeeStructuresBySchool, updateFeeStructure, deleteFeeStructure, assignFeeToStudents, getStudentFees, getPendingFees, collectFee, getFeeTransactions, getReceiptDetails, getFeeStatistics, revertTransaction, sendFeeReminder } = require('../controllers/fee-controller.js');
 const { createIncome, getIncomeBySchool, updateIncome, deleteIncome, getIncomeStatistics } = require('../controllers/income-controller.js');
 const { createExpense, getExpenseBySchool, updateExpense, deleteExpense, getExpenseStatistics } = require('../controllers/expense-controller.js');
 const {
@@ -31,8 +31,17 @@ const {
     whatsappConnect, whatsappStatus, whatsappDisconnect
 } = require('../controllers/message-controller.js');
 
+const { getMedia, deleteMedia, uploadMedia } = require('../controllers/media-controller.js');
 
+// --- Session API Routes ---
+const { createSession, getSessionsBySchool, makeSessionActive, deleteSession, updateSession, getActiveSessionBySchool } = require('../controllers/session-controller.js');
 
+router.post('/SessionCreate', createSession);
+router.get('/Sessions/:schoolId', getSessionsBySchool);
+router.get('/Sessions/Active/:schoolId', getActiveSessionBySchool);
+router.put('/Sessions/MakeActive', makeSessionActive);
+router.put('/Session/:id', updateSession);
+router.delete('/Session/:id', deleteSession);
 
 // --- Admin Auth Routes ---
 router.post('/AdminReg', adminRegister);
@@ -40,6 +49,7 @@ router.post('/AdminLogin', adminLogin);
 router.post('/admin/login', adminLogin); // Alias for case-insensitivity or cleaner URLs
 router.get('/Admin/:id', getAdminDetail);
 router.put('/Admin/:id', upload.single('schoolLogo'), updateAdmin);
+router.put('/Admin/Settings/:id', updateAdminSettings);
 
 // --- Student Routes ---
 router.post('/StudentLogin', studentLogin);
@@ -151,8 +161,10 @@ router.get('/StudentFees/:studentId', getStudentFees);
 router.get('/PendingFees/:schoolId', getPendingFees);
 router.post('/CollectFee', collectFee);
 router.get('/FeeTransactions/:schoolId', getFeeTransactions);
+router.delete('/RevertTransaction/:transactionId', revertTransaction);
 router.get('/FeeReceipt/:transactionId', getReceiptDetails);
 router.get('/FeeStatistics/:schoolId', getFeeStatistics);
+router.post('/Fee/Remind/:id', sendFeeReminder);
 
 // --- Income Management Routes ---
 router.post('/IncomeCreate', createIncome);
@@ -282,5 +294,14 @@ const { saveTemplate, getTemplates, deleteTemplate } = require('../controllers/c
 router.post('/CardTemplate/save', upload.single('backgroundImage'), saveTemplate);
 router.get('/CardTemplate/:schoolId', getTemplates);
 router.delete('/CardTemplate/:id', deleteTemplate);
+
+// --- Media Management Routes ---
+router.get('/Media/:schoolId', getMedia);
+router.post('/MediaUpload', upload.single('document'), uploadMedia);
+router.post('/MediaDelete', deleteMedia);
+
+// --- Attendance Routes ---
+const attendanceRoutes = require('./attendanceRoutes');
+router.use('/Attendance', attendanceRoutes);
 
 module.exports = router;

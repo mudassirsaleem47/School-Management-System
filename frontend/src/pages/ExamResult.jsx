@@ -104,7 +104,7 @@ const ExamResult = () => {
 
       const [stuRes, resRes] = await Promise.all([
         axios.get(`${API_BASE}/Students/${currentUser._id}`),
-        axios.get(`${API_BASE}/ExamResults/Schedule/${selectedSchedule}`)
+        axios.get(`${API_BASE}/ExamResults/Exam/${selectedSchedule}`)
       ]);
 
       const schoolStudents = Array.isArray(stuRes.data) ? stuRes.data : [];

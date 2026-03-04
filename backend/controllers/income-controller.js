@@ -86,14 +86,25 @@ const deleteIncome = async (req, res) => {
 const getIncomeStatistics = async (req, res) => {
     try {
         const { schoolId } = req.params;
+        const { session } = req.query;
+
+        let dateQuery = {};
+        if (session) {
+            const SessionData = await mongoose.model('session').findById(session);
+            if (SessionData) {
+                dateQuery.date = { $gte: SessionData.startDate, $lte: SessionData.endDate };
+            }
+        }
+
+        const matchQuery = { school: new mongoose.Types.ObjectId(schoolId), ...dateQuery };
 
         // Total income
         const totalIncomeData = await Income.aggregate([
-            { $match: { school: new mongoose.Types.ObjectId(schoolId) } },
+            { $match: matchQuery },
             { $group: { _id: null, total: { $sum: "$amount" }, count: { $sum: 1 } } }
         ]);
 
-        // Today's income
+        // Today's income (bounded by session if applicable)
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const tomorrow = new Date(today);
@@ -102,8 +113,8 @@ const getIncomeStatistics = async (req, res) => {
         const todayIncome = await Income.aggregate([
             {
                 $match: {
-                    school: new mongoose.Types.ObjectId(schoolId),
-                    date: { $gte: today, $lt: tomorrow }
+                    ...matchQuery,
+                    date: { ...(dateQuery.date || {}), $gte: today, $lt: tomorrow }
                 }
             },
             { $group: { _id: null, total: { $sum: "$amount" }, count: { $sum: 1 } } }
@@ -114,8 +125,8 @@ const getIncomeStatistics = async (req, res) => {
         const monthlyIncome = await Income.aggregate([
             {
                 $match: {
-                    school: new mongoose.Types.ObjectId(schoolId),
-                    date: { $gte: firstDayOfMonth }
+                    ...matchQuery,
+                    date: { ...(dateQuery.date || {}), $gte: firstDayOfMonth }
                 }
             },
             { $group: { _id: null, total: { $sum: "$amount" }, count: { $sum: 1 } } }
@@ -123,7 +134,7 @@ const getIncomeStatistics = async (req, res) => {
 
         // Category-wise breakdown
         const categoryBreakdown = await Income.aggregate([
-            { $match: { school: new mongoose.Types.ObjectId(schoolId) } },
+            { $match: matchQuery },
             { $group: { _id: "$category", total: { $sum: "$amount" }, count: { $sum: 1 } } }
         ]);
 

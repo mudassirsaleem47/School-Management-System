@@ -4,6 +4,7 @@ const FeeTransaction = require('../models/feeTransactionSchema.js');
 const Student = require('../models/studentSchema.js');
 const Sclass = require('../models/sclassSchema.js');
 const mongoose = require('mongoose');
+const EmailService = require('../services/emailService.js');
 
 // 1. Create Fee Structure
 const createFeeStructure = async (req, res) => {
@@ -223,7 +224,7 @@ const getPendingFees = async (req, res) => {
 // 8. Collect Fee (Process Payment)
 const collectFee = async (req, res) => {
     try {
-        console.log('💰 Collect Fee Request:', req.body);
+        console.log('Collect Fee Request:', req.body);
 
         const { 
             feeId, 
@@ -236,20 +237,20 @@ const collectFee = async (req, res) => {
             remarks 
         } = req.body;
 
-        console.log('📋 Payment Details:', { feeId, amount, paymentMethod, collectedBy });
+        console.log('Payment Details:', { feeId, amount, paymentMethod, collectedBy });
 
         // Get the fee record
         const fee = await Fee.findById(feeId).populate('student').populate('feeStructure');
         if (!fee) {
-            console.log('❌ Fee not found:', feeId);
+            console.log('Fee not found:', feeId);
             return res.status(404).json({ message: "Fee record not found." });
         }
 
-        console.log('✅ Fee found:', fee.feeStructure?.feeName, 'Pending:', fee.pendingAmount);
+        console.log('fee found:', fee.feeStructure?.feeName, 'Pending:', fee.pendingAmount);
 
         // Validate payment amount
         if (amount <= 0 || amount > fee.pendingAmount) {
-            console.log('❌ Invalid amount:', amount, 'Pending:', fee.pendingAmount);
+            console.log('Invalid amount:', amount, 'Pending:', fee.pendingAmount);
             return res.status(400).json({ 
                 message: `Invalid payment amount. Pending amount is ${fee.pendingAmount}` 
             });
@@ -390,12 +391,27 @@ const getReceiptDetails = async (req, res) => {
 const getFeeStatistics = async (req, res) => {
     try {
         const { schoolId } = req.params;
+        const { session } = req.query;
+
+        let feeDateQuery = {};
+        let transDateQuery = {};
+
+        if (session) {
+            const SessionData = await mongoose.model('session').findById(session);
+            if (SessionData) {
+                feeDateQuery.dueDate = { $gte: SessionData.startDate, $lte: SessionData.endDate };
+                transDateQuery.paymentDate = { $gte: SessionData.startDate, $lte: SessionData.endDate };
+            }
+        }
+
+        const feeMatchQuery = { school: new mongoose.Types.ObjectId(schoolId), ...feeDateQuery };
+        const transMatchQuery = { school: new mongoose.Types.ObjectId(schoolId), ...transDateQuery };
 
         // Total pending fees
         const pendingFeesData = await Fee.aggregate([
             { 
                 $match: { 
-                    school: new mongoose.Types.ObjectId(schoolId),
+                    ...feeMatchQuery,
                     status: { $in: ['Pending', 'Partial', 'Overdue'] }
                 } 
             },
@@ -417,8 +433,8 @@ const getFeeStatistics = async (req, res) => {
         const todayCollection = await FeeTransaction.aggregate([
             {
                 $match: {
-                    school: new mongoose.Types.ObjectId(schoolId),
-                    paymentDate: { $gte: today, $lt: tomorrow }
+                    ...transMatchQuery,
+                    paymentDate: { ...(transDateQuery.paymentDate || {}), $gte: today, $lt: tomorrow }
                 }
             },
             {
@@ -435,8 +451,8 @@ const getFeeStatistics = async (req, res) => {
         const monthlyCollection = await FeeTransaction.aggregate([
             {
                 $match: {
-                    school: new mongoose.Types.ObjectId(schoolId),
-                    paymentDate: { $gte: firstDayOfMonth }
+                    ...transMatchQuery,
+                    paymentDate: { ...(transDateQuery.paymentDate || {}), $gte: firstDayOfMonth }
                 }
             },
             {
@@ -468,6 +484,153 @@ const getFeeStatistics = async (req, res) => {
     }
 };
 
+// ─── Revert Transaction ───────────────────────────────────────────────────────
+const revertTransaction = async (req, res) => {
+    try {
+        const { transactionId } = req.params;
+
+        const transaction = await FeeTransaction.findById(transactionId);
+        if (!transaction) {
+            return res.status(404).json({ message: "Transaction not found." });
+        }
+
+        // Restore fee amounts BEFORE deleting
+        const fee = await Fee.findById(transaction.fee);
+        if (fee) {
+            fee.paidAmount = Math.max(0, (fee.paidAmount || 0) - transaction.amount);
+            fee.pendingAmount = fee.totalAmount - fee.paidAmount;
+            if (fee.paidAmount === 0) {
+                fee.status = fee.dueDate < new Date() ? 'Overdue' : 'Pending';
+            } else if (fee.paidAmount >= fee.totalAmount) {
+                fee.status = 'Paid';
+            } else {
+                fee.status = 'Partial';
+            }
+            await fee.save();
+        }
+
+        // Permanently delete the transaction record
+        await FeeTransaction.findByIdAndDelete(transactionId);
+
+        res.status(200).json({
+            message: "Transaction deleted and fee balance restored.",
+            fee
+        });
+    } catch (err) {
+        res.status(500).json({ message: "Error reverting transaction.", error: err.message });
+    }
+};
+
+// 13. Send Fee Reminder (EmailTemplate)
+const sendFeeReminder = async (req, res) => {
+    try {
+        const { id } = req.params; // Fee ID
+
+        const fee = await Fee.findById(id)
+            .populate({
+                path: 'student',
+                populate: { path: 'sclassName', select: 'sclassName' }
+            })
+            .populate('feeStructure', 'feeName')
+            .populate('school', 'schoolName');
+
+        if (!fee) {
+            return res.status(404).json({ message: "Fee record not found." });
+        }
+
+        const student = fee.student;
+        const targetEmail = student.email || student.father?.email || student.guardian?.email;
+
+        if (!targetEmail) {
+            return res.status(400).json({ message: "No email address found for this student/parent." });
+        }
+
+        const schoolId = fee.school._id.toString();
+        const schoolName = fee.school.schoolName || 'School Administration';
+        const dueDateStr = new Date(fee.dueDate).toLocaleDateString();
+
+        // Check if user has defined a message template for 'fee'
+        const MessageTemplate = require('../models/messageTemplateSchema.js');
+        const template = await MessageTemplate.findOne({ school: schoolId, category: 'fee' });
+
+        let htmlTemplate = '';
+        let subject = `Fee Reminder: ${fee.feeStructure?.feeName || 'Pending'}`;
+
+        if (template) {
+            htmlTemplate = template.content
+                .replace(/{{name}}/g, student.name || '')
+                .replace(/{{father}}/g, student.father?.name || '')
+                .replace(/{{class}}/g, student.sclassName?.sclassName || '')
+                .replace(/{{section}}/g, student.section || '')
+                .replace(/{{phone}}/g, student.mobileNumber || student.father?.phone || '')
+                .replace(/{{fee_amount}}/g, String(fee.pendingAmount))
+                .replace(/{{due_date}}/g, dueDateStr)
+                .replace(/{{school}}/g, schoolName)
+                .replace(/{{email}}/g, targetEmail)
+                .replace(/{{roll_number}}/g, student.rollNum || '')
+                .replace(/{{password}}/g, '') // Don't expose password
+                .replace(/{{login_url}}/g, '');
+
+            subject = template.name || subject;
+        } else {
+            // Fallback template
+            htmlTemplate = `
+                <div style="font-family: Arial, sans-serif; p-8; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+                    <div style="background-color: #ef4444; color: white; padding: 20px; text-align: center;">
+                        <h2 style="margin: 0; font-size: 24px;">Fee Reminder</h2>
+                    </div>
+                    <div style="padding: 24px; color: #334155; line-height: 1.6;">
+                        <p>Dear Parent/Guardian of <strong>${student.name}</strong>,</p>
+                        <p>This is a gentle reminder regarding the pending fee for <strong>${fee.feeStructure?.feeName || 'Pending'}</strong>.</p>
+                        
+                        <div style="background-color: #f8fafc; border-left: 4px solid #ef4444; padding: 16px; margin: 20px 0;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <tr>
+                                    <td style="padding: 4px 0; color: #64748b;">Total Amount:</td>
+                                    <td style="padding: 4px 0; font-weight: bold; text-align: right;">$${fee.totalAmount}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 4px 0; color: #64748b;">Paid Amount:</td>
+                                    <td style="padding: 4px 0; font-weight: bold; text-align: right; color: #10b981;">$${fee.paidAmount}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; color: #ef4444; font-weight: bold; border-top: 1px solid #e2e8f0;">Pending Amount:</td>
+                                    <td style="padding: 8px 0; font-weight: bold; text-align: right; color: #ef4444; border-top: 1px solid #e2e8f0; font-size: 18px;">$${fee.pendingAmount}</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <p>The due date for this payment was <strong>${dueDateStr}</strong>. Please ensure the payment is made at the earliest to avoid any inconvenience.</p>
+                        
+                        <p style="margin-top: 24px; font-size: 14px; color: #94a3b8;">If you have already made the payment, please ignore this email or contact the school administration.</p>
+                    </div>
+                    <div style="background-color: #f1f5f9; padding: 16px; text-align: center; color: #64748b; font-size: 14px;">
+                        <p style="margin: 0;">${schoolName}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        const emailResult = await EmailService.sendEmail(schoolId, {
+            to: targetEmail,
+            subject,
+            html: htmlTemplate,
+            text: `Dear Parent/Guardian of ${student.name}, this is a reminder regarding the pending fee for ${fee.feeStructure?.feeName || 'Pending'}. Pending Amount: $${fee.pendingAmount}. Due Date: ${dueDateStr}.`
+        });
+
+        if (emailResult.success) {
+            res.status(200).json({ message: `Reminder sent successfully to ${targetEmail}` });
+        } else {
+            console.error(emailResult.error);
+            // It could be that SMTP settings aren't configured. Return success if user wants a simulated frontend experience anyway
+            res.status(400).json({ message: "Failed to send email. Check SMTP settings.", error: emailResult.error });
+        }
+
+    } catch (err) {
+        res.status(500).json({ message: "Error sending fee reminder.", error: err.message });
+    }
+}
+
 module.exports = {
     createFeeStructure,
     getFeeStructuresBySchool,
@@ -479,5 +642,7 @@ module.exports = {
     collectFee,
     getFeeTransactions,
     getReceiptDetails,
-    getFeeStatistics
+    getFeeStatistics,
+    revertTransaction,
+    sendFeeReminder
 };

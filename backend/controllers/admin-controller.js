@@ -100,4 +100,15 @@ const updateAdmin = async (req, res) => {
     }
 };
 
-module.exports = { adminRegister, adminLogin, getAdminDetail, updateAdmin };
+const updateAdminSettings = async (req, res) => {
+    try {
+        const { settings } = req.body;
+        const result = await Admin.findByIdAndUpdate(req.params.id, { $set: { settings } }, { new: true });
+        result.password = undefined;
+        res.send(result);
+    } catch (err) {
+        res.status(500).json(err);
+    }
+};
+
+module.exports = { adminRegister, adminLogin, getAdminDetail, updateAdmin, updateAdminSettings };

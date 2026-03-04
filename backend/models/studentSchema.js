@@ -74,10 +74,10 @@ const studentSchema = new mongoose.Schema({
 
     // Admission Details
     admissionDate: Date,
-    academicYear: {
-        type: String,
-        required: true,
-        default: () => new Date().getFullYear().toString()
+    session: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'session',
+        required: false // For backward compatibility before sessions were added
     },
     studentPhoto: String,
     bloodGroup: String,

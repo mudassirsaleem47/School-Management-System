@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { formatDateTime } from '../utils/formatDateTime';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
@@ -9,7 +9,7 @@ import {
     PanelLeft, Check, Pipette, Plus, ChevronRight, Settings2,
     MessageSquare, Smartphone, QrCode, Wifi, WifiOff, XCircle, RefreshCw, Send,
     Shield, Bell, Palette, Loader2, Eye, EyeOff, CheckCircle2, Info, Monitor, Lock,
-    CalendarDays, RotateCcw, Sun, Moon, Sparkles, Scan, Type, SlidersHorizontal, Languages, Clock
+    CalendarDays, RotateCcw, Sun, Moon, Sparkles, Scan, Type, SlidersHorizontal, Languages, Clock, Calendar, Trash2
 } from 'lucide-react';
 
 import { Button } from "@/components/ui/button";
@@ -81,6 +81,7 @@ const NAV_ITEMS = [
     { id: 'notifications', label: 'Notifications', icon: Bell, description: 'Alert preferences' },
     { id: 'appearance', label: 'Appearance', icon: Palette, description: 'Theme & customization' },
     { id: 'regional', label: 'Regional', icon: Globe, description: 'Language, currency & format' },
+    { id: 'sessions', label: 'Sessions', icon: Calendar, description: 'Academic years' },
 ];
 
 // --- Helpers ---
@@ -118,11 +119,12 @@ const applyFontScale = (v) => document.documentElement.style.fontSize = v;
 // MAIN COMPONENT
 // ================================================================
 const SettingsProfile = () => {
-    const { currentUser, setCurrentUser } = useAuth();
+    const { currentUser, setCurrentUser, setActiveSession } = useAuth();
     const { showToast } = useToast();
     const { theme, setTheme } = useTheme();
     const [loading, setLoading] = useState(false);
     const [activeSection, setActiveSection] = useState('general');
+    const isFirstRender = useRef(true);
 
     // Role Helpers
     const isTeacher = currentUser?.userType === 'teacher';
@@ -150,6 +152,12 @@ const SettingsProfile = () => {
     const [showEmailPass, setShowEmailPass] = useState(false);
     const [savingEmail, setSavingEmail] = useState(false);
     const [testingEmail, setTestingEmail] = useState(false);
+
+    // --- Academic Sessions State ---
+    const [sessions, setSessions] = useState([]);
+    const [loadingSessions, setLoadingSessions] = useState(false);
+    const [newSessionData, setNewSessionData] = useState({ sessionYear: '', startDate: '', endDate: '' });
+    const [isSessionModalOpen, setIsSessionModalOpen] = useState(false);
 
     // General Profile
     const [formData, setFormData] = useState({
@@ -219,7 +227,7 @@ const SettingsProfile = () => {
         }
     }, [animationsEnabled]);
 
-    // Persist
+    // Persist to LocalStorage
     useEffect(() => { localStorage.setItem('sms_notificationPrefs', JSON.stringify(notifications)); }, [notifications]);
     useEffect(() => { localStorage.setItem('sms_accentColor', JSON.stringify(accentColor)); }, [accentColor]);
     useEffect(() => { localStorage.setItem('sms_borderRadius', borderRadius); }, [borderRadius]);
@@ -227,6 +235,34 @@ const SettingsProfile = () => {
     useEffect(() => { localStorage.setItem('sms_sidebarCompact', String(sidebarCompact)); }, [sidebarCompact]);
     useEffect(() => { localStorage.setItem('sms_animations', String(animationsEnabled)); }, [animationsEnabled]);
     useEffect(() => { localStorage.setItem('sms_appPreferences', JSON.stringify(preferences)); }, [preferences]);
+
+    // Save ALL settings to DB whenever they change (Debounced for 1s)
+    useEffect(() => {
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
+
+        const t = setTimeout(async () => {
+            if (!isAdmin) return;
+            try {
+                const settingsObject = {
+                    notifications,
+                    accentColor,
+                    borderRadius,
+                    fontSize,
+                    sidebarCompact,
+                    animationsEnabled,
+                    preferences
+                };
+                await axios.put(`${API_BASE}/Admin/Settings/${currentUser.school || currentUser._id}`, { settings: settingsObject });
+            } catch (err) {
+                console.error('Failed to sync settings to DB', err);
+            }
+        }, 1000);
+
+        return () => clearTimeout(t);
+    }, [notifications, accentColor, borderRadius, fontSize, sidebarCompact, animationsEnabled, preferences, isAdmin, currentUser]);
 
     // --- Handlers ---
     const fetchSettings = async () => {
@@ -240,6 +276,17 @@ const SettingsProfile = () => {
                 });
                 if (data.schoolLogo) {
                     setLogoPreview(data.schoolLogo.startsWith('http') ? data.schoolLogo : `${API_BASE}/${data.schoolLogo}`);
+                }
+
+                // Load DB Settings
+                if (data.settings) {
+                    if (data.settings.notifications) setNotifications(data.settings.notifications);
+                    if (data.settings.accentColor) { setAccentColor(data.settings.accentColor); applyAccentColor(data.settings.accentColor); }
+                    if (data.settings.borderRadius) { setBorderRadius(data.settings.borderRadius); applyRadius(data.settings.borderRadius); }
+                    if (data.settings.fontSize) { setFontSize(data.settings.fontSize); applyFontScale(data.settings.fontSize); }
+                    if (data.settings.sidebarCompact !== undefined) setSidebarCompact(data.settings.sidebarCompact);
+                    if (data.settings.animationsEnabled !== undefined) setAnimationsEnabled(data.settings.animationsEnabled);
+                    if (data.settings.preferences) setPreferences(data.settings.preferences);
                 }
 
                 // Fetch Messaging Settings (Admin Only)
@@ -340,6 +387,59 @@ const SettingsProfile = () => {
             showToast('WhatsApp disconnected!', 'success');
         } catch (err) { showToast('Error disconnecting WhatsApp!', 'error'); }
         finally { setLoadingWhatsapp(false); }
+    };
+
+    // --- Sessions Handlers ---
+    const fetchSessions = async () => {
+        try {
+            setLoadingSessions(true);
+            const res = await axios.get(`${API_BASE}/Sessions/${currentUser._id}`);
+            setSessions(res.data);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoadingSessions(false);
+        }
+    };
+
+    const handleCreateSession = async () => {
+        if (!newSessionData.sessionYear || !newSessionData.startDate || !newSessionData.endDate) {
+            showToast("Please fill all session fields", "error");
+            return;
+        }
+        try {
+            await axios.post(`${API_BASE}/SessionCreate`, { ...newSessionData, schoolId: currentUser._id });
+            showToast("Session created successfully", "success");
+            fetchSessions();
+            setIsSessionModalOpen(false);
+            setNewSessionData({ sessionYear: '', startDate: '', endDate: '' });
+        } catch (error) {
+            showToast("Failed to create session", "error");
+        }
+    };
+
+    const handleMakeSessionActive = async (id) => {
+        try {
+            const res = await axios.put(`${API_BASE}/Sessions/MakeActive`, { schoolId: currentUser._id, sessionId: id });
+            showToast("Session marked as active", "success");
+            if (res.data.activeSession) {
+                setActiveSession(res.data.activeSession);
+                localStorage.setItem('sms_activeSession', JSON.stringify(res.data.activeSession));
+            }
+            fetchSessions();
+        } catch (error) {
+            showToast("Failed to make session active", "error");
+        }
+    };
+
+    const handleDeleteSession = async (id) => {
+        try {
+            await axios.delete(`${API_BASE}/Session/${id}`);
+            showToast("Session deleted successfully", "success");
+            fetchSessions();
+        } catch (error) {
+            showToast(error.response?.data?.message || "Failed to delete session", "error");
+        }
     };
 
     // --- Email Handlers ---
@@ -557,7 +657,7 @@ const SettingsProfile = () => {
                                                         <input type="file" hidden onChange={handleLogoChange} accept="image/*" id="logo-upload" />
                                                         <label htmlFor="logo-upload" className="cursor-pointer block">
                                                             <Avatar className="h-24 w-24 border-2 border-dashed border-muted-foreground/25 hover:border-primary transition-colors">
-                                                                <AvatarImage src={logoPreview} alt="School Logo" />
+                                                                <AvatarImage src={logoPreview} className='object-cover' alt="School Logo" />
                                                                 <AvatarFallback className="bg-primary/5 text-primary">
                                                                     <Building className="h-8 w-8" />
                                                                 </AvatarFallback>
@@ -567,7 +667,7 @@ const SettingsProfile = () => {
                                                             </div>
                                                         </label>
                                                     </div>
-                                                    <p className="text-[11px] text-muted-foreground">PNG, JPG up to 5MB</p>
+                                                    <p className="text-[11px] text-muted-foreground">Upload logo png/svg</p>
                                                 </div>
 
                                                 <div className="flex-1 w-full space-y-4">
@@ -1324,8 +1424,146 @@ const SettingsProfile = () => {
                             </div>
                         )
                     }
+
+                    {/* ============ SESSIONS ============ */}
+                    {
+                        activeSection === 'sessions' && (
+                            <div className="space-y-6">
+                                <SectionHeader
+                                    title="Academic Sessions"
+                                    description="Manage academic years and set the active session globally."
+                                />
+
+                                <Card>
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-6 pb-2">
+                                        <div>
+                                            <CardTitle className="text-base">All Sessions</CardTitle>
+                                            <CardDescription>View and manage all your academic years.</CardDescription>
+                                        </div>
+                                        <Button onClick={() => setIsSessionModalOpen(true)} size="sm" className="mt-4 sm:mt-0 gap-2">
+                                            <Plus className="h-4 w-4" /> Create Session
+                                        </Button>
+                                    </div>
+                                    <CardContent className="pt-4">
+                                        {loadingSessions ? (
+                                            <div className="flex items-center justify-center py-8">
+                                                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                                            </div>
+                                        ) : sessions.length === 0 ? (
+                                            <div className="text-center py-12 px-4 rounded-xl border border-dashed">
+                                                <Calendar className="h-8 w-8 mx-auto text-muted-foreground/50 mb-3" />
+                                                <p className="text-sm font-medium">No sessions found</p>
+                                                <p className="text-xs text-muted-foreground mt-1">Create your first academic session to get started.</p>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-3">
+                                                {sessions.map((session) => (
+                                                    <div
+                                                        key={session._id}
+                                                        className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border transition-all ${session.isActive ? 'border-primary bg-primary/5' : 'border-muted hover:border-border'
+                                                            }`}
+                                                    >
+                                                        <div className="flex items-start gap-4 mb-4 sm:mb-0">
+                                                            <div className={`mt-0.5 h-10 w-10 flex border rounded-lg items-center justify-center shrink-0 ${session.isActive ? 'bg-primary/20 border-primary/20 text-primary' : 'bg-muted border-muted-foreground/10 text-muted-foreground'}`}>
+                                                                <CalendarDays className="h-5 w-5" />
+                                                            </div>
+                                                            <div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <p className="font-semibold text-base">{session.sessionYear}</p>
+                                                                    {session.isActive && (
+                                                                        <Badge variant="default" className="text-[10px] h-5 px-1.5 uppercase gap-1">
+                                                                            <CheckCircle2 className="h-3 w-3" /> Active
+                                                                        </Badge>
+                                                                    )}
+                                                                </div>
+                                                                <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <Clock className="h-3.5 w-3.5" />
+                                                                        {new Date(session.startDate).toLocaleDateString()} - {new Date(session.endDate).toLocaleDateString()}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center gap-2 sm:self-center">
+                                                            {!session.isActive && (
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    onClick={() => handleMakeSessionActive(session._id)}
+                                                                >
+                                                                    Set as Active
+                                                                </Button>
+                                                            )}
+                                                            {!session.isActive && (
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                                                    onClick={() => handleDeleteSession(session._id)}
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </Button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        )
+                    }
+
                 </div >
             </div >
+
+            {/* Session Dialog */}
+            <Dialog open={isSessionModalOpen} onOpenChange={setIsSessionModalOpen}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>Create Academic Session</DialogTitle>
+                        <DialogDescription>
+                            Define a new academic year. Example: "2025-2026".
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="sessionYear">Session Name (Year)</Label>
+                            <Input
+                                id="sessionYear"
+                                placeholder="e.g., 2025-2026"
+                                value={newSessionData.sessionYear}
+                                onChange={(e) => setNewSessionData({ ...newSessionData, sessionYear: e.target.value })}
+                            />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="startDate">Start Date</Label>
+                                <Input
+                                    id="startDate"
+                                    type="date"
+                                    value={newSessionData.startDate}
+                                    onChange={(e) => setNewSessionData({ ...newSessionData, startDate: e.target.value })}
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="endDate">End Date</Label>
+                                <Input
+                                    id="endDate"
+                                    type="date"
+                                    value={newSessionData.endDate}
+                                    onChange={(e) => setNewSessionData({ ...newSessionData, endDate: e.target.value })}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsSessionModalOpen(false)}>Cancel</Button>
+                        <Button onClick={handleCreateSession}>Create Session</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             {/* Password Dialog */}
             < Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen} >

@@ -20,10 +20,15 @@ const getInitialUser = () => {
 };      
 
 export const AuthContextProvider = ({ children }) => {
-    // Initial state Local Storage se load kiya
     const [currentUser, setCurrentUser] = useState(getInitialUser); 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [activeSession, setActiveSession] = useState(() => {
+        try {
+            const s = localStorage.getItem('sms_activeSession');
+            return s ? JSON.parse(s) : null;
+        } catch { return null; }
+    });
 
     // --- EFFECT: currentUser change hone par Local Storage update karna ---
     useEffect(() => {
@@ -37,6 +42,25 @@ export const AuthContextProvider = ({ children }) => {
             console.warn("LocalStorage access denied:", error);
         }
     }, [currentUser]);
+
+    // --- EFFECT: Fetch Active Session on login/reload ---
+    useEffect(() => {
+        const fetchActiveSession = async () => {
+            if (!currentUser) return;
+            try {
+                // For teachers or students, find their school ID
+                const schoolId = currentUser.school?._id || currentUser.school || currentUser._id;
+                const res = await axios.get(`${API_URL}/Sessions/Active/${schoolId}`);
+                if (res.data.success) {
+                    setActiveSession(res.data.session);
+                    localStorage.setItem('sms_activeSession', JSON.stringify(res.data.session));
+                }
+            } catch (err) {
+                console.error("Failed to fetch active session:", err);
+            }
+        };
+        fetchActiveSession();
+    }, [currentUser]);
     // ----------------------------------------------------------------------
 
     // Admin Login
@@ -47,6 +71,19 @@ export const AuthContextProvider = ({ children }) => {
             const res = await axios.post(LOGIN_URL, credentials);
             const userData = { ...res.data, userType: 'admin' };
             localStorage.setItem('currentUser', JSON.stringify(userData));
+
+            // Populate LocalStorage with DB Settings 
+            if (res.data.settings) {
+                const s = res.data.settings;
+                if (s.notifications) localStorage.setItem('sms_notificationPrefs', JSON.stringify(s.notifications));
+                if (s.accentColor) localStorage.setItem('sms_accentColor', JSON.stringify(s.accentColor));
+                if (s.borderRadius) localStorage.setItem('sms_borderRadius', s.borderRadius);
+                if (s.fontSize) localStorage.setItem('sms_fontSize', s.fontSize);
+                if (s.sidebarCompact !== undefined) localStorage.setItem('sms_sidebarCompact', String(s.sidebarCompact));
+                if (s.animationsEnabled !== undefined) localStorage.setItem('sms_animations', String(s.animationsEnabled));
+                if (s.preferences) localStorage.setItem('sms_appPreferences', JSON.stringify(s.preferences));
+            }
+
             setCurrentUser(userData);
             setLoading(false);
             return userData; // Return full user data including type
@@ -136,7 +173,7 @@ export const AuthContextProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ currentUser, setCurrentUser, loading, error, login, teacherLogin, parentLogin, staffLogin, logout }}>
+        <AuthContext.Provider value={{ currentUser, setCurrentUser, activeSession, setActiveSession, loading, error, login, teacherLogin, parentLogin, staffLogin, logout }}>
             {children}
         </AuthContext.Provider>
     );

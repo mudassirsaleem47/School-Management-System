@@ -196,10 +196,18 @@ const studentLogin = async (req, res) => {
 const getStudentsBySchool = async (req, res) => {
     try {
         const { schoolId } = req.params;
-        
+        const { session } = req.query; // Expect optional session query param
+
+        let query = { school: schoolId, status: "Active" };
+        if (session) {
+            query.session = session;
+        }
+
         // Find students belonging to this school ID
         // .populate('sclassName') se class ka poora data bhi saath mein aa jayega
-        const students = await Student.find({ school: schoolId, status: "Active" }).populate('sclassName');
+        const students = await Student.find(query)
+            .populate('sclassName')
+            .populate('session'); // Populate session details if needed
 
         if (students.length === 0) {
             return res.status(200).json([]);

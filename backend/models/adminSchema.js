@@ -45,6 +45,10 @@ const adminSchema = new mongoose.Schema({
     },
     website: {
         type: String,
+    },
+    settings: {
+        type: Object,
+        default: {}
     }
 });
 

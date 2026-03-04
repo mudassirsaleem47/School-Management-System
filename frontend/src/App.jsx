@@ -16,10 +16,12 @@ import StudentAdmission from './pages/StudentAdmission';
 import StudentDetailPage from './pages/StudentDetailPage';
 import DisabledStudents from './pages/DisabledStudents';
 import SettingsProfile from './pages/SettingsProfile';
-import FeeManagement from './pages/FeeManagement';
-import FeeCollection from './pages/FeeCollection';
 import FeeReports from './pages/FeeReports';
 import FeeAssignment from './pages/FeeAssignment';
+import FeeReminder from './pages/FeeReminder';
+import FeeManagement from './pages/FeeManagement';
+import FeeCollection from './pages/FeeCollection';
+import StudentFeeDetail from './pages/StudentFeeDetail';
 import IncomeManagement from './pages/IncomeManagement';
 import ExpenseManagement from './pages/ExpenseManagement';
 import ExamGroup from './pages/ExamGroup';
@@ -32,6 +34,7 @@ import DesignationManagement from './pages/DesignationManagement';
 import DisableReasonPage from './pages/DisableReasonPage';
 import AccountantList from './pages/AccountantList';
 import ReceptionistList from './pages/ReceptionistList';
+import MediaManager from './pages/MediaManager';
 
 import SendMessages from './pages/SendMessages';
 import MessageTemplates from './pages/MessageTemplates';
@@ -119,7 +122,9 @@ function App() {
                   <Route path="fee-management" element={<FeeManagement />} />
                   <Route path="fee-assignment" element={<FeeAssignment />} />
                   <Route path="fee-collection" element={<FeeCollection />} />
+                  <Route path="fee-collection/:studentId" element={<StudentFeeDetail />} />
                   <Route path="fee-reports" element={<FeeReports />} />
+                  <Route path="fee-reminder" element={<FeeReminder />} />
                   <Route path="income" element={<IncomeManagement />} />
                   <Route path="expense" element={<ExpenseManagement />} />
                   <Route path="exam-groups" element={<ExamGroup />} />
@@ -132,6 +137,7 @@ function App() {
                   <Route path="reports" element={<ReportsPage />} />
                   <Route path="accountants" element={<AccountantList />} />
                   <Route path="receptionists" element={<ReceptionistList />} />
+                  <Route path="media" element={<MediaManager />} />
                   {/* <Route path="designations" element={<DesignationManagement />} /> */}
                   <Route path="send-messages" element={<SendMessages />} />
                   <Route path="message-templates" element={<MessageTemplates />} />
@@ -196,6 +202,7 @@ function App() {
                   <Route index element={<AccountantDashboard />} />
                   <Route path="dashboard" element={<AccountantDashboard />} />
                   <Route path="fee-collection" element={<FeeCollection />} />
+                  <Route path="fee-collection/:studentId" element={<StudentFeeDetail />} />
                   <Route path="fee-reports" element={<FeeReports />} />
                   <Route path="income" element={<IncomeManagement />} />
                   <Route path="expense" element={<ExpenseManagement />} />

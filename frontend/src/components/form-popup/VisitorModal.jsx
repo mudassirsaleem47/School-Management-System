@@ -389,25 +389,37 @@ const VisitorModal = ({ isOpen, onClose, onSubmit, initialData, viewMode = false
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div className="space-y-2">
                                             <Label>Section <span className="text-destructive">*</span></Label>
-                                            <Input 
-                                                name="section" 
-                                                value={formData.section}
-                                                onChange={handleChange} 
-                                                placeholder="Section" 
-                                                required 
-                                            />
+                                            <Select
+                                                value={formData.section} 
+                                                onValueChange={(val) => handleSelectChange('section', val)}
+                                                disabled={!formData.class}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select section" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {classesList.find(c => c._id === formData.class)?.sections?.map((sec) => (
+                                                        <SelectItem key={sec._id || sec.sectionName} value={sec.sectionName}>
+                                                            {sec.sectionName}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
                                         </div>
                                         <div className="space-y-2">
                                             <Label>Student <span className="text-destructive">*</span></Label>
                                             <Select 
                                                 value={formData.student} 
                                                 onValueChange={(val) => handleSelectChange('student', val)}
+                                                disabled={!formData.class}
                                             >
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="Select student" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    {studentsList.map((student) => (
+                                                    {studentsList
+                                                        .filter(student => !formData.section || student.section === formData.section)
+                                                        .map((student) => (
                                                         <SelectItem key={student._id} value={student._id}>{student.name}</SelectItem>
                                                     ))}
                                                 </SelectContent>

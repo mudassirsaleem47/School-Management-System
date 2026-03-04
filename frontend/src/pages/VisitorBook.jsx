@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { toast } from "sonner";
 import API_URL from "../config/api";
 import VisitorModal from "../components/form-popup/VisitorModal";
+import { TablePagination } from '@/components/TablePagination';
 import {
     Table,
     TableBody,
@@ -65,6 +66,10 @@ const VisitorBook = () => {
     const [visitors, setVisitors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
+
+    // Pagination states
+    const [currentPage, setCurrentPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
 
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -192,6 +197,15 @@ const VisitorBook = () => {
         );
     });
 
+    // Reset pagination on search change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery]);
+
+    // Compute paginated data
+    const totalPages = Math.ceil(filteredVisitors.length / rowsPerPage);
+    const paginatedVisitors = filteredVisitors.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+
     return (
         <div className="flex-1 space-y-4 p-8 pt-6">
             {/* Header */}
@@ -260,7 +274,7 @@ const VisitorBook = () => {
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {filteredVisitors.map((visitor) => (
+                                            {paginatedVisitors.map((visitor) => (
                                                 <TableRow key={visitor._id} className="hover:bg-muted/5 transition-colors">
                                                     <TableCell>
                                                         <div className="flex items-center gap-3">
@@ -369,6 +383,14 @@ const VisitorBook = () => {
                                             ))}
                                         </TableBody>
                                     </Table>
+                                    <TablePagination
+                                        currentPage={currentPage}
+                                        totalPages={totalPages}
+                                        onPageChange={setCurrentPage}
+                                        rowsPerPage={rowsPerPage}
+                                        onRowsPerPageChange={(v) => { setRowsPerPage(v); setCurrentPage(1); }}
+                                        totalRows={filteredVisitors.length}
+                                    />
                                 </div>
                     )}
                 </CardContent>

@@ -12,12 +12,13 @@ import {
   IconWallet,
   IconBus,
   IconCalendar,
+  IconPhoto,
 } from "@tabler/icons-react"
 
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail } from "./ui/sidebar"
 import { NavMain } from "./nav-main"
 import { NavUser } from "./nav-user"
-import { TeamSwitcher } from "./team-switcher"
+import SidebarLogo from "./Sidebar-logo"
 import { Link } from "react-router-dom"
 
 import { useAuth } from "../context/AuthContext"
@@ -82,6 +83,7 @@ const adminNavData = [
           { title: 'Assign Fees', url: '/admin/fee-assignment' },
           { title: 'Fee Management', url: '/admin/fee-management' },
           { title: 'Fee Reports', url: '/admin/fee-reports' },
+        { title: 'Fee Reminder', url: '/admin/fee-reminder' },
       ]
   },
   {
@@ -143,13 +145,14 @@ const adminNavData = [
           { title: 'Template Designer', url: '/admin/card-management/designer' },
       ]
   },
+  { title: 'Media Manager', icon: IconPhoto, url: '/admin/media' },
   { title: 'Campuses', url: '/admin/campuses', icon: IconBuildingSkyscraper },
 ]
-
 const adminFooterData = [
+  { title: 'Settings', url: '/admin/settings', icon: IconSettings },
   { title: 'Reports', url: '/admin/reports', icon: IconFileText },
 ]
-
+5
 
 
 // Teacher limited navigation
@@ -271,7 +274,7 @@ export function AppSidebar({
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher />
+        <SidebarLogo />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={navData} />

@@ -46,6 +46,51 @@ const AdminLayout = () => {
     setExtraBreadcrumb(null);
   }, [location.pathname]);
 
+  // Apply Theme Globals from Storage
+  useEffect(() => {
+    try {
+      const savedAccent = localStorage.getItem('sms_accentColor');
+      if (savedAccent) {
+        const color = JSON.parse(savedAccent);
+        const root = document.documentElement;
+        const isDark = root.classList.contains('dark');
+        const hslValue = isDark ? color.hslDark : color.hsl;
+        root.style.setProperty('--primary', hslValue);
+        root.style.setProperty('--ring', color.ring);
+        root.style.setProperty('--sidebar-primary', hslValue);
+        root.style.setProperty('--sidebar-primary-foreground', isDark ? '0 0% 9%' : '0 0% 98%');
+
+        // Sidebar hover box — light tint of accent color
+        // Parse H S from hslValue (format: "H S% L%") and override L for a soft muted bg
+        const parts = hslValue.split(' ');
+        if (parts.length >= 2) {
+          const hs = `${parts[0]} ${parts[1]}`; // e.g. "220 70%"
+          const accentBg = isDark ? `${hs} 20%` : `${hs} 94%`;   // very light / very dark tint
+          const accentFg = isDark ? `${hs} 80%` : `${hs} 25%`;   // readable foreground
+          root.style.setProperty('--sidebar-accent', accentBg);
+          root.style.setProperty('--sidebar-accent-foreground', accentFg);
+        }
+      }
+
+      const savedRadius = localStorage.getItem('sms_borderRadius');
+      if (savedRadius) document.documentElement.style.setProperty('--radius', savedRadius);
+
+      const savedFont = localStorage.getItem('sms_fontSize');
+      if (savedFont) document.documentElement.style.fontSize = savedFont;
+
+      const animations = localStorage.getItem('sms_animations');
+      if (animations === 'false') {
+        document.documentElement.style.setProperty('--animate-duration', '0s');
+        document.documentElement.classList.add('no-animations');
+      } else {
+        document.documentElement.style.removeProperty('--animate-duration');
+        document.documentElement.classList.remove('no-animations');
+      }
+    } catch (e) {
+      console.error('Failed to apply theme preferences:', e);
+    }
+  }, []);
+
   // Generate breadcrumb dari current path
   const generateBreadcrumbs = () => {
     const paths = location.pathname.split('/').filter(Boolean);

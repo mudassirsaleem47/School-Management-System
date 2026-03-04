@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
 import API_URL from '../config/api.js';
+import { TablePagination } from '@/components/TablePagination';
 import EnquiryModal from '../components/form-popup/EnquiryModal';
 import ConfirmDeleteModal from '../components/form-popup/ConfirmDeleteModal';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -74,6 +75,10 @@ const AdmissionEnquiry = () => {
 
     // Search State
     const [searchQuery, setSearchQuery] = useState("");
+
+    // Pagination states
+    const [currentPage, setCurrentPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
 
     // Drawer State
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -194,6 +199,15 @@ const AdmissionEnquiry = () => {
             enquiry.assigned?.name?.toLowerCase().includes(query)
         );
     });
+
+    // Reset pagination on search change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery]);
+
+    // Compute paginated data
+    const totalPages = Math.ceil(filteredEnquiries.length / rowsPerPage);
+    const paginatedEnquiries = filteredEnquiries.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
     // Counts for cards
     const totalEnquiries = enquiries.length;
@@ -316,7 +330,7 @@ const AdmissionEnquiry = () => {
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                    {filteredEnquiries.map((item) => (
+                                            {paginatedEnquiries.map((item) => (
                                         <TableRow key={item._id} className="cursor-pointer hover:bg-muted/50 transition-colors">
                                             <TableCell>
                                                 <div className="flex flex-col">
@@ -412,6 +426,14 @@ const AdmissionEnquiry = () => {
                                     ))}
                                         </TableBody>
                                     </Table>
+                                    <TablePagination
+                                        currentPage={currentPage}
+                                        totalPages={totalPages}
+                                        onPageChange={setCurrentPage}
+                                        rowsPerPage={rowsPerPage}
+                                        onRowsPerPageChange={(v) => { setRowsPerPage(v); setCurrentPage(1); }}
+                                        totalRows={filteredEnquiries.length}
+                                    />
                         </div>
                     )}
                 </CardContent>

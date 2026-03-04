@@ -58,12 +58,15 @@ const StudentAttendancePanel = () => {
         if (!selectedClass) return;
         try {
             setLoading(true);
+            const schoolId = currentUser._id;
             const [stuRes, attRes] = await Promise.all([
-                axios.get(`${API_BASE}/Students/Class/${selectedClass}`),
-                axios.get(`${API_BASE}/Attendance/Class/${selectedClass}/Date/${selectedDate.toISOString()}`)
+                axios.get(`${API_BASE}/Students/${schoolId}`),
+                axios.get(`${API_BASE}/Attendance/ForClass/${schoolId}/${selectedClass}/${selectedDate.toISOString()}`)
             ]);
 
-            const studentsList = Array.isArray(stuRes.data) ? stuRes.data : [];
+            // Filter students by selected class on frontend
+            const allStudents = Array.isArray(stuRes.data) ? stuRes.data : [];
+            const studentsList = allStudents.filter(s => s.sclassName?._id === selectedClass || s.sclassName === selectedClass);
             setStudents(studentsList);
 
             const attendanceMap = {};

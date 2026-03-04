@@ -272,9 +272,10 @@ const MessageTemplates = () => {
                                 </div>
                             </CardHeader>
                             <CardContent className="flex-1">
-                                <p className="text-sm text-muted-foreground whitespace-pre-wrap line-clamp-4">
-                                    {template.content}
-                                </p>
+                                <div
+                                    className="text-sm text-muted-foreground whitespace-pre-wrap line-clamp-4 prose prose-sm dark:prose-invert max-w-none"
+                                    dangerouslySetInnerHTML={{ __html: template.content }}
+                                />
                             </CardContent>
                             <CardFooter className="pt-3 border-t bg-muted/20 flex justify-between items-center text-xs text-muted-foreground">
                                 <div className="flex items-center">

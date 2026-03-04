@@ -31,8 +31,8 @@ const ConfirmDeleteModal = ({
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
-                    <AlertDialogAction 
-                        onClick={onConfirm} 
+                    <AlertDialogAction
+                        onClick={onConfirm}
                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         disabled={loading}
                     >
