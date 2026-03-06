@@ -16,7 +16,7 @@ const cardTemplateSchema = new mongoose.Schema({
     },
     cardType: {
         type: String,
-        enum: ['student', 'staff', 'admit', 'report'],
+        enum: ['student', 'staff', 'admit', 'admit_card', 'report', 'mark_sheet'],
         default: 'student'
     },
     dimensions: {
@@ -28,17 +28,9 @@ const cardTemplateSchema = new mongoose.Schema({
         enum: ['horizontal', 'vertical'],
         default: 'horizontal'
     },
-    elements: [{
-        field: { type: String, required: true }, // e.g., 'name', 'class', 'rollNum', 'photo'
-        label: { type: String }, // Optional label to show before value
-        x: { type: Number, default: 0 },
-        y: { type: Number, default: 0 },
-        fontSize: { type: Number, default: 14 },
-        fontWeight: { type: String, default: 'normal' },
-        color: { type: String, default: '#000000' },
-        width: { type: Number }, // For images/containers
-        height: { type: Number }
-    }]
+    elements: {
+        type: mongoose.Schema.Types.Mixed
+    }
 }, { timestamps: true });
 
 module.exports = mongoose.model("CardTemplate", cardTemplateSchema);

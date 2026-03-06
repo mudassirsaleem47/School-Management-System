@@ -125,10 +125,15 @@ const ReportCard = () => {
         setLoading(true);
 
         try {
-            // Fetch students of the class
-            const studentsRes = await axios.get(`${API_URL}/Sclass/Students/${selectedClass}`);
-            const fetchedStudents = studentsRes.data;
-            setStudents(fetchedStudents);
+            // Fetch all students for the school and filter by class
+            const studentsRes = await axios.get(`${API_URL}/Students/${schoolId}`);
+            const allStudents = Array.isArray(studentsRes.data) ? studentsRes.data : [];
+
+            // Filter for selectedClass
+            const fetchedStudents = allStudents.filter(s => {
+                const cId = s.sclassName?._id || s.sclassName;
+                return String(cId) === String(selectedClass);
+            });
 
             // Fetch schedules for the group first.
             const schedulesRes = await axios.get(`${API_URL}/ExamSchedules/Group/${selectedExamGroup}`);
@@ -136,15 +141,23 @@ const ReportCard = () => {
 
             const resultsMap = {};
             await Promise.all(fetchedStudents.map(async (student) => {
-                const res = await axios.get(`${API_URL}/ExamResults/Student/${student._id}`);
-                // Filter results that belong to the selected Exam Group
-                const relevantResults = res.data.filter(r => 
-                    schedules.some(s => s._id === r.examSchedule._id)
-                );
-                
-                resultsMap[student._id] = relevantResults;
+                try {
+                    const res = await axios.get(`${API_URL}/ExamResults/Student/${student._id}`);
+                    // Filter results that belong to the selected Exam Group
+                    const relevantResults = res.data.filter(r => {
+                        if (!r.examSchedule) return false;
+                        const scheduleId = r.examSchedule._id || r.examSchedule;
+                        return schedules.some(s => s._id === scheduleId);
+                    });
+
+                    resultsMap[student._id] = relevantResults;
+                } catch (err) {
+                    console.error(`Error fetching results for student ${student.name}:`, err);
+                    resultsMap[student._id] = [];
+                }
             }));
 
+            setStudents(fetchedStudents);
             setResultsData(resultsMap);
 
         } catch (error) {

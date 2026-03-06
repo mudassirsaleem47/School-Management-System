@@ -91,7 +91,7 @@ const VisitorModal = ({ isOpen, onClose, onSubmit, initialData, viewMode = false
     const fetchClasses = async () => {
         try {
             const res = await axios.get(`${API_BASE}/Sclasses/${currentUser._id}`);
-            setClassesList(res.data);
+            setClassesList(Array.isArray(res.data) ? res.data : []);
         } catch (err) {
             // Silent fail - classes will be empty
         }
@@ -100,7 +100,8 @@ const VisitorModal = ({ isOpen, onClose, onSubmit, initialData, viewMode = false
     const fetchStudents = async (classId) => {
         try {
             const res = await axios.get(`${API_BASE}/Students/${currentUser._id}`);
-            const filteredStudents = res.data.filter(student => student.sclassName?._id === classId);
+            const studentsData = Array.isArray(res.data) ? res.data : [];
+            const filteredStudents = studentsData.filter(student => student.sclassName?._id === classId);
             setStudentsList(filteredStudents);
         } catch (err) {
             // Silent fail - students list will be empty

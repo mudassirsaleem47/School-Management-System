@@ -97,7 +97,7 @@ const DisableReasonPage = () => {
         } finally {
             setLoading(false);
         }
-    }, [currentUser._id, fetchData]);
+    }, [currentUser._id]);
 
     useEffect(() => {
         if (currentUser) {

@@ -1,7 +1,7 @@
 "use client"
 
 import { IconChevronRight } from "@tabler/icons-react";
-import { Link } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { useState } from "react";
 
 import {
@@ -24,26 +24,40 @@ export function NavMain({
   items
 }) {
   const [openItem, setOpenItem] = useState(null);
+  const location = useLocation();
 
   const handleToggle = (itemTitle) => {
     setOpenItem(openItem === itemTitle ? null : itemTitle);
+  };
+
+  const isActive = (url) => {
+    return location.pathname === url || location.pathname.startsWith(url + '/');
+  };
+
+  const isAnyChildActive = (itemItems) => {
+    if (!itemItems) return false;
+    return itemItems.some(subItem => isActive(subItem.url));
   };
 
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Menu</SidebarGroupLabel>
       <SidebarMenu>
-        {items.map((item) => (
-          item.items && item.items.length > 0 ? (
+        {items.map((item) => {
+          const hasActiveChild = isAnyChildActive(item.items);
+          return item.items && item.items.length > 0 ? (
             <Collapsible
               key={item.title}
               asChild
-              open={openItem === item.title}
+              open={openItem === item.title || hasActiveChild}
               onOpenChange={() => handleToggle(item.title)}
               className="group/collapsible">
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
-                  <SidebarMenuButton tooltip={item.title}>
+                  <SidebarMenuButton
+                    tooltip={item.title}
+                    className={hasActiveChild ? "bg-accent/40 text-accent-foreground font-medium" : ""}
+                  >
                     {item.icon && <item.icon />}
                     <span>{item.title}</span>
                     <IconChevronRight
@@ -54,7 +68,10 @@ export function NavMain({
                   <SidebarMenuSub>
                     {item.items?.map((subItem) => (
                       <SidebarMenuSubItem key={subItem.title}>
-                        <SidebarMenuSubButton asChild>
+                        <SidebarMenuSubButton
+                          asChild
+                          className={isActive(subItem.url) ? "bg-accent/40 text-accent-foreground font-medium" : ""}
+                        >
                           <Link to={subItem.url}>
                             <span>{subItem.title}</span>
                           </Link>
@@ -67,7 +84,11 @@ export function NavMain({
             </Collapsible>
           ) : (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton asChild tooltip={item.title}>
+                <SidebarMenuButton
+                  asChild
+                  tooltip={item.title}
+                  className={isActive(item.url) ? "bg-accent/40 text-accent-foreground font-medium" : ""}
+                >
                 <Link to={item.url}>
                   {item.icon && <item.icon />}
                   <span>{item.title}</span>
@@ -75,7 +96,7 @@ export function NavMain({
               </SidebarMenuButton>
             </SidebarMenuItem>
           )
-        ))}
+        })}
       </SidebarMenu>
     </SidebarGroup>
   );

@@ -54,7 +54,7 @@ const FeeAssignment = () => {
   const [loading, setLoading] = useState(true);
   
   const [selectedFeeStructure, setSelectedFeeStructure] = useState('');
-  const [assignmentMode, setAssignmentMode] = useState('individual'); // individual, class, bulk
+  const [assignmentMode, setAssignmentMode] = useState('individual');
   const [selectedClass, setSelectedClass] = useState('all');
   const [selectedSection, setSelectedSection] = useState('all');
   const [selectedStudents, setSelectedStudents] = useState([]);
@@ -187,7 +187,6 @@ const FeeAssignment = () => {
         showToast(`${response.data.errors.length} student(s) already had this fee assigned`, 'warning');
       }
 
-      // Reset selections
       setSelectedStudents([]);
       setSelectedFeeStructure('');
     } catch (error) {
@@ -252,31 +251,71 @@ const FeeAssignment = () => {
                             : 'border-transparent bg-card hover:bg-accent/50'
                             }`}
                         >
-                          <div className="flex items-start justify-between mb-2">
-                            <h3 className={`font-semibold ${selectedFeeStructure === fee._id ? 'text-primary' : 'text-foreground'}`}>
+                          {/* Fee Name + Type Badge */}
+                          <div className="flex items-start justify-between mb-3">
+                            <h3 className={`font-semibold text-sm ${selectedFeeStructure === fee._id ? 'text-primary' : 'text-foreground'}`}>
                               {fee.feeName}
                             </h3>
-                            <Badge variant={selectedFeeStructure === fee._id ? 'default' : 'secondary'}>
+                            <Badge variant={selectedFeeStructure === fee._id ? 'default' : 'secondary'} className="ml-2 shrink-0">
                               {fee.feeType}
                             </Badge>
                           </div>
-                          <div className="text-sm text-muted-foreground space-y-2">
-                            <div className="grid grid-cols-2 gap-2 text-xs">
-                              <div className="flex items-center gap-1.5" title="Class Constraint">
-                                <Users className="w-3.5 h-3.5" />
-                                <span>{fee.class?.sclassName || 'Any'} {fee.section ? `(${fee.section})` : ''}</span>
-                              </div>
-                              <div className="flex items-center gap-1.5" title="Due Date">
-                                <CalendarDays className="w-3.5 h-3.5" />
-                                <span>{formatDateTime(fee.dueDate, { dateOnly: true })}</span>
-                              </div>
+
+                          {/* Details Grid */}
+                          <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs text-muted-foreground mb-3">
+                            {/* Class */}
+                            <div className="flex items-center gap-1.5">
+                              <Users className="w-3.5 h-3.5 shrink-0" />
+                              <span className="truncate">{fee.class?.sclassName || 'All Classes'}</span>
                             </div>
-                            <div className="pt-3 mt-1 border-t flex justify-between items-center">
-                              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Amount</span>
-                              <span className={`font-bold text-lg ${selectedFeeStructure === fee._id ? 'text-primary' : 'text-primary'}`}>
-                                Rs. {fee.amount.toLocaleString()}
-                              </span>
+
+                            {/* Due Date */}
+                            <div className="flex items-center gap-1.5">
+                              <CalendarDays className="w-3.5 h-3.5 shrink-0" />
+                              <span className="truncate">{formatDateTime(fee.dueDate, { dateOnly: true }) || '-'}</span>
                             </div>
+
+                            {/* Frequency */}
+                            <div className="flex items-center gap-1.5">
+                              <Filter className="w-3.5 h-3.5 shrink-0" />
+                              <span className="truncate">{fee.frequency || '-'}</span>
+                            </div>
+
+                            {/* Month */}
+                            {fee.month ? (
+                              <div className="flex items-center gap-1.5">
+                                <span className="w-3.5 h-3.5 shrink-0 text-center font-bold text-[10px] leading-none border rounded px-0.5">M</span>
+                                <span className="truncate font-medium text-foreground">{fee.month}</span>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1.5 opacity-40">
+                                <span className="w-3.5 h-3.5 shrink-0 text-center font-bold text-[10px] leading-none border rounded px-0.5">M</span>
+                                <span>—</span>
+                              </div>
+                            )}
+
+                            {/* Academic Year */}
+                            {fee.academicYear && (
+                              <div className="flex items-center gap-1.5 col-span-2">
+                                <Building className="w-3.5 h-3.5 shrink-0" />
+                                <span>Year: <strong className="text-foreground">{fee.academicYear}</strong></span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Description */}
+                          {fee.description && (
+                            <p className="text-xs text-muted-foreground italic border-l-2 border-muted pl-2 mb-3 leading-relaxed">
+                              {fee.description}
+                            </p>
+                          )}
+
+                          {/* Amount Row */}
+                          <div className="pt-2 border-t flex justify-between items-center">
+                            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Amount</span>
+                            <span className="font-bold text-lg text-primary">
+                              Rs. {fee.amount.toLocaleString()}
+                            </span>
                           </div>
                         </div>
                       ))
@@ -465,16 +504,16 @@ const FeeAssignment = () => {
                                   key={student._id}
                                   onClick={() => toggleStudentSelection(student._id)}
                                   className={`
-                                        relative flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all hover:bg-accent group
-                                        ${selectedStudents.includes(student._id)
+                                      relative flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all hover:bg-accent group
+                                      ${selectedStudents.includes(student._id)
                                       ? 'border-primary bg-primary/5 shadow-sm'
                                       : 'border-muted bg-background hover:border-primary/50'}
-                                    `}
+                                  `}
                                 >
                                   <div className={`
-                                        flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors
-                                        ${selectedStudents.includes(student._id) ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground group-hover:bg-primary/10'}
-                                    `}>
+                                      flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors
+                                      ${selectedStudents.includes(student._id) ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground group-hover:bg-primary/10'}
+                                  `}>
                                     {selectedStudents.includes(student._id) ? <CheckCircle2 className="w-5 h-5" /> : <User className="w-4 h-4" />}
                                   </div>
                                   <div className="flex-1 min-w-0">
@@ -524,4 +563,3 @@ const FeeAssignment = () => {
 };
 
 export default FeeAssignment;
-

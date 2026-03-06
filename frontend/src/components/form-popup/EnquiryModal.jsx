@@ -46,7 +46,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-const EnquiryModal = ({ isOpen, onClose, onSubmit, initialData, classesList, teachersList, viewMode = false }) => {
+const EnquiryModal = ({ isOpen, onClose, onSubmit, initialData, classesList = [], teachersList = [], viewMode = false }) => {
     const [formData, setFormData] = useState({
         name: '',
         phone: '',

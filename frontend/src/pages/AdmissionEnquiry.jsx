@@ -97,8 +97,8 @@ const AdmissionEnquiry = () => {
             ]);
 
             setEnquiries(Array.isArray(enqRes.data) ? enqRes.data : []);
-            setClassesList(classRes.data);
-            setTeachersList(teachRes.data);
+            setClassesList(Array.isArray(classRes.data) ? classRes.data : []);
+            setTeachersList(Array.isArray(teachRes.data) ? teachRes.data : []);
         } catch (err) {
             console.error(err);
             toast.error("Error loading data");

@@ -56,6 +56,7 @@ const ExamResult = () => {
   const [students, setStudents] = useState([]);
   const [results, setResults] = useState([]);
   const [grades, setGrades] = useState([]);
+  const [sclasses, setSclasses] = useState([]);
   
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -63,6 +64,7 @@ const ExamResult = () => {
   
   const [selectedGroup, setSelectedGroup] = useState('');
   const [selectedSchedule, setSelectedSchedule] = useState('');
+  const [selectedClass, setSelectedClass] = useState('');
   const [selectedStudent, setSelectedStudent] = useState(null);
   
   const [formData, setFormData] = useState({
@@ -74,13 +76,15 @@ const ExamResult = () => {
   const fetchInitialData = useCallback(async () => {
     try {
       setLoading(true);
-      const [groupsRes, gradesRes] = await Promise.all([
+      const [groupsRes, gradesRes, sclassRes] = await Promise.all([
         axios.get(`${API_BASE}/ExamGroups/${currentUser._id}`),
-        axios.get(`${API_BASE}/MarksGrades/${currentUser._id}`)
+        axios.get(`${API_BASE}/MarksGrades/${currentUser._id}`),
+        axios.get(`${API_BASE}/Sclasses/${currentUser._id}`)
       ]);
       
       setExamGroups(Array.isArray(groupsRes.data) ? groupsRes.data : []);
       setGrades(Array.isArray(gradesRes.data) ? gradesRes.data : []);
+      setSclasses(Array.isArray(sclassRes.data) ? sclassRes.data : []);
       setLoading(false);
     } catch (error) {
       showToast(error.response?.data?.message || 'Error fetching data', 'error');
@@ -108,9 +112,11 @@ const ExamResult = () => {
       ]);
 
       const schoolStudents = Array.isArray(stuRes.data) ? stuRes.data : [];
-      const classStudents = schoolStudents.filter(s =>
-        s.sclassName?._id === schedule.sclassName?._id && s.section === schedule.section
-      );
+      const classId = schedule.class?._id || schedule.class;
+      const classStudents = schoolStudents.filter(s => {
+        const studentClassId = s.sclassName?._id || s.sclassName;
+        return String(studentClassId) === String(classId); // We remove section check since section might not be strictly typed in exam schedule
+      });
 
       setStudents(classStudents);
       setResults(Array.isArray(resRes.data) ? resRes.data : []);
@@ -245,6 +251,14 @@ const ExamResult = () => {
     );
   };
 
+  const filteredSchedules = React.useMemo(() => {
+    if (!selectedClass) return schedules;
+    return schedules.filter(s => {
+      const clsId = s.class?._id || s.class;
+      return String(clsId) === selectedClass;
+    });
+  }, [schedules, selectedClass]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -275,6 +289,7 @@ const ExamResult = () => {
                         value={selectedGroup} 
                         onValueChange={(value) => {
                             setSelectedGroup(value);
+                          setSelectedClass('');
                             setSelectedSchedule('');
                         }}
                     >
@@ -291,6 +306,30 @@ const ExamResult = () => {
                     </Select>
                 </div>
 
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+              <Label htmlFor="classSelect">Class Filter</Label>
+              <Select
+                value={selectedClass}
+                onValueChange={(val) => {
+                  setSelectedClass(val);
+                  setSelectedSchedule('');
+                }}
+                disabled={!selectedGroup}
+              >
+                <SelectTrigger id="classSelect">
+                  <SelectValue placeholder="All Classes" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Classes</SelectItem>
+                  {sclasses.map(c => (
+                    <SelectItem key={c._id} value={c._id}>
+                      {c.sclassName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
                 <div className="grid w-full max-w-sm items-center gap-1.5">
                     <Label htmlFor="examSelect">Exam</Label>
                     <Select 
@@ -302,7 +341,7 @@ const ExamResult = () => {
                             <SelectValue placeholder="Select Exam" />
                         </SelectTrigger>
                         <SelectContent>
-                            {schedules.map(schedule => (
+                  {filteredSchedules.map(schedule => (
                                 <SelectItem key={schedule._id} value={schedule._id}>
                                     {schedule.class?.sclassName} - {schedule.subject}
                                 </SelectItem>

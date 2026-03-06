@@ -71,6 +71,10 @@ import ParentHomework from './pages/Parent/ParentHomework';
 import ParentReportCard from './pages/Parent/ParentReportCard';
 import AccountantDashboard from './pages/Accountant/AccountantDashboard';
 import ReceptionistDashboard from './pages/ReceptionistDashboard';
+import DesignAdmitCard from './pages/examination/DesignAdmitCard';
+import PrintAdmitCard from './pages/examination/PrintAdmitCard';
+import DesignMarkSheet from './pages/examination/DesignMarkSheet';
+import PrintMarkSheet from './pages/examination/PrintMarkSheet';
 
 
 
@@ -132,6 +136,10 @@ function App() {
                   <Route path="exam-schedule" element={<ExamSchedule />} />
                   <Route path="marks-division" element={<MarksDivision />} />
                   <Route path="exam-result" element={<ExamResult />} />
+                  <Route path="design-admit-card" element={<DesignAdmitCard />} />
+                  <Route path="print-admit-card" element={<PrintAdmitCard />} />
+                  <Route path="design-mark-sheet" element={<DesignMarkSheet />} />
+                  <Route path="print-mark-sheet" element={<PrintMarkSheet />} />
                   <Route path="campuses" element={<CampusManagement />} />
                   <Route path="reports" element={<ReportsPage />} />
                   <Route path="reports" element={<ReportsPage />} />

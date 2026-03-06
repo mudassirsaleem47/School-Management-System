@@ -25,27 +25,27 @@ import { useAuth } from "../context/AuthContext"
 
 // Admin full navigation
 const adminNavData = [
-  { 
-      title: 'Front Office', 
-      icon: IconBriefcase,
-      items: [
-          { title: 'Admission Enquiry', url: '/admin/enquiry' },
-          { title: 'Visitor Book', url: '/admin/visitor-book' },
-          { title: 'Phone Call Log', url: '/admin/phone-calls' },
-          { title: 'Complain', url: '/admin/complain' },
-      ]
+  {
+    title: 'Front Office',
+    icon: IconBriefcase,
+    items: [
+      { title: 'Admission Enquiry', url: '/admin/enquiry' },
+      { title: 'Visitor Book', url: '/admin/visitor-book' },
+      { title: 'Phone Call Log', url: '/admin/phone-calls' },
+      { title: 'Complain', url: '/admin/complain' },
+    ]
   },
-  { 
-      title: 'Student Information', 
-      icon: IconSchool, 
-      items: [
-          { title: 'Students Details', url: '/admin/students' },
-          { title: 'Student Admission', url: '/admin/admission' },
-          { title: 'Disabled Students', url: '/admin/students/disabled' },
-          { title: 'Disable Reasons', url: '/admin/students/disable-reasons' },
-      ]
+  {
+    title: 'Student Information',
+    icon: IconSchool,
+    items: [
+      { title: 'Students Details', url: '/admin/students' },
+      { title: 'Student Admission', url: '/admin/admission' },
+      { title: 'Disabled Students', url: '/admin/students/disabled' },
+      { title: 'Disable Reasons', url: '/admin/students/disable-reasons' },
+    ]
   },
-  { 
+  {
     title: 'Lesson Plan',
     icon: IconBook,
     items: [
@@ -63,65 +63,69 @@ const adminNavData = [
       { title: 'Attendance By Date', url: '/admin/attendance/by-date' },
     ]
   },
-  { 
-      title: 'Academics', 
-      icon: IconBook, 
-      items: [
-          { title: 'Classes', url: '/admin/classes' },
-          { title: 'Subjects', url: '/admin/subjects' },
-        { title: 'Subject Groups', url: '/admin/subject-groups' },
-          { title: 'Class Schedule', url: '/admin/class-schedule' },
-          { title: 'Teacher Schedule', url: '/admin/teacher-schedule' },
-          { title: 'Promote Students', url: '/admin/promote' },
-      ]
-  },
-  { 
-      title: 'Fees Collections',    
-      icon: IconCurrencyDollar, 
-      items: [
-          { title: 'Collect Fees', url: '/admin/fee-collection' },
-          { title: 'Assign Fees', url: '/admin/fee-assignment' },
-          { title: 'Fee Management', url: '/admin/fee-management' },
-          { title: 'Fee Reports', url: '/admin/fee-reports' },
-        { title: 'Fee Reminder', url: '/admin/fee-reminder' },
-      ]
+  {
+    title: 'Academics',
+    icon: IconBook,
+    items: [
+      { title: 'Classes', url: '/admin/classes' },
+      { title: 'Subjects', url: '/admin/subjects' },
+      { title: 'Subject Groups', url: '/admin/subject-groups' },
+      { title: 'Class Schedule', url: '/admin/class-schedule' },
+      { title: 'Teacher Schedule', url: '/admin/teacher-schedule' },
+      { title: 'Promote Students', url: '/admin/promote' },
+    ]
   },
   {
-      title: 'Finance',
-      icon: IconWallet,
-      items: [
-          { title: 'Income Management', url: '/admin/income' },
-          { title: 'Expense Management', url: '/admin/expense' },
-      ]
+    title: 'Fees Collections',
+    icon: IconCurrencyDollar,
+    items: [
+      { title: 'Collect Fees', url: '/admin/fee-collection' },
+      { title: 'Assign Fees', url: '/admin/fee-assignment' },
+      { title: 'Fee Management', url: '/admin/fee-management' },
+      { title: 'Fee Reports', url: '/admin/fee-reports' },
+      { title: 'Fee Reminder', url: '/admin/fee-reminder' },
+    ]
   },
   {
-      title: 'Examinations',
-      icon: IconBook,
-      items: [
-          { title: 'Exam Groups', url: '/admin/exam-groups' },
-          { title: 'Exam Schedule', url: '/admin/exam-schedule' },
-          { title: 'Exam Result', url: '/admin/exam-result' },
-          { title: 'Marks Grade', url: '/admin/marks-grade' },
-          { title: 'Marks Division', url: '/admin/marks-division' },
-      ]
+    title: 'Finance',
+    icon: IconWallet,
+    items: [
+      { title: 'Income Management', url: '/admin/income' },
+      { title: 'Expense Management', url: '/admin/expense' },
+    ]
   },
   {
-      title: 'Staff Management',
-      icon: IconUsers,
-      items: [
-        { title: 'Teachers', url: '/admin/teachers' },
-        { title: 'Accountants', url: '/admin/accountants' },
-        { title: 'Receptionists', url: '/admin/receptionists' },
-      ]
+    title: 'Examinations',
+    icon: IconBook,
+    items: [
+      { title: 'Exam Groups', url: '/admin/exam-groups' },
+      { title: 'Exam Schedule', url: '/admin/exam-schedule' },
+      { title: 'Exam Result', url: '/admin/exam-result' },
+      { title: 'Marks Grade', url: '/admin/marks-grade' },
+      { title: 'Marks Division', url: '/admin/marks-division' },
+      { title: 'Design Admit Card', url: '/admin/design-admit-card' },
+      { title: 'Print Admit Card', url: '/admin/print-admit-card' },
+      { title: 'Design Mark Sheet', url: '/admin/design-mark-sheet' },
+      { title: 'Print Mark Sheet', url: '/admin/print-mark-sheet' },
+    ]
   },
   {
-      title: 'Communication',
-      icon: IconMessage,
-      items: [
-          { title: 'Send Messages', url: '/admin/send-messages' },
-          { title: 'Message Templates', url: '/admin/message-templates' },
-          { title: 'Message Report', url: '/admin/message-report' },
-          { title: 'Birthday Wishes', url: '/admin/birthday-wishes' },
+    title: 'Staff Management',
+    icon: IconUsers,
+    items: [
+      { title: 'Teachers', url: '/admin/teachers' },
+      { title: 'Accountants', url: '/admin/accountants' },
+      { title: 'Receptionists', url: '/admin/receptionists' },
+    ]
+  },
+  {
+    title: 'Communication',
+    icon: IconMessage,
+    items: [
+      { title: 'Send Messages', url: '/admin/send-messages' },
+      { title: 'Message Templates', url: '/admin/message-templates' },
+      { title: 'Message Report', url: '/admin/message-report' },
+      { title: 'Birthday Wishes', url: '/admin/birthday-wishes' },
     ]
   },
   {
@@ -136,14 +140,14 @@ const adminNavData = [
     ]
   },
   {
-      title: 'Card Management',
-      icon: IconId,
-      items: [
-          { title: 'Student ID Card', url: '/admin/card-management/student' },
-          { title: 'Staff ID Card', url: '/admin/card-management/staff' },
-          { title: 'Result Card', url: '/admin/report-card' },
-          { title: 'Template Designer', url: '/admin/card-management/designer' },
-      ]
+    title: 'Card Management',
+    icon: IconId,
+    items: [
+      { title: 'Student ID Card', url: '/admin/card-management/student' },
+      { title: 'Staff ID Card', url: '/admin/card-management/staff' },
+      { title: 'Result Card', url: '/admin/report-card' },
+      { title: 'Template Designer', url: '/admin/card-management/designer' },
+    ]
   },
   { title: 'Media Manager', icon: IconPhoto, url: '/admin/media' },
   { title: 'Campuses', url: '/admin/campuses', icon: IconBuildingSkyscraper },

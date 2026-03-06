@@ -62,6 +62,7 @@ const ExamSchedule = () => {
   const [editingSchedule, setEditingSchedule] = useState(null);
   
   const [selectedGroup, setSelectedGroup] = useState('');
+  const [selectedClassFilter, setSelectedClassFilter] = useState('all');
   
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
@@ -245,7 +246,29 @@ const ExamSchedule = () => {
                         </SelectContent>
                     </Select>
                 </div>
-                
+
+            {selectedGroup && (
+              <div className="grid w-full max-w-sm items-center gap-1.5 ml-4">
+                <Label htmlFor="classFilterSelect">Select Class</Label>
+                <Select
+                  value={selectedClassFilter}
+                  onValueChange={setSelectedClassFilter}
+                >
+                  <SelectTrigger id="classFilterSelect">
+                    <SelectValue placeholder="All Classes" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Classes</SelectItem>
+                    {classes.map(cls => (
+                      <SelectItem key={cls._id} value={cls._id}>
+                        {cls.sclassName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
                 {selectedGroup && (
                     <div className="ml-auto">
                         <Dialog open={isDialogOpen} onOpenChange={(open) => {
@@ -444,7 +467,9 @@ const ExamSchedule = () => {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {schedules.map((schedule) => (
+                      {schedules
+                        .filter(schedule => selectedClassFilter === 'all' || (schedule.class && schedule.class._id === selectedClassFilter) || schedule.class === selectedClassFilter)
+                        .map((schedule) => (
                                 <TableRow key={schedule._id}>
                                     <TableCell className="font-medium">
                                         <div className="flex items-center gap-2">

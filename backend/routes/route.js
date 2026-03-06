@@ -303,5 +303,9 @@ router.post('/MediaDelete', deleteMedia);
 // --- Attendance Routes ---
 const attendanceRoutes = require('./attendanceRoutes');
 router.use('/Attendance', attendanceRoutes);
+const { getAdmitCardData: getAdmitCardDataNew } = require('../controllers/admit-card-controller');
+
+// Admit Card Routes
+router.get('/AdmitCardData/:schoolId/:examGroupId/:classId', getAdmitCardDataNew);
 
 module.exports = router;

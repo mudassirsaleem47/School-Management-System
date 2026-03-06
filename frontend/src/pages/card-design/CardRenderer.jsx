@@ -88,6 +88,49 @@ const CardRenderer = ({ template, data, schoolData }) => {
                     );
                 }
 
+                // --- Exam Table Rendering ---
+                if (el.type === 'examTable') {
+                    const scheduleList = data.examScheduleList || [];
+                    return (
+                        <div
+                            key={el.id}
+                            className="absolute bg-white overflow-hidden"
+                            style={{
+                                left: `${el.x}px`,
+                                top: `${el.y}px`,
+                                width: `${el.width}px`,
+                                height: `${el.height}px`,
+                                zIndex: 10
+                            }}
+                        >
+                            <table className="exam-table-print" style={{ width: '100%', fontSize: `${el.fontSize || 10}px`, borderCollapse: 'collapse' }}>
+                                <thead>
+                                    <tr>
+                                        <th style={{ border: '1px solid #000', padding: '4px', backgroundColor: '#f3f4f6' }}>Date</th>
+                                        <th style={{ border: '1px solid #000', padding: '4px', backgroundColor: '#f3f4f6' }}>Subject</th>
+                                        <th style={{ border: '1px solid #000', padding: '4px', backgroundColor: '#f3f4f6' }}>Time</th>
+                                        <th style={{ border: '1px solid #000', padding: '4px', backgroundColor: '#f3f4f6' }}>Duration</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {scheduleList.length > 0 ? scheduleList.map((exam, idx) => (
+                                        <tr key={idx}>
+                                            <td style={{ border: '1px solid #000', padding: '4px' }}>{exam.examDate ? formatDateTime(exam.examDate, { dateOnly: true }) : '-'}</td>
+                                            <td style={{ border: '1px solid #000', padding: '4px' }}>{exam.subject || '-'}</td>
+                                            <td style={{ border: '1px solid #000', padding: '4px' }}>{exam.startTime || '-'}</td>
+                                            <td style={{ border: '1px solid #000', padding: '4px' }}>{exam.duration ? `${exam.duration}m` : '-'}</td>
+                                        </tr>
+                                    )) : (
+                                        <tr>
+                                            <td colSpan="4" style={{ border: '1px solid #000', padding: '4px', textAlign: 'center' }}>No schedule available</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    );
+                }
+
                 // --- Text Rendering ---
                 return (
                     <div
@@ -100,18 +143,10 @@ const CardRenderer = ({ template, data, schoolData }) => {
                             fontWeight: el.fontWeight,
                             color: el.color,
                             zIndex: 10,
-                            fontFamily: 'Arial, sans-serif' // Fallback font
+                            fontFamily: 'Arial, sans-serif'
                         }}
                     >
                         {el.label.startsWith('{') ? el.label : value} 
-                        {/* 
-                           Note: In CardDesigner, labels are mostly static like "Student Name" 
-                           but the ACTUAL dynamic value is what we want.
-                           The logic in CardDesigner was: if type=text, show label. 
-                           Here we want the VALUES.
-                           Wait - existing CardDesigner elements store `field` ID. 
-                           So we just render `getValue(el.field)`.
-                        */}
                     </div>
                 );
             })}
