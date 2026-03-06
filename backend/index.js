@@ -6,6 +6,14 @@ const routes = require("./routes/route");
 const transportRoutes = require("./routes/transportRoutes");
 const lessonPlanRoutes = require("./routes/lessonPlanRoutes");
 const attendanceRoutes = require("./routes/attendanceRoutes");
+const staffAttendanceRoutes = require("./routes/staffAttendanceRoutes");
+const payrollRoutes = require("./routes/payrollRoutes");
+const designationRoutes = require("./routes/designationRoutes");
+const issueItemRoutes = require("./routes/issueItemRoutes");
+const inventoryItemRoutes = require("./routes/inventoryItemRoutes");
+const itemMasterRoutes = require("./routes/itemMasterRoutes");
+const itemCategoryRoutes = require("./routes/itemCategoryRoutes");
+const itemSupplierRoutes = require("./routes/itemSupplierRoutes");
 
 dotenv.config();
 
@@ -44,6 +52,14 @@ app.use('/', routes);
 app.use('/Transport', transportRoutes);
 app.use('/LessonPlan', lessonPlanRoutes);
 app.use('/Attendance', attendanceRoutes);
+app.use('/StaffAttendance', staffAttendanceRoutes);
+app.use('/Payroll', payrollRoutes);
+app.use('/Designation', designationRoutes);
+app.use('/Inventory/IssueItem', issueItemRoutes);
+app.use('/Inventory/Stock', inventoryItemRoutes);
+app.use('/Inventory/Item', itemMasterRoutes);
+app.use('/Inventory/Category', itemCategoryRoutes);
+app.use('/Inventory/Supplier', itemSupplierRoutes);
 
 // Database Connection
 mongoose

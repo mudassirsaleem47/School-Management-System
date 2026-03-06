@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
-    Save, X, Image as ImageIcon, Plus, Loader2, LayoutTemplate
+    Save, X, Image as ImageIcon, Plus, Loader2, LayoutTemplate, Upload
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -304,7 +304,13 @@ const DesignMarkSheet = () => {
                                         </div>
                                     </div>
                                 ) : (
-                                    <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'headerLogo')} className="cursor-pointer" />
+                                        <Label className="cursor-pointer block">
+                                            <div className="border border-dashed border-gray-300 rounded-lg py-8 flex flex-col items-center justify-center text-center hover:bg-muted/50 transition-colors">
+                                                <Upload className="h-5 w-5 text-muted-foreground mb-1" />
+                                                <span className="text-xs font-medium text-muted-foreground">Upload Logo</span>
+                                            </div>
+                                            <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'headerLogo')} className="hidden" />
+                                        </Label>
                                 )}
                             </div>
 
@@ -324,7 +330,13 @@ const DesignMarkSheet = () => {
                                                 </div>
                                             </div>
                                         ) : (
-                                            <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, sigField)} className="cursor-pointer text-xs" />
+                                                <Label className="cursor-pointer block">
+                                                    <div className="border border-dashed border-gray-300 rounded-lg py-4 flex flex-col items-center justify-center text-center hover:bg-muted/50 transition-colors">
+                                                        <Upload className="h-4 w-4 text-muted-foreground mb-1" />
+                                                        <span className="text-[10px] font-medium text-muted-foreground">Upload Signature</span>
+                                                    </div>
+                                                    <Input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, sigField)} className="hidden" />
+                                                </Label>
                                         )}
                                     </div>
                                 ))}

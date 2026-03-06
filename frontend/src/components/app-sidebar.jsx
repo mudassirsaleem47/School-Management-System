@@ -9,10 +9,14 @@ import {
   IconSchool,
   IconSettings,
   IconUsers,
+  IconUsersGroup,
   IconWallet,
   IconBus,
   IconCalendar,
   IconPhoto,
+  IconClock,
+  IconChecklist,
+  IconBox
 } from "@tabler/icons-react"
 
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail } from "./ui/sidebar"
@@ -110,12 +114,33 @@ const adminNavData = [
     ]
   },
   {
+    title: 'Human Resource',
+    icon: IconUsersGroup,
+    items: [
+      { title: 'Staff Directory', url: '/admin/staff-directory' },
+      { title: 'Staff Attendance', url: '/admin/attendance/staff' },
+      { title: 'Payroll', url: '/admin/staff-payroll' },
+      { title: 'Designations', url: '/admin/designations' },
+    ]
+  },
+  {
     title: 'Staff Management',
     icon: IconUsers,
     items: [
       { title: 'Teachers', url: '/admin/teachers' },
       { title: 'Accountants', url: '/admin/accountants' },
       { title: 'Receptionists', url: '/admin/receptionists' },
+    ]
+  },
+  {
+    title: 'Inventory',
+    icon: IconBox,
+    items: [
+      { title: 'Add Item', url: '/admin/inventory/add-item' },
+      { title: 'Add Item Stock', url: '/admin/inventory/add-item-stock' },
+      { title: 'Issue Item', url: '/admin/inventory/issue-item' },
+      { title: 'Item Category', url: '/admin/inventory/item-category' },
+      { title: 'Item Supplier', url: '/admin/inventory/item-supplier' },
     ]
   },
   {

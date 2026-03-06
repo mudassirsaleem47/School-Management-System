@@ -30,10 +30,10 @@ import ExamSchedule from './pages/ExamSchedule';
 import MarksDivision from './pages/MarksDivision';
 import ExamResult from './pages/ExamResult';
 import CampusManagement from './pages/CampusManagement';
-import DesignationManagement from './pages/DesignationManagement';
 import DisableReasonPage from './pages/DisableReasonPage';
 import AccountantList from './pages/AccountantList';
 import ReceptionistList from './pages/ReceptionistList';
+import StaffDirectory from './pages/StaffDirectory';
 import MediaManager from './pages/MediaManager';
 
 import SendMessages from './pages/SendMessages';
@@ -47,6 +47,8 @@ import TransportVehiclesPage from './pages/Transport/TransportVehiclesPage';
 import TransportStopsPage from './pages/Transport/TransportStopsPage';
 import TransportStudentsPage from './pages/Transport/TransportStudentsPage';
 import StudentAttendancePage from './pages/Attendance/StudentAttendancePage';
+import StaffAttendancePage from './pages/Attendance/StaffAttendancePage';
+import StaffPayrollPage from './pages/HumanResource/StaffPayrollPage';
 import ApproveLeavePage from './pages/Attendance/ApproveLeavePage';
 import AttendanceByDatePage from './pages/Attendance/AttendanceByDatePage';
 import LessonTopics from './pages/LessonPlan/LessonTopics';
@@ -75,8 +77,14 @@ import DesignAdmitCard from './pages/examination/DesignAdmitCard';
 import PrintAdmitCard from './pages/examination/PrintAdmitCard';
 import DesignMarkSheet from './pages/examination/DesignMarkSheet';
 import PrintMarkSheet from './pages/examination/PrintMarkSheet';
+import NotFoundPage from './pages/NotFoundPage';
 
-
+import DesignationManagement from './pages/HumanResource/DesignationManagement';
+import IssueItems from './pages/Inventory/IssueItems';
+import AddItemStock from './pages/Inventory/AddItemStock';
+import ItemMaster from './pages/Inventory/ItemMaster';
+import ItemCategory from './pages/Inventory/ItemCategory';
+import ItemSupplier from './pages/Inventory/ItemSupplier';
 
 import { ToastProvider } from './context/ToastContext';
 import { CampusProvider } from './context/CampusContext';
@@ -145,16 +153,24 @@ function App() {
                   <Route path="reports" element={<ReportsPage />} />
                   <Route path="accountants" element={<AccountantList />} />
                   <Route path="receptionists" element={<ReceptionistList />} />
+                  <Route path="staff-directory" element={<StaffDirectory />} />
+                  <Route path="staff-payroll" element={<StaffPayrollPage />} />
+                  <Route path="designations" element={<DesignationManagement />} />
                   <Route path="media" element={<MediaManager />} />
-                  {/* <Route path="designations" element={<DesignationManagement />} /> */}
                   <Route path="send-messages" element={<SendMessages />} />
                   <Route path="message-templates" element={<MessageTemplates />} />
+                  <Route path="inventory/add-item-stock" element={<AddItemStock />} />
+                  <Route path="inventory/add-item" element={<ItemMaster />} />
+                  <Route path="inventory/item-category" element={<ItemCategory />} />
+                  <Route path="inventory/item-supplier" element={<ItemSupplier />} />
+                  <Route path="inventory/issue-item" element={<IssueItems />} />
                   <Route path="transport/pickup" element={<TransportPickupPage />} />
                   <Route path="transport/routes" element={<TransportRoutesPage />} />
                   <Route path="transport/vehicles" element={<TransportVehiclesPage />} />
                   <Route path="transport/stops" element={<TransportStopsPage />} />
                   <Route path="transport/assignments" element={<TransportStudentsPage />} />
                   <Route path="attendance/student" element={<StudentAttendancePage />} />
+                  <Route path="attendance/staff" element={<StaffAttendancePage />} />
                   <Route path="attendance/approve-leave" element={<ApproveLeavePage />} />
                   <Route path="attendance/by-date" element={<AttendanceByDatePage />} />
 
@@ -173,6 +189,7 @@ function App() {
                   <Route path="/admin/report-card" element={<ReportCard />} />
                   <Route path="message-report" element={<MessageReport />} />
                   <Route path="notifications" element={<NotificationsPage />} />
+                  <Route path="*" element={<NotFoundPage />} />
 
                   {/* Exam Management */}
                 </Route>

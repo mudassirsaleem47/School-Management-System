@@ -14,6 +14,7 @@ const cardTemplateSchema = new mongoose.Schema({
         type: String, // URL of the uploaded template image
         required: false
     },
+    
     cardType: {
         type: String,
         enum: ['student', 'staff', 'admit', 'admit_card', 'report', 'mark_sheet'],
