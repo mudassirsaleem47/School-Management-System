@@ -85,11 +85,14 @@ import AddItemStock from './pages/Inventory/AddItemStock';
 import ItemMaster from './pages/Inventory/ItemMaster';
 import ItemCategory from './pages/Inventory/ItemCategory';
 import ItemSupplier from './pages/Inventory/ItemSupplier';
+import ItemStore from './pages/Inventory/ItemStore';
+
 
 import { ToastProvider } from './context/ToastContext';
 import { CampusProvider } from './context/CampusContext';
 import { ThemeProvider } from "./components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
+import AiChatbot from './components/AiChatbot';
 
 function App() {
   return (
@@ -162,7 +165,9 @@ function App() {
                   <Route path="inventory/add-item-stock" element={<AddItemStock />} />
                   <Route path="inventory/add-item" element={<ItemMaster />} />
                   <Route path="inventory/item-category" element={<ItemCategory />} />
+                  <Route path="inventory/item-store" element={<ItemStore />} />
                   <Route path="inventory/item-supplier" element={<ItemSupplier />} />
+
                   <Route path="inventory/issue-item" element={<IssueItems />} />
                   <Route path="transport/pickup" element={<TransportPickupPage />} />
                   <Route path="transport/routes" element={<TransportRoutesPage />} />
@@ -248,6 +253,7 @@ function App() {
               </Route>
             </Routes>
             <Toaster />
+            <AiChatbot />
           </ThemeProvider>
         </CampusProvider>
       </ToastProvider>

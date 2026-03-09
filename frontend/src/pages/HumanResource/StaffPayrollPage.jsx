@@ -50,6 +50,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { MonthPicker } from "@/components/ui/MonthPicker";
+
 
 const API_BASE = API_URL;
 
@@ -193,13 +195,12 @@ const StaffPayrollPage = () => {
                 
                 <div className="flex items-center gap-3 bg-white p-2 rounded-lg border shadow-sm">
                     <Label htmlFor="month" className="ml-2">Select Month:</Label>
-                    <Input 
-                        id="month"
-                        type="month" 
+                    <MonthPicker 
                         value={monthYear} 
-                        onChange={(e) => setMonthYear(e.target.value)}
-                        className="w-auto h-9"
+                        onChange={(val) => setMonthYear(val)}
+                        className="w-[180px] h-9"
                     />
+
                     <Button 
                         onClick={handleGenerate} 
                         disabled={generating}

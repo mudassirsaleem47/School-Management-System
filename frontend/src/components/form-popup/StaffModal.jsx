@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/ui/DatePicker";
+import { PasswordField } from '@/components/ui/email-pass';
 import {
     Dialog,
     DialogContent,
@@ -170,20 +171,17 @@ const StaffModal = ({ staff, onClose }) => {
                             </div>
                         </div>
 
+                        {!staff && (
+                            <PasswordField
+                                label="Password"
+                                id="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                                placeholder="••••••••"
+                            />
+                        )}
                         <div className="grid grid-cols-2 gap-4">
-                            {!staff && (
-                                <div className="space-y-2">
-                                    <Label htmlFor="password">Password *</Label>
-                                    <Input
-                                        id="password"
-                                        type="password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        placeholder="••••••••"
-                                        required
-                                    />
-                                </div>
-                            )}
                             <div className="space-y-2">
                                 <Label htmlFor="phone">Phone Number</Label>
                                 <Input

@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/ui/DatePicker";
+import { PasswordField } from '@/components/ui/email-pass';
 
 const TeacherModal = ({ isOpen, onClose, onSubmit, initialData }) => {
     // Form state - if initialData exists (Edit mode), use it, otherwise keep empty
@@ -97,25 +98,18 @@ const TeacherModal = ({ isOpen, onClose, onSubmit, initialData }) => {
                                 placeholder="teacher@example.com"
                                 value={formData.email}
                                 onChange={handleChange}
-                                required 
+                                required
                             />
                         </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="password">
-                                Password {!initialData && <span className="text-destructive">*</span>}
-                            </Label>
-                            <Input
-                                id="password"
-                                name="password"
-                                type="password" 
-                                placeholder={initialData ? "Leave blank to keep current" : "Min 6 chars"}
-                                value={formData.password}
-                                onChange={handleChange}
-                                required={!initialData}
-                                minLength={6}
-                            />
-                        </div>
+                        <PasswordField
+                            label={`Password ${!initialData ? '*' : ''}`}
+                            id="password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            required={!initialData}
+                            placeholder={initialData ? "Leave blank to keep current" : "Min 8 chars"}
+                        />
                     </div>
 
                     {/* Row 2: Phone, Subject, Qualification */}

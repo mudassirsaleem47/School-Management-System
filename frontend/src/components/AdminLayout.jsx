@@ -46,6 +46,37 @@ const AdminLayout = () => {
     setExtraBreadcrumb(null);
   }, [location.pathname]);
 
+  // Dynamic Browser Tab Title
+  useEffect(() => {
+    if (!currentUser) return;
+
+    // 1. Get School Name from currentUser (handles different user types)
+    const schoolName = currentUser.schoolName || currentUser.school?.schoolName || "School Management System";
+
+    // 2. Determine Page Name from path
+    const paths = location.pathname.split('/').filter(Boolean);
+    const lastSegment = paths[paths.length - 1];
+
+    // Convert slug to Title Case (e.g. "student-list" -> "Student List")
+    const toTitle = (str) => {
+      if (!str) return "Dashboard";
+      return str
+        .split('-')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+    };
+
+    let pageTitle = toTitle(lastSegment);
+
+    // 3. Set Document Title
+    if (pageTitle.toLowerCase() === "dashboard" || paths.length <= 1) {
+      document.title = schoolName;
+    } else {
+      document.title = `${pageTitle} - ${schoolName}`;
+    }
+  }, [location.pathname, currentUser]);
+
+
   // Apply Theme Globals from Storage
   useEffect(() => {
     try {
@@ -78,14 +109,7 @@ const AdminLayout = () => {
       const savedFont = localStorage.getItem('sms_fontSize');
       if (savedFont) document.documentElement.style.fontSize = savedFont;
 
-      const animations = localStorage.getItem('sms_animations');
-      if (animations === 'false') {
-        document.documentElement.style.setProperty('--animate-duration', '0s');
-        document.documentElement.classList.add('no-animations');
-      } else {
-        document.documentElement.style.removeProperty('--animate-duration');
-        document.documentElement.classList.remove('no-animations');
-      }
+
     } catch (e) {
       console.error('Failed to apply theme preferences:', e);
     }

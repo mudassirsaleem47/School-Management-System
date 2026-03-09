@@ -464,6 +464,12 @@ const getFeeStatistics = async (req, res) => {
             }
         ]);
 
+        // All-time collection
+        const allTimeCollection = await FeeTransaction.aggregate([
+            { $match: transMatchQuery },
+            { $group: { _id: null, total: { $sum: "$amount" }, count: { $sum: 1 } } }
+        ]);
+
         res.status(200).json({
             pendingFees: {
                 amount: pendingFeesData[0]?.totalPending || 0,
@@ -476,6 +482,10 @@ const getFeeStatistics = async (req, res) => {
             monthlyCollection: {
                 amount: monthlyCollection[0]?.total || 0,
                 count: monthlyCollection[0]?.count || 0
+            },
+            totalCollection: {
+                amount: allTimeCollection[0]?.total || 0,
+                count: allTimeCollection[0]?.count || 0
             }
         });
 

@@ -14,6 +14,8 @@ const inventoryItemRoutes = require("./routes/inventoryItemRoutes");
 const itemMasterRoutes = require("./routes/itemMasterRoutes");
 const itemCategoryRoutes = require("./routes/itemCategoryRoutes");
 const itemSupplierRoutes = require("./routes/itemSupplierRoutes");
+const itemStoreRoutes = require("./routes/itemStoreRoutes");
+
 
 dotenv.config();
 
@@ -60,6 +62,8 @@ app.use('/Inventory/Stock', inventoryItemRoutes);
 app.use('/Inventory/Item', itemMasterRoutes);
 app.use('/Inventory/Category', itemCategoryRoutes);
 app.use('/Inventory/Supplier', itemSupplierRoutes);
+app.use('/Inventory/Store', itemStoreRoutes);
+
 
 // Database Connection
 mongoose

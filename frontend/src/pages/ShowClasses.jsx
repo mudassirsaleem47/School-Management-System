@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
@@ -58,6 +59,8 @@ const API_BASE = API_URL;
 const ShowClasses = () => {
     const { currentUser } = useAuth();
     const location = useLocation();
+    const navigate = useNavigate();
+
 
     useEffect(() => {
         if (location.state?.openAddModal) {
@@ -77,8 +80,13 @@ const ShowClasses = () => {
     const [showAddModal, setShowAddModal] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Edit Class State
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [currentEditClass, setCurrentEditClass] = useState(null);
+
     // Delete Confirmation State
     const [deleteConfig, setDeleteConfig] = useState({ open: false, type: null, id: null, subId: null });
+
 
     // --- 1. Fetch Classes ---
     const fetchClasses = React.useCallback(async () => {
@@ -125,7 +133,7 @@ const ShowClasses = () => {
         }
     }, [currentUser, fetchClasses, fetchTeachers]);
 
-    // --- 2. Add Class ---
+    // --- 2. Add/Edit Class ---
     const addClass = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -150,6 +158,36 @@ const ShowClasses = () => {
             setIsSubmitting(false);
         }
     };
+
+    const handleEditClick = (cls) => {
+        setCurrentEditClass(cls);
+        setSclassName(cls.sclassName);
+        setClassIncharge(cls.classIncharge?._id || "");
+        setShowEditModal(true);
+    };
+
+    const updateClass = async (e) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        try {
+            const data = {
+                sclassName: sclassName,
+                classIncharge: classIncharge || undefined
+            };
+            await axios.put(`${API_BASE}/SclassUpdate/${currentEditClass._id}`, data);
+            setShowEditModal(false);
+            setSclassName("");
+            setClassIncharge("");
+            setCurrentEditClass(null);
+            fetchClasses();
+            toast.success("Class updated successfully!");
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Error updating class");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
 
     // --- 3. Delete Class/Section Config ---
     const handleDeleteRequest = (type, id, subId = null) => {
@@ -235,13 +273,14 @@ const ShowClasses = () => {
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
                                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                            <DropdownMenuItem onClick={() => { }}>
+                                            <DropdownMenuItem onClick={() => navigate(`/admin/students?class=${item._id}`)}>
                                                 <Users className="mr-2 h-4 w-4" /> View Students
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => { }}>
+                                            <DropdownMenuItem onClick={() => handleEditClick(item)}>
                                                 <Pencil className="mr-2 h-4 w-4" /> Edit Class
                                             </DropdownMenuItem>
                                             <DropdownMenuSeparator />
+
                                             <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDeleteRequest('class', item._id)}>
                                                 <Trash2 className="mr-2 h-4 w-4" /> Delete Class
                                             </DropdownMenuItem>
@@ -372,8 +411,62 @@ const ShowClasses = () => {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+            {/* Edit Class Modal */}
+            <Dialog open={showEditModal} onOpenChange={(open) => {
+                setShowEditModal(open);
+                if (!open) {
+                    setSclassName("");
+                    setClassIncharge("");
+                    setCurrentEditClass(null);
+                }
+            }}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Edit Class</DialogTitle>
+                        <DialogDescription>
+                            Update class information and incharge.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={updateClass} className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-sclassName">Class Name <span className="text-destructive">*</span></Label>
+                            <Input
+                                id="edit-sclassName"
+                                placeholder="e.g. Class 10"
+                                value={sclassName}
+                                onChange={(e) => setSclassName(e.target.value)}
+                                required
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-incharge">Class Incharge (Optional)</Label>
+                            <Select value={classIncharge} onValueChange={setClassIncharge}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select Teacher" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {teachers.map((teacher) => (
+                                        <SelectItem key={teacher._id} value={teacher._id}>
+                                            {teacher.name} ({teacher.subject})
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <DialogFooter>
+                            <Button type="button" variant="outline" onClick={() => setShowEditModal(false)}>Cancel</Button>
+                            <Button type="submit" disabled={isSubmitting}>
+                                {isSubmitting ? "Updating..." : "Update Class"}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };
+
 
 export default ShowClasses;

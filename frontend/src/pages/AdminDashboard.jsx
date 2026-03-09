@@ -33,7 +33,7 @@ const AdminDashboard = () => {
   const { selectedCampus, campuses } = useCampus();
   const navigate = useNavigate();
   const isTeacher = currentUser?.userType === 'teacher';
-  const schoolId = isTeacher ? (currentUser?.school?._id || currentUser?.school) : currentUser?._id;
+  const schoolId = currentUser?.school?._id || currentUser?.school || currentUser?._id;
   const basePath = isTeacher ? '/teacher' : '/admin';
 
   const [loading, setLoading] = useState(true);
@@ -138,7 +138,7 @@ const AdminDashboard = () => {
       let revenue = 0;
       if (!isTeacher) {
         try {
-          const incomeRes = await axios.get(`${API_URL}/IncomeStatistics/${schoolId}${sessionQuery}`);
+          const incomeRes = await axios.get(`${API_URL}/IncomeStatistics/${schoolId}`);
           revenue = incomeRes.data?.totalIncome?.amount || 0;
         } catch { }
       }
@@ -151,9 +151,9 @@ const AdminDashboard = () => {
         axios.get(`${API_URL}/Events/${schoolId}`),
         ...(isTeacher ? [] : [
           axios.get(`${API_URL}/Students/${schoolId}`),
-          axios.get(`${API_URL}/FeeStatistics/${schoolId}${sessionQuery}`),
-          axios.get(`${API_URL}/IncomeStatistics/${schoolId}${sessionQuery}`),
-          axios.get(`${API_URL}/ExpenseStatistics/${schoolId}${sessionQuery}`),
+          axios.get(`${API_URL}/FeeStatistics/${schoolId}`),
+          axios.get(`${API_URL}/IncomeStatistics/${schoolId}`),
+          axios.get(`${API_URL}/ExpenseStatistics/${schoolId}`),
           axios.get(`${API_URL}/Sclasses/${schoolId}`),
         ]),
       ];
@@ -231,10 +231,10 @@ const AdminDashboard = () => {
     if (otherCount > 0) genderData.push({ name: 'Other', value: otherCount, fill: 'hsl(150, 60%, 50%)' });
 
     // Financial for donut chart
-    const totalIncome = incomeStats?.totalIncome || 0;
-    const totalExpense = expenseStats?.totalExpense || 0;
-    const totalFeeCollected = feeStats?.totalCollected || 0;
-    const totalFeePending = feeStats?.totalPending || 0;
+    const totalIncome = incomeStats?.totalIncome?.amount || 0;
+    const totalExpense = expenseStats?.totalExpense?.amount || 0;
+    const totalFeeCollected = feeStats?.totalCollection?.amount || 0;
+    const totalFeePending = feeStats?.pendingFees?.amount || 0;
 
     const financialOverview = [
       { name: 'Income', value: totalIncome, fill: 'hsl(142, 71%, 45%)' },
@@ -263,7 +263,7 @@ const AdminDashboard = () => {
 
   const formatCurrency = (amount) => {
     if (amount >= 1000000) return `PKR ${(amount / 1000000).toFixed(1)}M`;
-    if (amount >= 1000) return `PKR ${(amount / 1000).toFixed(0)}K`;
+    if (amount >= 1000) return `PKR ${(amount / 1000).toFixed(1)}K`;
     return `PKR ${amount?.toLocaleString() || 0}`;
   };
 
@@ -380,14 +380,14 @@ const AdminDashboard = () => {
           <h2 className="text-3xl font-bold tracking-tight text-foreground">
             {isTeacher ? `Welcome, ${currentUser?.name || 'Teacher'}` : 'Dashboard'}
           </h2>
-          <p className="text-muted-foreground mt-0.5 flex items-center gap-2">
+          <div className="text-muted-foreground mt-0.5 flex items-center gap-2 text-sm">
             {isTeacher ? `${currentUser?.subject || ''} Teacher` : "Overview of your institute's performance."}
             {activeSession && (
               <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary">
                 Session: {activeSession.sessionYear}
               </Badge>
             )}
-          </p>
+          </div>
         </div>
         <div className="flex items-center space-x-2">
           <Button variant="outline" className="hidden sm:flex" onClick={fetchDashboardData}>

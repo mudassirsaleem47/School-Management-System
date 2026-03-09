@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from '@/components/ui/checkbox';
+import { PasswordField } from '@/components/ui/email-pass';
 
 import API_URL from '@/config/api';
 const API_BASE = API_URL;
@@ -551,10 +552,14 @@ const StudentAdmissionForm = ({ onSuccess, onCancel }) => {
                 </CardHeader>
                 <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                            <Label htmlFor="password">Login Password <span className="text-destructive">*</span></Label>
-                            <Input id="password" name="password" type="password" value={formData.password} onChange={handleInputChange} required placeholder="Set a strong password for login" />
-                        </div>
+                        <PasswordField
+                            label="Login Password"
+                            id="password"
+                            value={formData.password}
+                            onChange={handleInputChange}
+                            required
+                            placeholder="Set a strong password for login"
+                        />
                     </div>
                 </CardContent>
             </Card>

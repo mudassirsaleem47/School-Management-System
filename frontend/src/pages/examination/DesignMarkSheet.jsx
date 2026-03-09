@@ -46,8 +46,10 @@ const DesignMarkSheet = () => {
         phone1: '',
         phone2: '',
         facebook: '',
-        website: ''
+        website: '',
+        footerText: ''
     });
+
 
     const user = JSON.parse(localStorage.getItem('currentUser'));
     const schoolId = user?.schoolName ? user._id : user?.school;
@@ -96,8 +98,10 @@ const DesignMarkSheet = () => {
             phone1: '+92 300 8875374',
             phone2: '+92 313 8875374',
             facebook: 'ilmohikmat.edu.pk',
-            website: 'www.soih.pk'
+            website: 'www.soih.pk',
+            footerText: ''
         });
+
     };
 
     const handleCreateNew = () => {
@@ -220,7 +224,8 @@ const DesignMarkSheet = () => {
     return (
         <div className="flex h-[calc(100vh-theme(spacing.16))] gap-6 p-6">
             {/* Left Sidebar */}
-            <div className="w-[400px] flex flex-col gap-6">
+            <div className="w-[500px] flex flex-col gap-6">
+
                 {/* Templates List */}
                 <Card className="flex-shrink-0">
                     <CardHeader className="pb-3">
@@ -290,6 +295,18 @@ const DesignMarkSheet = () => {
                                 <Label>Heading (e.g. REPORT)</Label>
                                 <Input name="heading" value={config.heading} onChange={handleChange} />
                             </div>
+                            <div className="space-y-1.5">
+                                <Label>Footer Text / Instructions</Label>
+                                <Textarea
+                                    name="footerText"
+                                    value={config.footerText}
+                                    onChange={handleChange}
+                                    rows={4}
+                                    className="text-sm"
+                                    placeholder="Enter instructions, use <br> for new lines..."
+                                />
+                            </div>
+
 
                             {/* Header Logo */}
                             <div className="space-y-1.5 pt-2">
@@ -373,8 +390,13 @@ const DesignMarkSheet = () => {
                     </h3>
                     <div className="text-xs text-muted-foreground">Showing with dummy student data</div>
                 </div>
-                <div className="flex-1 overflow-auto p-8 flex justify-center items-start bg-gray-50/50">
+                <div className="flex-1 overflow-auto p-4 flex justify-center items-start bg-gray-50/50">
+
+
+
                     <div className="shadow-2xl ring-1 ring-border" style={{ transform: 'scale(0.9)', transformOrigin: 'top center' }}>
+
+
                         <MarkSheetLayout
                             config={config}
                             student={dummyStudent}

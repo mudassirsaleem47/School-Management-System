@@ -3,7 +3,8 @@ const upload = require('../middleware/uploadMiddleware');
 const { adminRegister, adminLogin, getAdminDetail, updateAdmin, updateAdminSettings } = require('../controllers/admin-controller.js');
 const { studentAdmission, studentLogin, getStudentsBySchool, getStudentById, updateStudent, deleteStudent, getDisabledStudents, promoteStudents } = require('../controllers/student-controller.js');
 const { enquiryCreate, enquiryList, enquiryDelete, enquiryUpdate } = require('../controllers/enquiry-controller.js');
-const { sclassCreate, getSclassesBySchool, deleteSclass, addSection, deleteSection } = require('../controllers/sclass-controller.js');
+const { sclassCreate, getSclassesBySchool, deleteSclass, addSection, deleteSection, updateSclass } = require('../controllers/sclass-controller.js');
+
 const { addTeacher, getTeachersBySchool, updateTeacher, deleteTeacher, assignClassToTeacher, removeClassFromTeacher, teacherLogin } = require('../controllers/teacher-controller.js');
 const { visitorCreate, visitorList, visitorUpdate, visitorDelete } = require('../controllers/visitor-controller.js');
 const { createComplain, getComplains, getComplainById, updateComplain, deleteComplain } = require('../controllers/complain-controller.js');
@@ -76,7 +77,9 @@ router.put('/Students/Promote', promoteStudents);
 router.post('/SclassCreate', sclassCreate);
 router.get('/Sclasses/:schoolId', getSclassesBySchool);
 router.delete('/Sclass/:id', deleteSclass);
+router.put('/SclassUpdate/:id', updateSclass);
 router.put('/Sclass/:id/Section', addSection);
+
 router.delete('/Sclass/:id/Section/:sectionId', deleteSection);
 
 // --- Subject Routes ---
@@ -299,6 +302,10 @@ router.delete('/CardTemplate/:id', deleteTemplate);
 router.get('/Media/:schoolId', getMedia);
 router.post('/MediaUpload', upload.single('document'), uploadMedia);
 router.post('/MediaDelete', deleteMedia);
+
+// --- AI Chat Routes ---
+const { groqChat } = require('../controllers/ai-controller.js');
+router.post('/AiChat/Groq', groqChat);
 
 // --- Attendance Routes ---
 const attendanceRoutes = require('./attendanceRoutes');

@@ -4,6 +4,7 @@ import axios from "axios"
 import API_URL from "@/config/api.js"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { PasswordField } from '@/components/ui/email-pass'
 import {
   Card,
   CardContent,
@@ -126,21 +127,14 @@ export function RegisterForm({
                   This will be your school's unique identifier
                 </p>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="password">Password</Label>
-                <Input 
-                  id="password"
-                  name="password" 
-                  type="password"
-                  placeholder="Create a strong password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required 
-                />
-                <p className="text-xs text-muted-foreground">
-                  Password should be at least 6 characters
-                </p>
-              </div>
+              <PasswordField
+                label="Password"
+                id="password"
+                placeholder="Create a strong password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
               <Button 
                 type="submit" 
                 className="w-full"

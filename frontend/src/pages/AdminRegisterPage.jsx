@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertCircle, CheckCircle, School, UserPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PasswordField } from '@/components/ui/email-pass';
 
 const REGISTER_URL = `${API_URL}/AdminReg`;
 
@@ -137,22 +138,15 @@ const AdminRegisterPage = () => {
                                         This will be your school's unique identifier.
                                     </p>
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="password">Password</Label>
-                                    <Input
-                                        id="password"
-                                        name="password"
-                                        type="password"
-                                        placeholder="Create a strong password"
-                                        value={formData.password}
-                                        onChange={handleChange}
-                                        required
-                                        className="h-10"
-                                    />
-                                    <p className="text-[11px] text-muted-foreground">
-                                        Must be at least 6 characters long.
-                                    </p>
-                                </div>
+                                <PasswordField
+                                    label="Password"
+                                    id="password"
+                                    placeholder="Create a strong password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    required
+                                    className="h-10 border-none"
+                                />
                                 <Button type="submit" className="w-full h-10 mt-2" disabled={loading}>
                                     {loading ? "Creating Account..." : "Register School"}
                                 </Button>

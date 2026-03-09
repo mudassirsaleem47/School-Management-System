@@ -16,6 +16,20 @@ function numberToWords(num) {
     return num.toString();
 }
 
+function getGrade(percentage) {
+    const pct = parseFloat(percentage);
+    if (isNaN(pct)) return '-';
+    if (pct >= 90) return 'A+';
+    if (pct >= 80) return 'A';
+    if (pct >= 70) return 'B';
+    if (pct >= 60) return 'C';
+    if (pct >= 50) return 'D';
+    if (pct >= 40) return 'E';
+    return 'F';
+}
+
+
+
 /**
  * MarkSheetLayout
  * props:
@@ -182,15 +196,27 @@ const MarkSheetLayout = ({ config, student, terms = [] }) => {
                                 <td className="border border-black py-0.5 px-2">{numberToWords(grandObtained)} Marks</td>
                             </tr>
                             <tr>
+                                <td className="border border-black py-0.5 px-2 font-bold">GRADE:</td>
+                                <td className="border border-black py-0.5 px-2 font-bold">{getGrade(grandPct)}</td>
+                            </tr>
+                            <tr>
                                 <td className="border border-black py-0.5 px-2 font-bold">RESULT:</td>
                                 <td className={`border border-black py-0.5 px-2 font-bold ${overallResult === 'Pass' ? 'text-green-700' : 'text-red-700'}`}>{overallResult}</td>
                             </tr>
+
                         </tbody>
                     </table>
                 </div>
             )}
 
+            {/* ===== FOOTER TEXT / INSTRUCTIONS ===== */}
+            {config.footerText && (
+                <div className="mb-4 p-2 border border-gray-200 rounded text-[9px] leading-relaxed italic"
+                    dangerouslySetInnerHTML={{ __html: config.footerText }} />
+            )}
+
             {/* ===== SIGNATURES ===== */}
+
             <div className="flex justify-between items-end mt-auto pt-3 px-2">
                 <div className="text-center flex flex-col items-center">
                     <div className="h-8 w-28 border-b border-black mb-0.5 flex items-end justify-center pb-0.5">

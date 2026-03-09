@@ -108,5 +108,27 @@ const deleteSection = async (req, res) => {
     }
 };
 
+// 6. Class Update karna
+const updateSclass = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { sclassName, classIncharge } = req.body;
+
+        const updatedSclass = await Sclass.findByIdAndUpdate(
+            id,
+            { sclassName, classIncharge },
+            { new: true }
+        ).populate('classIncharge', 'name email');
+
+        if (!updatedSclass) {
+            return res.status(404).json({ message: "Class not found." });
+        }
+
+        res.status(200).json({ message: "Class updated successfully!", class: updatedSclass });
+    } catch (err) {
+        res.status(500).json({ message: "Internal Server Error during Class Update.", error: err.message });
+    }
+};
+
 // Export mein naye functions add karna mat bhoolna
-module.exports = { sclassCreate, getSclassesBySchool, deleteSclass, addSection, deleteSection };
+module.exports = { sclassCreate, getSclassesBySchool, deleteSclass, addSection, deleteSection, updateSclass };

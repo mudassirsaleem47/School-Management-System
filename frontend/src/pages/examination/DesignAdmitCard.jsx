@@ -238,7 +238,8 @@ const DesignAdmitCard = () => {
         <div className="flex h-[calc(100vh-theme(spacing.16))] gap-6 p-6">
             
             {/* Left Sidebar: Templates & Form */}
-            <div className="w-[400px] flex flex-col gap-6">
+            <div className="w-[500px] flex flex-col gap-6">
+
                 
                 {/* Templates List */}
                 <Card className="flex-shrink-0">
@@ -434,9 +435,14 @@ const DesignAdmitCard = () => {
                     <div className="text-xs text-muted-foreground">Showing with dummy student data</div>
                 </div>
                 
-                <div className="flex-1 overflow-auto p-8 flex justify-center items-start bg-gray-50/50">
+                <div className="flex-1 overflow-auto p-4 flex justify-center items-start bg-gray-50/50">
+
+
+
                     {/* The Preview Component */}
                     <div className="shadow-2xl ring-1 ring-border" style={{ transform: 'scale(0.95)', transformOrigin: 'top center' }}>
+
+
                         <AdmitCardLayout 
                             config={config} 
                             student={dummyStudent} 

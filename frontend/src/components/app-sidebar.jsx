@@ -140,6 +140,7 @@ const adminNavData = [
       { title: 'Add Item Stock', url: '/admin/inventory/add-item-stock' },
       { title: 'Issue Item', url: '/admin/inventory/issue-item' },
       { title: 'Item Category', url: '/admin/inventory/item-category' },
+      { title: 'Item Store', url: '/admin/inventory/item-store' },
       { title: 'Item Supplier', url: '/admin/inventory/item-supplier' },
     ]
   },

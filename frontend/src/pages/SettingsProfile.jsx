@@ -42,6 +42,11 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { DatePicker } from "@/components/ui/DatePicker";
+import { MonthPicker } from "@/components/ui/MonthPicker";
+import EmailPass, { PasswordField } from '@/components/ui/email-pass';
+
+
 
 import API_URL from '@/config/api';
 const API_BASE = API_URL;
@@ -191,10 +196,7 @@ const SettingsProfile = () => {
     const [borderRadius, setBorderRadius] = useState(() => localStorage.getItem('sms_borderRadius') || '0.65rem');
     const [fontSize, setFontSize] = useState(() => localStorage.getItem('sms_fontSize') || '16px');
     const [sidebarCompact, setSidebarCompact] = useState(() => localStorage.getItem('sms_sidebarCompact') === 'true');
-    const [animationsEnabled, setAnimationsEnabled] = useState(() => {
-        const saved = localStorage.getItem('sms_animations');
-        return saved !== null ? saved === 'true' : true;
-    });
+
 
     // Regional Preferences
     const [preferences, setPreferences] = useState(() => {
@@ -212,20 +214,33 @@ const SettingsProfile = () => {
         return () => clearInterval(timer);
     }, []);
 
+    // Auto-calculate Session Year
+    useEffect(() => {
+        if (newSessionData.startDate || newSessionData.endDate) {
+            const startYear = newSessionData.startDate ? new Date(newSessionData.startDate).getFullYear() : null;
+            const endYear = newSessionData.endDate ? new Date(newSessionData.endDate).getFullYear() : null;
+
+            let calculatedYear = '';
+            if (startYear && endYear) {
+                calculatedYear = `${startYear}-${endYear}`;
+            } else if (startYear) {
+                calculatedYear = `${startYear}-${startYear + 1}`;
+            } else if (endYear) {
+                calculatedYear = `${endYear - 1}-${endYear}`;
+            }
+
+            if (calculatedYear && calculatedYear !== newSessionData.sessionYear) {
+                setNewSessionData(prev => ({ ...prev, sessionYear: calculatedYear }));
+            }
+        }
+    }, [newSessionData.startDate, newSessionData.endDate]);
+
     // --- Effects ---
     useEffect(() => { if (currentUser) fetchSettings(); }, [currentUser]);
     useEffect(() => { applyAccentColor(accentColor); }, [accentColor, theme]);
     useEffect(() => { applyRadius(borderRadius); }, [borderRadius]);
     useEffect(() => { applyFontScale(fontSize); }, [fontSize]);
-    useEffect(() => {
-        if (!animationsEnabled) {
-            document.documentElement.style.setProperty('--animate-duration', '0s');
-            document.documentElement.classList.add('no-animations');
-        } else {
-            document.documentElement.style.removeProperty('--animate-duration');
-            document.documentElement.classList.remove('no-animations');
-        }
-    }, [animationsEnabled]);
+
 
     // Persist to LocalStorage
     useEffect(() => { localStorage.setItem('sms_notificationPrefs', JSON.stringify(notifications)); }, [notifications]);
@@ -233,8 +248,8 @@ const SettingsProfile = () => {
     useEffect(() => { localStorage.setItem('sms_borderRadius', borderRadius); }, [borderRadius]);
     useEffect(() => { localStorage.setItem('sms_fontSize', fontSize); }, [fontSize]);
     useEffect(() => { localStorage.setItem('sms_sidebarCompact', String(sidebarCompact)); }, [sidebarCompact]);
-    useEffect(() => { localStorage.setItem('sms_animations', String(animationsEnabled)); }, [animationsEnabled]);
     useEffect(() => { localStorage.setItem('sms_appPreferences', JSON.stringify(preferences)); }, [preferences]);
+
 
     // Save ALL settings to DB whenever they change (Debounced for 1s)
     useEffect(() => {
@@ -252,7 +267,6 @@ const SettingsProfile = () => {
                     borderRadius,
                     fontSize,
                     sidebarCompact,
-                    animationsEnabled,
                     preferences
                 };
                 await axios.put(`${API_BASE}/Admin/Settings/${currentUser.school || currentUser._id}`, { settings: settingsObject });
@@ -262,7 +276,7 @@ const SettingsProfile = () => {
         }, 1000);
 
         return () => clearTimeout(t);
-    }, [notifications, accentColor, borderRadius, fontSize, sidebarCompact, animationsEnabled, preferences, isAdmin, currentUser]);
+    }, [notifications, accentColor, borderRadius, fontSize, sidebarCompact, preferences, isAdmin, currentUser]);
 
     // --- Handlers ---
     const fetchSettings = async () => {
@@ -285,8 +299,8 @@ const SettingsProfile = () => {
                     if (data.settings.borderRadius) { setBorderRadius(data.settings.borderRadius); applyRadius(data.settings.borderRadius); }
                     if (data.settings.fontSize) { setFontSize(data.settings.fontSize); applyFontScale(data.settings.fontSize); }
                     if (data.settings.sidebarCompact !== undefined) setSidebarCompact(data.settings.sidebarCompact);
-                    if (data.settings.animationsEnabled !== undefined) setAnimationsEnabled(data.settings.animationsEnabled);
                     if (data.settings.preferences) setPreferences(data.settings.preferences);
+
                 }
 
                 // Fetch Messaging Settings (Admin Only)
@@ -553,7 +567,7 @@ const SettingsProfile = () => {
         setAccentColor(d); applyAccentColor(d);
         setBorderRadius('0.65rem'); applyRadius('0.65rem');
         setFontSize('16px'); applyFontScale('16px');
-        setAnimationsEnabled(true);
+
         setTheme('system');
         showToast('Appearance reset to defaults', 'success');
     };
@@ -1241,14 +1255,7 @@ const SettingsProfile = () => {
                                         <CardDescription>Fine-tune your interface behavior.</CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-1">
-                                        <NotifRow
-                                            icon={Sparkles}
-                                            title="Animations"
-                                            desc="Enable smooth transitions and micro-animations."
-                                            checked={animationsEnabled}
-                                            onChange={(v) => { setAnimationsEnabled(v); showToast(`Animations ${v ? 'enabled' : 'disabled'}`, 'success'); }}
-                                        />
-                                        <Separator className="my-4" />
+
                                         <NotifRow
                                             icon={PanelLeft}
                                             title="Compact Sidebar"
@@ -1539,29 +1546,27 @@ const SettingsProfile = () => {
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="startDate">Start Date</Label>
-                                <Input
-                                    id="startDate"
-                                    type="date"
+                                <Label htmlFor="startDate">Start Date (Month)</Label>
+                                <MonthPicker 
                                     value={newSessionData.startDate}
-                                    onChange={(e) => setNewSessionData({ ...newSessionData, startDate: e.target.value })}
+                                    onChange={(val) => setNewSessionData(prev => ({ ...prev, startDate: val }))}
                                 />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="endDate">End Date</Label>
-                                <Input
-                                    id="endDate"
-                                    type="date"
+                                <Label htmlFor="endDate">End Date (Month)</Label>
+                                <MonthPicker 
                                     value={newSessionData.endDate}
-                                    onChange={(e) => setNewSessionData({ ...newSessionData, endDate: e.target.value })}
+                                    onChange={(val) => setNewSessionData(prev => ({ ...prev, endDate: val }))}
                                 />
                             </div>
                         </div>
+
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setIsSessionModalOpen(false)}>Cancel</Button>
                         <Button onClick={handleCreateSession}>Create Session</Button>
                     </DialogFooter>
+
                 </DialogContent>
             </Dialog>
 
@@ -1573,35 +1578,22 @@ const SettingsProfile = () => {
                         <DialogDescription>Enter your current password and choose a new one.</DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-2">
-                        <div className="space-y-2">
-                            <Label>Current Password</Label>
-                            <div className="relative">
-                                <Input
-                                    type={showCurrentPass ? 'text' : 'password'}
-                                    value={passwordData.currentPassword}
-                                    onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
-                                    placeholder="Enter current password"
-                                />
-                                <Button type="button" variant="ghost" size="icon" className="absolute right-0 top-0 h-full px-3" onClick={() => setShowCurrentPass(!showCurrentPass)}>
-                                    {showCurrentPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                </Button>
-                            </div>
-                        </div>
-                        <div className="space-y-2">
-                            <Label>New Password</Label>
-                            <div className="relative">
-                                <Input
-                                    type={showNewPass ? 'text' : 'password'}
-                                    value={passwordData.newPassword}
-                                    onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
-                                    placeholder="Enter new password"
-                                />
-                                <Button type="button" variant="ghost" size="icon" className="absolute right-0 top-0 h-full px-3" onClick={() => setShowNewPass(!showNewPass)}>
-                                    {showNewPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                </Button>
-                            </div>
-                            {passwordData.newPassword && <PasswordStrength password={passwordData.newPassword} />}
-                        </div>
+                        <PasswordField
+                            label="Current Password"
+                            id="currentPassword"
+                            value={passwordData.currentPassword}
+                            onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
+                            required
+                            placeholder="Enter current password"
+                        />
+                        <PasswordField
+                            label="New Password"
+                            id="newPassword"
+                            value={passwordData.newPassword}
+                            onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
+                            required
+                            placeholder="Enter new password"
+                        />
                         <div className="space-y-2">
                             <Label>Confirm New Password</Label>
                             <Input
@@ -1609,9 +1601,10 @@ const SettingsProfile = () => {
                                 value={passwordData.confirmPassword}
                                 onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
                                 placeholder="Confirm new password"
+                                className="h-10"
                             />
                             {passwordData.confirmPassword && passwordData.newPassword !== passwordData.confirmPassword && (
-                                <p className="text-xs text-destructive">Passwords do not match</p>
+                                <p className="text-xs text-destructive font-medium mt-1">Passwords do not match</p>
                             )}
                         </div>
                     </div>

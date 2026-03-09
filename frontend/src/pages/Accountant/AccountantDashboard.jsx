@@ -52,9 +52,13 @@ const AccountantDashboard = () => {
             ]);
 
             const newStats = {
-                fees: feeRes.status === 'fulfilled' ? feeRes.value.data : { total: 0, collected: 0, pending: 0 },
-                income: incomeRes.status === 'fulfilled' ? incomeRes.value.data : { total: 0, monthly: [] },
-                expense: expenseRes.status === 'fulfilled' ? expenseRes.value.data : { total: 0, monthly: [] }
+                fees: feeRes.status === 'fulfilled' ? {
+                    total: (feeRes.value.data.pendingFees?.amount || 0) + (feeRes.value.data.totalCollection?.amount || 0),
+                    collected: feeRes.value.data.totalCollection?.amount || 0,
+                    pending: feeRes.value.data.pendingFees?.amount || 0,
+                } : { total: 0, collected: 0, pending: 0 },
+                income: { total: (incomeRes.status === 'fulfilled' ? (incomeRes.value.data.totalIncome?.amount || 0) : 0) },
+                expense: { total: (expenseRes.status === 'fulfilled' ? (expenseRes.value.data.totalExpense?.amount || 0) : 0) }
             };
 
             setStats(newStats);
