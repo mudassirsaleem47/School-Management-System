@@ -1,27 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+const upload = require('../middleware/uploadMiddleware');
 const InventoryItem = require('../models/inventoryItemSchema');
 
-// Ensure upload directory exists
-const uploadDir = 'uploads/inventory';
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-// Multer Storage Configuration
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname));
-    }
-});
-
-const upload = multer({ storage: storage });
 
 // Add new inventory item (with optional document upload)
 router.post('/', upload.single('document'), async (req, res) => {
@@ -30,7 +11,7 @@ router.post('/', upload.single('document'), async (req, res) => {
         
         let documentUrl = null;
         if (req.file) {
-            documentUrl = req.file.path.replace(/\\/g, '/'); // Normalize path for Windows
+            documentUrl = req.file.path; // Cloudinary automatically gives the full URL
         }
 
         const inventoryItem = new InventoryItem({
@@ -70,13 +51,8 @@ router.delete('/:id', async (req, res) => {
         const item = await InventoryItem.findById(req.params.id);
         if (!item) return res.status(404).json({ message: "Item not found" });
 
-        // Optionally delete the file if exists
-        if (item.documentUrl) {
-            const filePath = path.resolve(item.documentUrl);
-            if (fs.existsSync(filePath)) {
-                fs.unlinkSync(filePath);
-            }
-        }
+        // Deleting from Cloudinary requires extra logic if needed,
+        // but for now we remove the failing fs.existsSync/unlinkSync.
 
         await InventoryItem.findByIdAndDelete(req.params.id);
         res.send({ message: "Deleted successfully" });
