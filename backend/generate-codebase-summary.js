@@ -6,15 +6,13 @@
  * Yeh script aapki poori codebase scan karke
  * ek codebaseSummary.js file banayega jo AI ke
  * system prompt mein inject hogi.
- * 
- * Place this file in: backend/
  */
 
 const fs   = require('fs');
 const path = require('path');
 
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
-const PROJECT_ROOT = __dirname; // Since script is in root
+const PROJECT_ROOT = path.join(__dirname, '..'); // Now script is in backend/
 const OUTPUT_FILE  = path.join(__dirname, 'codebaseSummary.js');
 
 // Jin folders ko scan karna hai
@@ -178,7 +176,6 @@ module.exports = CODEBASE_SUMMARY;
 
   console.log(`\n✅ Summary generated! → backend/codebaseSummary.js`);
   console.log(`📊 ${allFiles.length} files scanned`);
-  console.log(`\nNext step: import this in your aiChat-controller.js`);
 }
 
 generateSummary();
