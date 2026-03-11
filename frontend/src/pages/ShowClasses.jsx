@@ -277,63 +277,65 @@ const ShowClasses = () => {
                         </Button>
                     </div>
                 ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        <div className="flex flex-col gap-4">
                     {sclasses.map((item) => (
-                        <Card key={item._id} className="flex flex-col hover:shadow-md transition-all duration-200">
-                            <CardHeader className="pb-2">
-                                <div className="flex justify-between items-start">
-                                    <div>
+                        <Card key={item._id} className="flex flex-col sm:flex-row sm:items-center justify-between hover:shadow-md transition-all duration-200 p-4 gap-4">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-10 flex-1 w-full">
+                                <div className="min-w-[200px] flex flex-col gap-1">
+                                    <div className="flex items-center gap-2">
                                         <CardTitle className="text-xl font-bold text-primary">{item.sclassName}</CardTitle>
-                                        <CardDescription className="text-xs pt-1">ID: {item._id.slice(-4)}</CardDescription>
                                     </div>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" className="h-8 w-8 p-0 text-muted-foreground hover:bg-transparent">
-                                                <span className="sr-only">Open menu</span>
-                                                <MoreHorizontal className="h-4 w-4" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                            <DropdownMenuItem onClick={() => navigate(`/admin/students?class=${item._id}`)}>
-                                                <Users className="mr-2 h-4 w-4" /> View Students
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => handleEditClick(item)}>
-                                                <Pencil className="mr-2 h-4 w-4" /> Edit Class
-                                            </DropdownMenuItem>
-                                            <DropdownMenuSeparator />
-
-                                            <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDeleteRequest('class', item._id)}>
-                                                <Trash2 className="mr-2 h-4 w-4" /> Delete Class
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </div>
-                                {item.classIncharge && (
-                                    <Badge variant="secondary" className="w-fit mt-2 font-normal">
-                                        Incharge: {item.classIncharge.name}
-                                    </Badge>
-                                )}
-                            </CardHeader>
-
-                            <CardContent className="flex-1 py-4">
-                                <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 block">Sections</Label>
-                                <div className="flex flex-wrap gap-2">
-                                    {item.sections && item.sections.length > 0 ? (
-                                        item.sections.map((sec) => (
-                                            <Badge
-                                                key={sec._id}
-                                                variant="secondary"
-                                                className="pl-3 pr-2 py-0.5 flex items-center gap-2 group hover:bg-secondary/80 transition-all border border-transparent hover:border-border"
-                                            >
-                                                <span className="text-sm font-medium">{sec.sectionName}</span>
-                                            </Badge>
-                                        ))
-                                    ) : (
-                                            <span className="text-sm text-muted-foreground italic">No sections added</span>
+                                    <span className="text-xs text-muted-foreground">ID: {item._id.slice(-4)}</span>
+                                    {item.classIncharge && (
+                                        <Badge variant="secondary" className="w-fit mt-1 font-normal bg-secondary/50">
+                                            Incharge: {item.classIncharge.name}
+                                        </Badge>
                                     )}
                                 </div>
-                            </CardContent>
+
+                                <div className="flex-1">
+                                    <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">Sections</Label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {item.sections && item.sections.length > 0 ? (
+                                            item.sections.map((sec) => (
+                                                <Badge
+                                                    key={sec._id}
+                                                    variant="outline"
+                                                    className="bg-background text-foreground shrink-0 border-border"
+                                                >
+                                                    {sec.sectionName}
+                                                </Badge>
+                                            ))
+                                        ) : (
+                                            <span className="text-xs text-muted-foreground italic bg-muted/50 px-2 py-1 rounded-md">No sections added</span>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="shrink-0 self-end sm:self-center">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground">
+                                            <span className="sr-only">Actions</span>
+                                            <MoreHorizontal className="h-4 w-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                        <DropdownMenuItem onClick={() => navigate(`/admin/students?class=${item._id}`)}>
+                                            <Users className="mr-2 h-4 w-4" /> View Students
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handleEditClick(item)}>
+                                            <Pencil className="mr-2 h-4 w-4" /> Edit Class
+                                        </DropdownMenuItem>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDeleteRequest('class', item._id)}>
+                                            <Trash2 className="mr-2 h-4 w-4" /> Delete Class
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
                         </Card>
                     ))}
                 </div>
