@@ -23,11 +23,7 @@ const visitorList = async (req, res) => {
             .populate('student', 'name')
             .sort({ date: -1, createdAt: -1 });
         
-        if (visitors.length > 0) {
-            res.send(visitors);
-        } else {
-            res.send({ message: "No visitors found" });
-        }
+        res.send(Array.isArray(visitors) ? visitors : []);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

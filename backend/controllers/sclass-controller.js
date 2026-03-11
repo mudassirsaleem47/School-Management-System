@@ -3,20 +3,24 @@ const Sclass = require('../models/sclassSchema.js');
 // 1. Nayi Class/Section Create karna
 const sclassCreate = async (req, res) => {
     try {
-        const { sclassName, school, classIncharge } = req.body;
+        const { sclassName, school, classIncharge, sections } = req.body;
         
-        // Check: Kya is school mein pehle se ye Class exist karti hai?
         const sclassExists = await Sclass.findOne({ sclassName, school });
-
         if (sclassExists) {
             return res.status(400).json({ message: "Class already exists in this school." });
         }
 
-        const newSclass = new Sclass(req.body);
+        const newSclass = new Sclass({
+            sclassName,
+            school,
+            classIncharge,
+            sections: sections || []
+        });
         const result = await newSclass.save();
 
-        // Populate classIncharge data for response
-        const populatedClass = await Sclass.findById(result._id).populate('classIncharge', 'name email');
+        const populatedClass = await Sclass.findById(result._id)
+            .populate('classIncharge', 'name email')
+            .populate('sections');
 
         res.status(201).json({ 
             message: "Class created successfully!",
@@ -29,12 +33,12 @@ const sclassCreate = async (req, res) => {
     }
 };
 
-// 2. Class List Fetch karna (School ID ke hisab se)
 const getSclassesBySchool = async (req, res) => {
     try {
         const { schoolId } = req.params;
-        
-        const sclasses = await Sclass.find({ school: schoolId }).populate('classIncharge', 'name email');
+        const sclasses = await Sclass.find({ school: schoolId })
+            .populate('classIncharge', 'name email')
+            .populate('sections');
 
         if (sclasses.length === 0) {
             return res.status(200).json([]);

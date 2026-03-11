@@ -8,6 +8,7 @@ import { Plus, GraduationCap, Users, BookOpen, Trash2, X, MoreHorizontal, Pencil
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
     Card,
     CardHeader,
@@ -77,6 +78,8 @@ const ShowClasses = () => {
     // Add Class Modal State
     const [sclassName, setSclassName] = useState(""); 
     const [classIncharge, setClassIncharge] = useState("");
+    const [selectedSections, setSelectedSections] = useState([]);
+    const [availableSections, setAvailableSections] = useState([]);
     const [showAddModal, setShowAddModal] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -126,12 +129,26 @@ const ShowClasses = () => {
         }
     }, [currentUser]);
 
+    // --- Fetch Sections ---
+    const fetchSections = React.useCallback(async () => {
+        if (!currentUser?._id) return;
+        try {
+            const res = await axios.get(`${API_BASE}/Sections/${currentUser._id}`);
+            if (Array.isArray(res.data)) {
+                setAvailableSections(res.data);
+            }
+        } catch (err) {
+            console.error("Error fetching sections:", err);
+        }
+    }, [currentUser]);
+
     useEffect(() => {
         if (currentUser) {
             fetchClasses();
             fetchTeachers();
+            fetchSections();
         }
-    }, [currentUser, fetchClasses, fetchTeachers]);
+    }, [currentUser, fetchClasses, fetchTeachers, fetchSections]);
 
     // --- 2. Add/Edit Class ---
     const addClass = async (e) => {
@@ -142,13 +159,15 @@ const ShowClasses = () => {
             const data = {
                 sclassName: sclassName,
                 school: currentUser._id,
-                classIncharge: classIncharge || undefined
+                classIncharge: classIncharge || undefined,
+                sections: selectedSections
             };
             
             await axios.post(`${API_BASE}/SclassCreate`, data);
             
             setSclassName("");
             setClassIncharge("");
+            setSelectedSections([]);
             setShowAddModal(false);
             fetchClasses();
             toast.success("Class added successfully!");
@@ -163,6 +182,7 @@ const ShowClasses = () => {
         setCurrentEditClass(cls);
         setSclassName(cls.sclassName);
         setClassIncharge(cls.classIncharge?._id || "");
+        setSelectedSections(cls.sections?.map(s => s._id) || []);
         setShowEditModal(true);
     };
 
@@ -172,12 +192,14 @@ const ShowClasses = () => {
         try {
             const data = {
                 sclassName: sclassName,
-                classIncharge: classIncharge || undefined
+                classIncharge: classIncharge || undefined,
+                sections: selectedSections
             };
             await axios.put(`${API_BASE}/SclassUpdate/${currentEditClass._id}`, data);
             setShowEditModal(false);
             setSclassName("");
             setClassIncharge("");
+            setSelectedSections([]);
             setCurrentEditClass(null);
             fetchClasses();
             toast.success("Class updated successfully!");
@@ -305,14 +327,6 @@ const ShowClasses = () => {
                                                 className="pl-3 pr-2 py-0.5 flex items-center gap-2 group hover:bg-secondary/80 transition-all border border-transparent hover:border-border"
                                             >
                                                 <span className="text-sm font-medium">{sec.sectionName}</span>
-                                                <div
-                                                    className="w-5 h-5 rounded-full flex items-center justify-center cursor-pointer hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
-                                                    onClick={() => handleDeleteRequest('section', item._id, sec._id)}
-                                                    role="button"
-                                                    title="Remove Section"
-                                                >
-                                                    <X className="h-3.5 w-3.5" />
-                                                </div>
                                             </Badge>
                                         ))
                                     ) : (
@@ -320,26 +334,6 @@ const ShowClasses = () => {
                                     )}
                                 </div>
                             </CardContent>
-
-                            <CardFooter className="border-t pt-2 bg-muted/20">
-                                <form 
-                                    onSubmit={(e) => {
-                                        e.preventDefault();
-                                        handleAddSection(item._id, e.target.section.value, e.target);
-                                    }} 
-                                    className="flex w-full items-center gap-2"
-                                >
-                                    <Input 
-                                        name="section" 
-                                        placeholder="Add Section"
-                                        className="h-8 text-sm bg-background"
-                                        autoComplete="off"
-                                    />
-                                    <Button type="submit" size="sm" className="h-8 px-3">
-                                        <Plus className="h-3 w-3" />
-                                    </Button>
-                                </form>
-                            </CardFooter>
                         </Card>
                     ))}
                 </div>
@@ -382,6 +376,53 @@ const ShowClasses = () => {
                             </Select>
                         </div>
 
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <Label>Select Sections</Label>
+                                {availableSections.length > 0 && (
+                                    <div className="flex items-center space-x-2">
+                                        <Checkbox
+                                            id="select-all-sections"
+                                            checked={selectedSections.length === availableSections.length}
+                                            onCheckedChange={(checked) => {
+                                                if (checked) {
+                                                    setSelectedSections(availableSections.map(s => s._id));
+                                                } else {
+                                                    setSelectedSections([]);
+                                                }
+                                            }}
+                                        />
+                                        <label htmlFor="select-all-sections" className="text-sm font-medium leading-none cursor-pointer">
+                                            Select All
+                                        </label>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 border rounded-lg p-3 max-h-[150px] overflow-y-auto">
+                                {availableSections.map((section) => (
+                                    <div key={section._id} className="flex items-center space-x-2">
+                                        <Checkbox
+                                            id={`section-${section._id}`}
+                                            checked={selectedSections.includes(section._id)}
+                                            onCheckedChange={(checked) => {
+                                                if (checked) {
+                                                    setSelectedSections([...selectedSections, section._id]);
+                                                } else {
+                                                    setSelectedSections(selectedSections.filter(id => id !== section._id));
+                                                }
+                                            }}
+                                        />
+                                        <label htmlFor={`section-${section._id}`} className="text-sm font-medium leading-none cursor-pointer">
+                                            {section.sectionName}
+                                        </label>
+                                    </div>
+                                ))}
+                                {availableSections.length === 0 && (
+                                    <p className="text-xs text-muted-foreground col-span-2 text-center py-2">No sections found. Please add sections first.</p>
+                                )}
+                            </div>
+                        </div>
+
                         <DialogFooter>
                             <Button type="button" variant="outline" onClick={() => setShowAddModal(false)}>Cancel</Button>
                             <Button type="submit" disabled={isSubmitting}>
@@ -417,6 +458,7 @@ const ShowClasses = () => {
                 if (!open) {
                     setSclassName("");
                     setClassIncharge("");
+                    setSelectedSections([]);
                     setCurrentEditClass(null);
                 }
             }}>
@@ -453,6 +495,50 @@ const ShowClasses = () => {
                                     ))}
                                 </SelectContent>
                             </Select>
+                        </div>
+
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <Label>Select Sections</Label>
+                                {availableSections.length > 0 && (
+                                    <div className="flex items-center space-x-2">
+                                        <Checkbox
+                                            id="edit-select-all-sections"
+                                            checked={selectedSections.length === availableSections.length}
+                                            onCheckedChange={(checked) => {
+                                                if (checked) {
+                                                    setSelectedSections(availableSections.map(s => s._id));
+                                                } else {
+                                                    setSelectedSections([]);
+                                                }
+                                            }}
+                                        />
+                                        <label htmlFor="edit-select-all-sections" className="text-sm font-medium leading-none cursor-pointer">
+                                            Select All
+                                        </label>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 border rounded-lg p-3 max-h-[150px] overflow-y-auto">
+                                {availableSections.map((section) => (
+                                    <div key={section._id} className="flex items-center space-x-2">
+                                        <Checkbox
+                                            id={`edit-section-${section._id}`}
+                                            checked={selectedSections.includes(section._id)}
+                                            onCheckedChange={(checked) => {
+                                                if (checked) {
+                                                    setSelectedSections([...selectedSections, section._id]);
+                                                } else {
+                                                    setSelectedSections(selectedSections.filter(id => id !== section._id));
+                                                }
+                                            }}
+                                        />
+                                        <label htmlFor={`edit-section-${section._id}`} className="text-sm font-medium leading-none cursor-pointer">
+                                            {section.sectionName}
+                                        </label>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
 
                         <DialogFooter>

@@ -183,7 +183,7 @@ const VisitorBook = () => {
         }
     };
 
-    const filteredVisitors = visitors.filter((visitor) => {
+    const filteredVisitors = (Array.isArray(visitors) ? visitors : []).filter((visitor) => {
         const query = searchQuery.toLowerCase();
         const staffName = visitor.staff?.name?.toLowerCase() || "";
         const studentName = visitor.student?.name?.toLowerCase() || "";

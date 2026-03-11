@@ -35,6 +35,7 @@ import AccountantList from './pages/AccountantList';
 import ReceptionistList from './pages/ReceptionistList';
 import StaffDirectory from './pages/StaffDirectory';
 import MediaManager from './pages/MediaManager';
+import Sections from './pages/Sections';
 
 import SendMessages from './pages/SendMessages';
 import MessageTemplates from './pages/MessageTemplates';
@@ -120,6 +121,7 @@ function App() {
                   <Route path="enquiry" element={<AdmissionEnquiry />} />
                   <Route path="classes" element={<ShowClasses />} />
                   <Route path="subjects" element={<SubjectManagement />} />
+                  <Route path="sections" element={<Sections />} />
                   <Route path="subject-groups" element={<SubjectGroupPage />} />
                   <Route path="class-schedule" element={<ClassSchedule />} />
                   <Route path="teacher-schedule" element={<TeacherSchedule />} />

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Outlet, useLocation, Link } from 'react-router-dom';
+import API_URL from '../config/api';
 import { AppSidebar } from "@/components/app-sidebar";
 import {
   SidebarInset,
@@ -75,6 +76,22 @@ const AdminLayout = () => {
       document.title = `${pageTitle} - ${schoolName}`;
     }
   }, [location.pathname, currentUser]);
+  
+  // Dynamic Favicon Update
+  useEffect(() => {
+    if (!currentUser) return;
+    const favicon = currentUser.favicon || (currentUser.school && currentUser.school.favicon);
+    if (favicon) {
+      const fullPath = favicon.startsWith('http') ? favicon : `${API_URL}/${favicon.replace(/\\/g, '/')}`;
+      let link = document.querySelector("link[rel~='icon']");
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.getElementsByTagName('head')[0].appendChild(link);
+      }
+      link.href = fullPath;
+    }
+  }, [currentUser]);
 
 
   // Apply Theme Globals from Storage

@@ -4,6 +4,7 @@ const { adminRegister, adminLogin, getAdminDetail, updateAdmin, updateAdminSetti
 const { studentAdmission, studentLogin, getStudentsBySchool, getStudentById, updateStudent, deleteStudent, getDisabledStudents, promoteStudents } = require('../controllers/student-controller.js');
 const { enquiryCreate, enquiryList, enquiryDelete, enquiryUpdate } = require('../controllers/enquiry-controller.js');
 const { sclassCreate, getSclassesBySchool, deleteSclass, addSection, deleteSection, updateSclass } = require('../controllers/sclass-controller.js');
+const { createSection, getSectionsBySchool, deleteSection: deleteStandaloneSection, updateSection } = require('../controllers/section-controller.js');
 
 const { addTeacher, getTeachersBySchool, updateTeacher, deleteTeacher, assignClassToTeacher, removeClassFromTeacher, teacherLogin } = require('../controllers/teacher-controller.js');
 const { visitorCreate, visitorList, visitorUpdate, visitorDelete } = require('../controllers/visitor-controller.js');
@@ -49,7 +50,7 @@ router.post('/AdminReg', adminRegister);
 router.post('/AdminLogin', adminLogin);
 router.post('/admin/login', adminLogin); // Alias for case-insensitivity or cleaner URLs
 router.get('/Admin/:id', getAdminDetail);
-router.put('/Admin/:id', upload.single('schoolLogo'), updateAdmin);
+router.put('/Admin/:id', upload.fields([{ name: 'schoolLogo', maxCount: 1 }, { name: 'favicon', maxCount: 1 }]), updateAdmin);
 router.put('/Admin/Settings/:id', updateAdminSettings);
 
 // --- Student Routes ---
@@ -81,6 +82,12 @@ router.put('/SclassUpdate/:id', updateSclass);
 router.put('/Sclass/:id/Section', addSection);
 
 router.delete('/Sclass/:id/Section/:sectionId', deleteSection);
+
+// --- Standalone Section Routes ---
+router.post('/SectionCreate', createSection);
+router.get('/Sections/:schoolId', getSectionsBySchool);
+router.put('/SectionUpdate/:id', updateSection);
+router.delete('/SectionDelete/:id', deleteStandaloneSection);
 
 // --- Subject Routes ---
 const { subjectCreate, getSubjectDetail, deleteSubject, allSubjects, deleteSubjects, updateSubject } = require('../controllers/subject-controller.js');

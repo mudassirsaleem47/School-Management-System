@@ -72,6 +72,7 @@ const adminNavData = [
     icon: IconBook,
     items: [
       { title: 'Classes', url: '/admin/classes' },
+      { title: 'Sections', url: '/admin/sections' },
       { title: 'Subjects', url: '/admin/subjects' },
       { title: 'Subject Groups', url: '/admin/subject-groups' },
       { title: 'Class Schedule', url: '/admin/class-schedule' },

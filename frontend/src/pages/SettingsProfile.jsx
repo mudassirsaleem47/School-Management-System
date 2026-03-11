@@ -170,6 +170,8 @@ const SettingsProfile = () => {
     });
     const [logo, setLogo] = useState(null);
     const [logoPreview, setLogoPreview] = useState(null);
+    const [favicon, setFavicon] = useState(null);
+    const [faviconPreview, setFaviconPreview] = useState(null);
 
     // Password
     const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
@@ -290,6 +292,9 @@ const SettingsProfile = () => {
                 });
                 if (data.schoolLogo) {
                     setLogoPreview(data.schoolLogo.startsWith('http') ? data.schoolLogo : `${API_BASE}/${data.schoolLogo}`);
+                }
+                if (data.favicon) {
+                    setFaviconPreview(data.favicon.startsWith('http') ? data.favicon : `${API_BASE}/${data.favicon}`);
                 }
 
                 // Load DB Settings
@@ -496,6 +501,11 @@ const SettingsProfile = () => {
         if (file) { setLogo(file); const r = new FileReader(); r.onloadend = () => setLogoPreview(r.result); r.readAsDataURL(file); }
     };
 
+    const handleFaviconChange = (e) => {
+        const file = e.target.files[0];
+        if (file) { setFavicon(file); const r = new FileReader(); r.onloadend = () => setFaviconPreview(r.result); r.readAsDataURL(file); }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -510,6 +520,7 @@ const SettingsProfile = () => {
                 const data = new FormData();
                 Object.keys(formData).forEach(key => data.append(key, formData[key]));
                 if (logo) data.append('schoolLogo', logo);
+                if (favicon) data.append('favicon', favicon);
                 const res = await axios.put(endpoint, data, { headers: { 'Content-Type': 'multipart/form-data' } });
                 setCurrentUser({ ...currentUser, ...res.data });
             } else {
@@ -666,22 +677,42 @@ const SettingsProfile = () => {
                                         </CardHeader>
                                         <CardContent>
                                             <div className="flex flex-col sm:flex-row items-start gap-6">
-                                                <div className="flex flex-col items-center gap-2">
-                                                    <div className="relative group">
-                                                        <input type="file" hidden onChange={handleLogoChange} accept="image/*" id="logo-upload" />
-                                                        <label htmlFor="logo-upload" className="cursor-pointer block">
-                                                            <Avatar className="h-24 w-24 border-2 border-dashed border-muted-foreground/25 hover:border-primary transition-colors">
-                                                                <AvatarImage src={logoPreview} className='object-cover' alt="School Logo" />
-                                                                <AvatarFallback className="bg-primary/5 text-primary">
-                                                                    <Building className="h-8 w-8" />
-                                                                </AvatarFallback>
-                                                            </Avatar>
-                                                            <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                <Upload className="text-white h-5 w-5" />
-                                                            </div>
-                                                        </label>
+                                                <div className="flex gap-6">
+                                                    <div className="flex flex-col items-center gap-2">
+                                                        <div className="relative group">
+                                                            <input type="file" hidden onChange={handleLogoChange} accept="image/*" id="logo-upload" />
+                                                            <label htmlFor="logo-upload" className="cursor-pointer block">
+                                                                <Avatar className="h-24 w-24 border-2 border-dashed border-muted-foreground/25 hover:border-primary transition-colors">
+                                                                    <AvatarImage src={logoPreview} className='object-cover' alt="School Logo" />
+                                                                    <AvatarFallback className="bg-primary/5 text-primary">
+                                                                        <Building className="h-8 w-8" />
+                                                                    </AvatarFallback>
+                                                                </Avatar>
+                                                                <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                    <Upload className="text-white h-5 w-5" />
+                                                                </div>
+                                                            </label>
+                                                        </div>
+                                                        <p className="text-[11px] text-muted-foreground">Upload logo png/svg</p>
                                                     </div>
-                                                    <p className="text-[11px] text-muted-foreground">Upload logo png/svg</p>
+
+                                                    <div className="flex flex-col items-center gap-2">
+                                                        <div className="relative group">
+                                                            <input type="file" hidden onChange={handleFaviconChange} accept="image/*" id="favicon-upload" />
+                                                            <label htmlFor="favicon-upload" className="cursor-pointer block">
+                                                                <Avatar className="h-24 w-24 border-2 border-dashed border-muted-foreground/25 hover:border-primary transition-colors">
+                                                                    <AvatarImage src={faviconPreview} className='object-cover' alt="School Favicon" />
+                                                                    <AvatarFallback className="bg-primary/5 text-primary">
+                                                                        <Sparkles className="h-8 w-8" />
+                                                                    </AvatarFallback>
+                                                                </Avatar>
+                                                                <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                    <Upload className="text-white h-5 w-5" />
+                                                                </div>
+                                                            </label>
+                                                        </div>
+                                                        <p className="text-[11px] text-muted-foreground">Upload Favicon (1:1)</p>
+                                                    </div>
                                                 </div>
 
                                                 <div className="flex-1 w-full space-y-4">

@@ -56,7 +56,9 @@ export const AuthContextProvider = ({ children }) => {
                     localStorage.setItem('sms_activeSession', JSON.stringify(res.data.session));
                 }
             } catch (err) {
-                console.error("Failed to fetch active session:", err);
+                if (err.response?.status !== 404) {
+                    console.error("Failed to fetch active session:", err);
+                }
             }
         };
         fetchActiveSession();

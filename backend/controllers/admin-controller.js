@@ -85,11 +85,15 @@ const updateAdmin = async (req, res) => {
         const { name, email, schoolName, address, phoneNumber, website } = req.body;
         const updateData = { name, email, schoolName, address, phoneNumber, website };
 
-        if (req.file) {
-            console.log("File uploaded:", req.file);
-            updateData.schoolLogo = req.file.path;
-        } else {
-            console.log("No file uploaded in request");
+        if (req.files) {
+            if (req.files.schoolLogo && req.files.schoolLogo[0]) {
+                console.log("School Logo uploaded:", req.files.schoolLogo[0]);
+                updateData.schoolLogo = req.files.schoolLogo[0].path;
+            }
+            if (req.files.favicon && req.files.favicon[0]) {
+                console.log("Favicon uploaded:", req.files.favicon[0]);
+                updateData.favicon = req.files.favicon[0].path;
+            }
         }
 
         const result = await Admin.findByIdAndUpdate(req.params.id, { $set: updateData }, { new: true });

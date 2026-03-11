@@ -5,9 +5,9 @@ const sclassSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    // Sections ka array add kiya (e.g., Section A, Section B)
     sections: [{ 
-        sectionName: { type: String, required: true } 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'section' 
     }],
     school: {
         type: mongoose.Schema.Types.ObjectId,

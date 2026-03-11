@@ -37,6 +37,9 @@ const adminSchema = new mongoose.Schema({
     schoolLogo: {
         type: String,
     },
+    favicon: {
+        type: String,
+    },
     address: {
         type: String,
     },
