@@ -116,11 +116,16 @@ const deleteSection = async (req, res) => {
 const updateSclass = async (req, res) => {
     try {
         const { id } = req.params;
-        const { sclassName, classIncharge } = req.body;
+        const { sclassName, classIncharge, sections } = req.body;
+
+        const updateData = { sclassName, classIncharge };
+        if (sections !== undefined) {
+            updateData.sections = sections;
+        }
 
         const updatedSclass = await Sclass.findByIdAndUpdate(
             id,
-            { sclassName, classIncharge },
+            updateData,
             { new: true }
         ).populate('classIncharge', 'name email');
 

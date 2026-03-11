@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
+import ConfirmDeleteModal from '@/components/form-popup/ConfirmDeleteModal';
 
 import API_URL from '@/config/api';
 const API_BASE = API_URL;
@@ -38,6 +39,11 @@ const Sections = () => {
     const [editMode, setEditMode] = useState(false);
     const [currentSection, setCurrentSection] = useState(null);
     const [sectionName, setSectionName] = useState("");
+
+    // Delete Modal State
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [sectionToDelete, setSectionToDelete] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const fetchSections = async () => {
         if (!currentUser?._id) return;
@@ -86,14 +92,24 @@ const Sections = () => {
         setShowModal(true);
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm("Are you sure you want to delete this section?")) return;
+    const handleDeleteClick = (id) => {
+        setSectionToDelete(id);
+        setIsDeleteModalOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!sectionToDelete) return;
+        setIsDeleting(true);
         try {
-            await axios.delete(`${API_BASE}/SectionDelete/${id}`);
+            await axios.delete(`${API_BASE}/SectionDelete/${sectionToDelete}`);
             toast.success("Section deleted successfully");
             fetchSections();
         } catch (err) {
             toast.error("Failed to delete section");
+        } finally {
+            setIsDeleting(false);
+            setIsDeleteModalOpen(false);
+            setSectionToDelete(null);
         }
     };
 
@@ -138,7 +154,7 @@ const Sections = () => {
                                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(section)}>
                                         <Pencil className="h-4 w-4" />
                                     </Button>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(section._id)}>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDeleteClick(section._id)}>
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
                                 </div>
@@ -180,6 +196,15 @@ const Sections = () => {
                     </form>
                 </DialogContent>
             </Dialog>
+
+            <ConfirmDeleteModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={confirmDelete}
+                loading={isDeleting}
+                title="Delete Section?"
+                description="Are you sure you want to delete this section? This action cannot be undone."
+            />
         </div>
     );
 };

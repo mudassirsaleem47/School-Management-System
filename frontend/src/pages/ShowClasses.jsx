@@ -234,7 +234,6 @@ const ShowClasses = () => {
         setDeleteConfig({ open: false, type: null, id: null, subId: null });
     };
 
-    // --- 4. Add Section ---
     const handleAddSection = async (classId, sectionName, form) => {
         if (!sectionName) return;
         try {
@@ -244,6 +243,45 @@ const ShowClasses = () => {
             form.reset();
         } catch (err) {
             toast.error("Failed to add section");
+        }
+    };
+
+    const handleQuickAssignSection = async (cls, sectionId) => {
+        try {
+            const currentSectionIds = cls.sections?.map(s => s._id) || [];
+            if (currentSectionIds.includes(sectionId)) return;
+            
+            const updatedSections = [...currentSectionIds, sectionId];
+            const data = {
+                sclassName: cls.sclassName,
+                classIncharge: cls.classIncharge?._id || undefined,
+                sections: updatedSections
+            };
+            
+            await axios.put(`${API_BASE}/SclassUpdate/${cls._id}`, data);
+            fetchClasses();
+            toast.success("Section assigned successfully!");
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Error assigning section");
+        }
+    };
+
+    const handleQuickRemoveSection = async (cls, sectionId) => {
+        try {
+            const currentSectionIds = cls.sections?.map(s => s._id) || [];
+            const updatedSections = currentSectionIds.filter(id => id !== sectionId);
+            
+            const data = {
+                sclassName: cls.sclassName,
+                classIncharge: cls.classIncharge?._id || undefined,
+                sections: updatedSections
+            };
+            
+            await axios.put(`${API_BASE}/SclassUpdate/${cls._id}`, data);
+            fetchClasses();
+            toast.success("Section removed successfully!");
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Error removing section");
         }
     };
 
@@ -295,20 +333,51 @@ const ShowClasses = () => {
 
                                 <div className="flex-1">
                                     <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">Sections</Label>
-                                    <div className="flex flex-wrap gap-2">
+                                    <div className="flex flex-wrap gap-2 items-center">
                                         {item.sections && item.sections.length > 0 ? (
                                             item.sections.map((sec) => (
                                                 <Badge
                                                     key={sec._id}
                                                     variant="outline"
-                                                    className="bg-background text-foreground shrink-0 border-border"
+                                                    className="bg-background text-foreground shrink-0 border-border group relative pr-7"
                                                 >
                                                     {sec.sectionName}
+                                                    <button 
+                                                        onClick={() => handleQuickRemoveSection(item, sec._id)}
+                                                        className="absolute right-1 top-1/2 -translate-y-1/2 rounded-full p-0.5 opacity-50 hover:opacity-100 hover:bg-destructive/10 text-destructive transition-all"
+                                                        title="Remove section"
+                                                    >
+                                                        <X className="h-3 w-3" />
+                                                    </button>
                                                 </Badge>
                                             ))
                                         ) : (
                                             <span className="text-xs text-muted-foreground italic bg-muted/50 px-2 py-1 rounded-md">No sections added</span>
                                         )}
+                                        
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="outline" size="icon" className="h-6 w-6 rounded-full shrink-0">
+                                                    <span className="sr-only">Assign Section</span>
+                                                    <Plus className="h-3 w-3" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent>
+                                                <DropdownMenuLabel>Add Section</DropdownMenuLabel>
+                                                <DropdownMenuSeparator />
+                                                {availableSections.filter(s => !item.sections?.find(is => is._id === s._id)).length > 0 ? (
+                                                    availableSections
+                                                        .filter(s => !item.sections?.find(is => is._id === s._id))
+                                                        .map(s => (
+                                                            <DropdownMenuItem key={s._id} onClick={() => handleQuickAssignSection(item, s._id)}>
+                                                                {s.sectionName}
+                                                            </DropdownMenuItem>
+                                                        ))
+                                                ) : (
+                                                    <DropdownMenuItem disabled>No more sections</DropdownMenuItem>
+                                                )}
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
                                     </div>
                                 </div>
                             </div>

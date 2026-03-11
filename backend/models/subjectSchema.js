@@ -11,7 +11,13 @@ const subjectSchema = new mongoose.Schema({
     },
     sessions: {
         type: String,
-        required: true,
+        required: false,
+    },
+    subType: {
+        type: String,
+        enum: ['Theory', 'Practical'],
+        default: 'Theory',
+        required: true
     },
     school: {
         type: mongoose.Schema.Types.ObjectId,

@@ -42,16 +42,27 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
+import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/pagination";
 
 import API_URL from '@/config/api';
 const API_BASE = API_URL;
@@ -64,6 +75,12 @@ const SubjectManagement = () => {
     const [subjects, setSubjects] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 8;
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery]);
     
     // Add Subject Form State
     const [showAddModal, setShowAddModal] = useState(false);
@@ -82,7 +99,8 @@ const SubjectManagement = () => {
     const [formData, setFormData] = useState({
         subName: "",
         subCode: "",
-        sessions: ""
+        sessions: "",
+        subType: "Theory"
     });
 
 
@@ -126,7 +144,8 @@ const SubjectManagement = () => {
                 const updatePayload = {
                     subName: formData.subName,
                     subCode: formData.subCode,
-                    sessions: formData.sessions
+                    sessions: formData.sessions,
+                    subType: formData.subType
                 };
                 await axios.put(`${API_BASE}/Subject/${currentSubjectId}`, updatePayload); // Guessing route
                 toast.success("Subject updated successfully!");
@@ -136,7 +155,8 @@ const SubjectManagement = () => {
                     subjects: [{
                         subName: formData.subName,
                         subCode: formData.subCode,
-                        sessions: formData.sessions
+                        sessions: formData.sessions,
+                        subType: formData.subType
                     }],
                     adminID: currentUser._id
                 };
@@ -144,7 +164,7 @@ const SubjectManagement = () => {
                 toast.success("Subject added successfully!");
             }
 
-            setFormData({ subName: "", subCode: "", sessions: "" });
+            setFormData({ subName: "", subCode: "", sessions: "", subType: "Theory" });
             setShowAddModal(false);
             setIsEditing(false);
             setCurrentSubjectId(null);
@@ -161,7 +181,8 @@ const SubjectManagement = () => {
         setFormData({
             subName: sub.subName,
             subCode: sub.subCode,
-            sessions: sub.sessions
+            sessions: sub.sessions || "",
+            subType: sub.subType || "Theory"
         });
         setCurrentSubjectId(sub._id);
         setIsEditing(true);
@@ -203,11 +224,15 @@ const SubjectManagement = () => {
         return true;
     });
 
+    const totalPages = Math.ceil(filteredSubjects.length / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const currentSubjects = filteredSubjects.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
     const activeSubjects = subjects.filter(s => s.status !== 'Disabled').length;
     const stats = {
         totalSubjects: subjects.length,
         activeSubjects,
-        avgSessions: subjects.length > 0 ? Math.round(subjects.reduce((acc, curr) => acc + parseInt(curr.sessions || 0), 0) / subjects.length) : 0
+        avgSessions: subjects.length > 0 ? Math.round(subjects.reduce((acc, curr) => acc + (parseInt(curr.sessions, 10) || 0), 0) / subjects.length) : 0
     };
 
     return (
@@ -270,7 +295,7 @@ const SubjectManagement = () => {
                 <div className="flex items-center gap-2">
                     <Button onClick={() => {
                         setIsEditing(false);
-                        setFormData({ subName: "", subCode: "", sessions: "" });
+                        setFormData({ subName: "", subCode: "", sessions: "", subType: "Theory" });
                         setShowAddModal(true);
                     }} className="bg-primary hover:bg-primary/90 text-primary-foreground">
                         <Plus className="mr-2 h-4 w-4" /> Add Subject
@@ -303,13 +328,38 @@ const SubjectManagement = () => {
                         )}
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            {filteredSubjects.map((sub) => (
-                                <Card key={sub._id} className={`group transition-all duration-300 border-t-4 ${sub.status === "Disabled" ? "border-t-muted bg-muted/30 opacity-70" : "border-t-indigo-500"} overflow-hidden relative`}>
-                                    <div className="absolute top-2 right-2">
+                <div className="border rounded-lg bg-background shadow-sm overflow-hidden">
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="bg-muted/50">
+                                <TableHead className="w-[30%]">Subject Name</TableHead>
+                                <TableHead className="w-[20%]">Subject Code</TableHead>
+                                <TableHead className="w-[15%]">Type</TableHead>
+                                <TableHead className="w-[15%]">Sessions/Wk</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {currentSubjects.map((sub) => (
+                                <TableRow key={sub._id} className={sub.status === "Disabled" ? "bg-muted/20 opacity-70" : ""}>
+                                    <TableCell className="font-semibold">{sub.subName}</TableCell>
+                                    <TableCell>
+                                        <Badge variant="outline" className="font-mono bg-background">
+                                            {sub.subCode}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge variant="secondary" className={sub.subType === 'Practical' ? 'bg-blue-100/50 text-blue-700 hover:bg-blue-100' : 'bg-orange-100/50 text-orange-700 hover:bg-orange-100'}>
+                                            {sub.subType || 'Theory'}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                        <span className="text-muted-foreground font-medium">{sub.sessions || 'N/A'}</span>
+                                    </TableCell>
+                                    <TableCell className="text-right">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" className="h-8 w-8 p-0 text-muted-foreground hover:bg-transparent">
+                                                <Button variant="ghost" className="h-8 w-8 p-0 text-muted-foreground hover:bg-muted">
                                                     <span className="sr-only">Open menu</span>
                                                     <MoreHorizontal className="h-4 w-4" />
                                                 </Button>
@@ -336,25 +386,48 @@ const SubjectManagement = () => {
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
-                                    </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                    
+                    {/* Pagination Controls */}
+                    {totalPages > 1 && (
+                        <div className="py-4 border-t">
+                            <Pagination>
+                                <PaginationContent>
+                                    <PaginationItem>
+                                        <PaginationPrevious 
+                                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                            disabled={currentPage === 1}
+                                            className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                        />
+                                    </PaginationItem>
+                                    
+                                    {[...Array(totalPages)].map((_, i) => (
+                                        <PaginationItem key={i}>
+                                            <PaginationLink
+                                                onClick={() => setCurrentPage(i + 1)}
+                                                isActive={currentPage === i + 1}
+                                                className="cursor-pointer"
+                                            >
+                                                {i + 1}
+                                            </PaginationLink>
+                                        </PaginationItem>
+                                    ))}
 
-                                    <CardHeader className="pb-2">
-                                        <CardTitle className="text-xl font-bold text-foreground">{sub.subName}</CardTitle>
-                            </CardHeader>
-                                    <CardContent className="space-y-4 pb-4">
-                                        <div className="grid grid-cols-2 gap-2 text-sm">
-                                            <div className="bg-muted/50 p-2 rounded flex flex-col items-center justify-center text-center">
-                                                <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Code</span>
-                                                <span className="font-mono font-medium text-foreground">{sub.subCode}</span>
-                                            </div>
-                                            <div className="bg-muted/50 p-2 rounded flex flex-col items-center justify-center text-center">
-                                                <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Sessions</span>
-                                                <span className="font-medium text-foreground">{sub.sessions}/Wk</span>
-                                            </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
+                                    <PaginationItem>
+                                        <PaginationNext 
+                                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                            disabled={currentPage === totalPages}
+                                            className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                        />
+                                    </PaginationItem>
+                                </PaginationContent>
+                            </Pagination>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -398,7 +471,7 @@ const SubjectManagement = () => {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="sessions">Sessions/Week <span className="text-destructive">*</span></Label>
+                                <Label htmlFor="sessions">Sessions/Week</Label>
                                 <div className="relative">
                                     <Clock className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                                     <Input
@@ -408,13 +481,26 @@ const SubjectManagement = () => {
                                         className="pl-9"
                                         value={formData.sessions}
                                         onChange={(e) => setFormData({ ...formData, sessions: e.target.value })}
-                                        required
                                     />
                                 </div>
                             </div>
                         </div>
 
-
+                        <div className="flex flex-row items-center space-x-2 space-y-0 p-4 border rounded-md">
+                            <Checkbox 
+                                id="practical" 
+                                checked={formData.subType === 'Practical'}
+                                onCheckedChange={(checked) => 
+                                    setFormData({ ...formData, subType: checked ? 'Practical' : 'Theory' })
+                                }
+                            />
+                            <div className="space-y-1 leading-none">
+                                <Label htmlFor="practical">Practical Subject</Label>
+                                <p className="text-sm text-muted-foreground">
+                                    Check this if this subject involves practical sessions.
+                                </p>
+                            </div>
+                        </div>
 
                         <DialogFooter>
                             <Button type="button" variant="outline" onClick={() => setShowAddModal(false)}>Cancel</Button>
