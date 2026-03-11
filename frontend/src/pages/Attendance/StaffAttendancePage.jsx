@@ -24,6 +24,13 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 const API_BASE = API_URL;
 
@@ -36,6 +43,7 @@ const StaffAttendancePage = () => {
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [roleFilter, setRoleFilter] = useState('all');
 
     const fetchAttendance = async (selectedDate) => {
         if (!currentUser) return;
@@ -77,7 +85,10 @@ const StaffAttendancePage = () => {
     };
 
     const markAllStatus = (status) => {
-        setStaff(prev => prev.map(s => ({ ...s, currentStatus: status, isDirty: true })));
+        const filteredIds = filteredStaff.map(s => s._id);
+        setStaff(prev => prev.map(s => 
+            filteredIds.includes(s._id) ? { ...s, currentStatus: status, isDirty: true } : s
+        ));
     };
 
     const handleSaveAttendance = async () => {
@@ -106,10 +117,14 @@ const StaffAttendancePage = () => {
         }
     };
 
-    const filteredStaff = staff.filter(s =>
-        s.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        s.role?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filteredStaff = staff.filter(s => {
+        const matchesSearch = s.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            s.role?.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesRole = roleFilter === 'all' || s.role === roleFilter;
+        return matchesSearch && matchesRole;
+    });
+
+    const uniqueRoles = Array.from(new Set(staff.map(s => s.role).filter(Boolean)));
 
     const isAnyDirty = staff.some(s => s.isDirty);
     const allMarked = staff.every(s => s.attendanceStatus); // all have saved status
@@ -218,7 +233,18 @@ const StaffAttendancePage = () => {
                                 <Badge variant="secondary" className="bg-emerald-100 text-emerald-800 border-none">Saved for Date</Badge>
                             }
                         </CardTitle>
-                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                            <Select value={roleFilter} onValueChange={setRoleFilter}>
+                                <SelectTrigger className="w-[150px] h-9">
+                                    <SelectValue placeholder="All Roles" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Roles</SelectItem>
+                                    {uniqueRoles.map(role => (
+                                        <SelectItem key={role} value={role}>{role}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                             <Input
                                 placeholder="Search staff..."
                                 value={searchQuery}

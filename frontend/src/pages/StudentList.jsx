@@ -120,14 +120,25 @@ const StudentList = () => {
     const fetchInitialData = async () => {
         try {
             setLoading(true);
-            const schoolId = currentUser._id;
+            
+            // Correctly derive school ID for all user types
+            const schoolId = currentUser.school?._id || currentUser.school || currentUser._id;
+            
             const [classesRes, studentsRes] = await Promise.all([
                 axios.get(`${API_BASE}/Sclasses/${schoolId}`),
                 axios.get(`${API_BASE}/Students/${schoolId}`)
             ]);
-            setClassesList(Array.isArray(classesRes.data) ? classesRes.data : []);
 
+            let fetchedClasses = Array.isArray(classesRes.data) ? classesRes.data : [];
             const fetchedStudents = Array.isArray(studentsRes.data) ? studentsRes.data : [];
+
+            // If teacher, filter classes to only show assigned ones
+            if (currentUser.userType === 'teacher' && currentUser.assignedClasses) {
+                const assignedClassIds = currentUser.assignedClasses.map(c => c._id || c);
+                fetchedClasses = fetchedClasses.filter(c => assignedClassIds.includes(c._id));
+            }
+
+            setClassesList(fetchedClasses);
             setStudents(fetchedStudents);
 
             // Handle Search Navigation

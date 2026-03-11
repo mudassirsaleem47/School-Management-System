@@ -58,14 +58,6 @@ const AdminRegisterPage = () => {
         <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 dark:bg-zinc-950 p-4">
             <div className="w-full max-w-lg space-y-8 animate-in slide-in-from-bottom-4 duration-700 fade-in zoom-in-95">
 
-                {/* Header Section */}
-                <div className="flex flex-col items-center text-center space-y-2">
-                    <div className="p-3 bg-primary/10 rounded-full mb-2">
-                        <School className="h-10 w-10 text-primary" />
-                    </div>
-                    <h1 className="text-3xl font-bold tracking-tight">School Management System</h1>
-                    <p className="text-muted-foreground">Create a new school account</p>
-                </div>
 
                 {/* Register Card */}
                 <Card className="border shadow-lg">
@@ -145,7 +137,7 @@ const AdminRegisterPage = () => {
                                     value={formData.password}
                                     onChange={handleChange}
                                     required
-                                    className="h-10 border-none"
+                                    className=""
                                 />
                                 <Button type="submit" className="w-full h-10 mt-2" disabled={loading}>
                                     {loading ? "Creating Account..." : "Register School"}

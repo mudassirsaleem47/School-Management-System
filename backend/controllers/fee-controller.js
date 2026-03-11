@@ -391,12 +391,15 @@ const getReceiptDetails = async (req, res) => {
 const getFeeStatistics = async (req, res) => {
     try {
         const { schoolId } = req.params;
-        const { session } = req.query;
+        const { session, startDate, endDate } = req.query;
 
         let feeDateQuery = {};
         let transDateQuery = {};
 
-        if (session) {
+        if (startDate && endDate) {
+            feeDateQuery.dueDate = { $gte: new Date(startDate), $lte: new Date(endDate) };
+            transDateQuery.paymentDate = { $gte: new Date(startDate), $lte: new Date(endDate) };
+        } else if (session) {
             const SessionData = await mongoose.model('session').findById(session);
             if (SessionData) {
                 feeDateQuery.dueDate = { $gte: SessionData.startDate, $lte: SessionData.endDate };
@@ -549,43 +552,57 @@ const sendFeeReminder = async (req, res) => {
         }
 
         const student = fee.student;
+        if (!student) {
+            return res.status(404).json({ message: "Student record not found for this fee." });
+        }
+
         const targetEmail = student.email || student.father?.email || student.guardian?.email;
 
         if (!targetEmail) {
             return res.status(400).json({ message: "No email address found for this student/parent." });
         }
 
+        if (!fee.school) {
+            return res.status(400).json({ message: "School data missing for this fee." });
+        }
+
         const schoolId = fee.school._id.toString();
         const schoolName = fee.school.schoolName || 'School Administration';
-        const dueDateStr = new Date(fee.dueDate).toLocaleDateString();
+        const dueDateStr = fee.dueDate ? new Date(fee.dueDate).toLocaleDateString() : 'N/A';
 
         // Check if user has defined a message template for 'fee'
-        const MessageTemplate = require('../models/messageTemplateSchema.js');
-        const template = await MessageTemplate.findOne({ school: schoolId, category: 'fee' });
+        let template = null;
+        try {
+            const MessageTemplate = mongoose.model('MessageTemplate');
+            template = await MessageTemplate.findOne({ school: schoolId, category: 'fee' });
+        } catch (err) {
+            console.error("Error fetching message template:", err);
+            // Continue with fallback if template fetching fails
+        }
 
         let htmlTemplate = '';
         let subject = `Fee Reminder: ${fee.feeStructure?.feeName || 'Pending'}`;
 
-        if (template) {
+        if (template && template.content) {
             htmlTemplate = template.content
                 .replace(/{{name}}/g, student.name || '')
                 .replace(/{{father}}/g, student.father?.name || '')
                 .replace(/{{class}}/g, student.sclassName?.sclassName || '')
                 .replace(/{{section}}/g, student.section || '')
                 .replace(/{{phone}}/g, student.mobileNumber || student.father?.phone || '')
-                .replace(/{{fee_amount}}/g, String(fee.pendingAmount))
+                .replace(/{{fee_amount}}/g, String(fee.pendingAmount || 0))
                 .replace(/{{due_date}}/g, dueDateStr)
                 .replace(/{{school}}/g, schoolName)
                 .replace(/{{email}}/g, targetEmail)
                 .replace(/{{roll_number}}/g, student.rollNum || '')
-                .replace(/{{password}}/g, '') // Don't expose password
+                .replace(/{{password}}/g, '') 
                 .replace(/{{login_url}}/g, '');
 
             subject = template.name || subject;
         } else {
             // Fallback template
             htmlTemplate = `
-                <div style="font-family: Arial, sans-serif; p-8; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+                <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
                     <div style="background-color: #ef4444; color: white; padding: 20px; text-align: center;">
                         <h2 style="margin: 0; font-size: 24px;">Fee Reminder</h2>
                     </div>
@@ -597,15 +614,15 @@ const sendFeeReminder = async (req, res) => {
                             <table style="width: 100%; border-collapse: collapse;">
                                 <tr>
                                     <td style="padding: 4px 0; color: #64748b;">Total Amount:</td>
-                                    <td style="padding: 4px 0; font-weight: bold; text-align: right;">$${fee.totalAmount}</td>
+                                    <td style="padding: 4px 0; font-weight: bold; text-align: right;">${fee.totalAmount}</td>
                                 </tr>
                                 <tr>
                                     <td style="padding: 4px 0; color: #64748b;">Paid Amount:</td>
-                                    <td style="padding: 4px 0; font-weight: bold; text-align: right; color: #10b981;">$${fee.paidAmount}</td>
+                                    <td style="padding: 4px 0; font-weight: bold; text-align: right; color: #10b981;">${fee.paidAmount}</td>
                                 </tr>
                                 <tr>
                                     <td style="padding: 8px 0; color: #ef4444; font-weight: bold; border-top: 1px solid #e2e8f0;">Pending Amount:</td>
-                                    <td style="padding: 8px 0; font-weight: bold; text-align: right; color: #ef4444; border-top: 1px solid #e2e8f0; font-size: 18px;">$${fee.pendingAmount}</td>
+                                    <td style="padding: 8px 0; font-weight: bold; text-align: right; color: #ef4444; border-top: 1px solid #e2e8f0; font-size: 18px;">${fee.pendingAmount}</td>
                                 </tr>
                             </table>
                         </div>
@@ -625,21 +642,21 @@ const sendFeeReminder = async (req, res) => {
             to: targetEmail,
             subject,
             html: htmlTemplate,
-            text: `Dear Parent/Guardian of ${student.name}, this is a reminder regarding the pending fee for ${fee.feeStructure?.feeName || 'Pending'}. Pending Amount: $${fee.pendingAmount}. Due Date: ${dueDateStr}.`
+            text: `Dear Parent/Guardian of ${student.name}, this is a reminder regarding the pending fee for ${fee.feeStructure?.feeName || 'Pending'}. Pending Amount: ${fee.pendingAmount}. Due Date: ${dueDateStr}.`
         });
 
         if (emailResult.success) {
-            res.status(200).json({ message: `Reminder sent successfully to ${targetEmail}` });
+            res.status(200).json({ success: true, message: `Reminder sent successfully to ${targetEmail}` });
         } else {
-            console.error(emailResult.error);
-            // It could be that SMTP settings aren't configured. Return success if user wants a simulated frontend experience anyway
-            res.status(400).json({ message: "Failed to send email. Check SMTP settings.", error: emailResult.error });
+            console.error("Email sending failed:", emailResult.error);
+            res.status(400).json({ success: false, message: "Failed to send email. Check SMTP settings.", error: emailResult.error });
         }
 
     } catch (err) {
-        res.status(500).json({ message: "Error sending fee reminder.", error: err.message });
+        console.error("Error in sendFeeReminder:", err);
+        res.status(500).json({ success: false, message: "Error sending fee reminder.", error: err.message });
     }
-}
+};
 
 module.exports = {
     createFeeStructure,

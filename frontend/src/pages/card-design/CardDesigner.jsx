@@ -351,7 +351,18 @@ const CardDesigner = () => {
         if (!isStandard) { setCustomWidth(width); setCustomHeight(height); }
         setOrientation(width > height ? 'horizontal' : 'vertical');
         setBackgroundImage(t.backgroundImage);
-        setElements(t.elements);
+        
+        let loadedElements = t.elements;
+        if (typeof loadedElements === 'string') {
+            try {
+                loadedElements = JSON.parse(loadedElements);
+            } catch (e) {
+                console.error("Failed to parse elements string:", e);
+                loadedElements = [];
+            }
+        }
+        setElements(Array.isArray(loadedElements) ? loadedElements : []);
+        
         setIsDirty(false); // Reset dirty state after loading
         setView('design');
     };
@@ -389,7 +400,7 @@ const CardDesigner = () => {
         }
     };
 
-    const selectedEl = elements.find(e => e.id === selectedElementId);
+    const selectedEl = Array.isArray(elements) ? elements.find(e => e.id === selectedElementId) : null;
     const canvas = getCanvasStyle();
 
     // --- Render: List View ---
@@ -669,7 +680,7 @@ const CardDesigner = () => {
                             </div>
                         )}
 
-                        {elements.map(el => (
+                        {Array.isArray(elements) && elements.map(el => (
                             <DraggableElement
                                 key={el.id}
                                 element={el}

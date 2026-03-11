@@ -20,11 +20,10 @@ import {
 } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Users, BookOpen, Clock, Bell, GraduationCap } from "lucide-react";
+import { Users, BookOpen, Clock, Bell, GraduationCap } from "lucide-react";
 
 const TeacherDashboard = () => {
   const { currentUser } = useAuth();
-  const [schedule, setSchedule] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -34,19 +33,10 @@ const TeacherDashboard = () => {
         if (!currentUser?._id) return;
         
         // Parallel fetching
-        const [scheduleRes, notificationsRes] = await Promise.all([
-          axios.get(`${API_URL}/TeacherSchedule/${currentUser._id}`),
+        const [notificationsRes] = await Promise.all([
           axios.get(`${API_URL}/Notifications/${currentUser._id}`)
         ]);
 
-        // Process Schedule Data
-        // API returns array of ClassSchedule objects. We need to extract periods relevant to this teacher.
-        // Or better yet, the backend route I added returns schedules where the teacher is present.
-        // Assuming backend filter logic is simple find().
-        // We might need to process it here to flatten it into "Today's Schedule".
-        // For now, let's just set raw data and debug or format simply.
-        setSchedule(scheduleRes.data.message ? [] : scheduleRes.data);
-        
         setNotifications(notificationsRes.data.message ? [] : notificationsRes.data);
 
       } catch (error) {
@@ -58,18 +48,6 @@ const TeacherDashboard = () => {
 
     fetchData();
   }, [currentUser]);
-
-  // Transform schedule data for display
-  // Structure: { days: [{ day: "Monday", periods: [{ subject, teacher, startTime, endTime }] }] }
-  // We want to show today's schedule if possible, or just a list of all assigned slots.
-  // Let's just list all assigned slots for now, grouped by Day.
-  
-  const getTodaySchedule = () => {
-      const today = new Date().toLocaleDateString('en-US', { weekday: 'Long' }); // e.g., "Monday"
-      // Filter logic would go here. For now, showing all.
-      return schedule;
-  };
-
 
   return (
     <div className="flex-1 space-y-6 p-4 md:p-8 pt-6">
@@ -90,7 +68,7 @@ const TeacherDashboard = () => {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <Card className="hover:shadow-lg transition-shadow border-l-4 border-l-blue-500">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Assigned Classes</CardTitle>
@@ -99,17 +77,6 @@ const TeacherDashboard = () => {
                 <CardContent>
                     <div className="text-2xl font-bold">{currentUser?.assignedClasses?.length || 0}</div>
                     <p className="text-xs text-muted-foreground">Active classes</p>
-                </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-lg transition-shadow border-l-4 border-l-green-500">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Schedule</CardTitle>
-                    <Calendar className="h-4 w-4 text-green-500" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{schedule.length}</div>
-                    <p className="text-xs text-muted-foreground">Schedule entries</p>
                 </CardContent>
             </Card>
 
@@ -136,54 +103,9 @@ const TeacherDashboard = () => {
             </Card>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-            {/* Schedule Table */}
-            <Card className="col-span-4 hover:shadow-md transition-shadow">
-                <CardHeader>
-                    <CardTitle>Schedule</CardTitle>
-                    <CardDescription>
-                        Your weekly class schedule.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <ScrollArea className="h-[300px]">
-                        {schedule.length > 0 ? (
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Class</TableHead>
-                                        <TableHead>Day</TableHead>
-                                        <TableHead>Subject</TableHead>
-                                        <TableHead className="text-right">Period</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {schedule.map((sch, i) => (
-                                       sch.days && sch.days.map((day, j) => (
-                                           day.periods.filter(p => p.teacher == currentUser._id).map((period, k) => (
-                                                <TableRow key={`${i}-${j}-${k}`}>
-                                                    <TableCell className="font-medium">{sch.sclass?.sclassName}</TableCell>
-                                                    <TableCell>{day.day}</TableCell>
-                                                    <TableCell>{period.subject?.subName || "Subject"}</TableCell>
-                                                    <TableCell className="text-right">Unknown Time</TableCell> 
-                                                </TableRow>
-                                           ))
-                                       ))
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        ) : (
-                            <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
-                                <Calendar className="h-8 w-8 mb-2 opacity-50" />
-                                <p>No schedule found.</p>
-                            </div>
-                        )}
-                    </ScrollArea>
-                </CardContent>
-            </Card>
-
+        <div className="grid gap-4 md:grid-cols-1">
             {/* Notifications */}
-            <Card className="col-span-3 hover:shadow-md transition-shadow">
+            <Card className="hover:shadow-md transition-shadow">
                 <CardHeader>
                     <CardTitle>Notifications</CardTitle>
                     <CardDescription>

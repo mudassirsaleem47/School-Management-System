@@ -70,7 +70,9 @@ export function NavMain({
                       <SidebarMenuSubItem key={subItem.title}>
                         <SidebarMenuSubButton
                           asChild
-                          className={isActive(subItem.url) ? "bg-accent/40 text-accent-foreground font-medium" : ""}
+                          className={isActive(subItem.url)
+                            ? "bg-primary text-primary-foreground font-semibold shadow-sm hover:bg-primary/90"
+                            : "hover:bg-accent/50"}
                         >
                           <Link to={subItem.url}>
                             <span>{subItem.title}</span>
@@ -87,7 +89,9 @@ export function NavMain({
                 <SidebarMenuButton
                   asChild
                   tooltip={item.title}
-                  className={isActive(item.url) ? "bg-accent/40 text-accent-foreground font-medium" : ""}
+                  className={isActive(item.url)
+                    ? "bg-primary text-primary-foreground font-semibold shadow-sm hover:bg-primary/90"
+                    : "hover:bg-accent/50"}
                 >
                 <Link to={item.url}>
                   {item.icon && <item.icon />}

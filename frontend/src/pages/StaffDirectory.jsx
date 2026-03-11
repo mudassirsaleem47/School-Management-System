@@ -84,21 +84,27 @@ const StaffDirectory = () => {
         setLoading(true);
         try {
             const schoolId = currentUser._id;
-            const [teachersRes, accountantsRes, receptionistsRes] = await Promise.allSettled([
+            // Fetch teachers and all other staff in parallel
+            const [teachersRes, staffRes] = await Promise.allSettled([
                 axios.get(`${API_BASE}/Teachers/${schoolId}`),
-                axios.get(`${API_BASE}/Accountants/${schoolId}`),
-                axios.get(`${API_BASE}/Receptionists/${schoolId}`),
+                axios.get(`${API_BASE}/Staff/${schoolId}`),
             ]);
 
-            const teachers = (teachersRes.status === 'fulfilled' ? teachersRes.value.data : [])
+            const teachers = (teachersRes.status === 'fulfilled' ? (Array.isArray(teachersRes.value.data) ? teachersRes.value.data : []) : [])
                 .map(t => ({ ...t, role: 'teacher' }));
-            const accountants = (accountantsRes.status === 'fulfilled' ? accountantsRes.value.data : [])
-                .map(a => ({ ...a, role: 'accountant' }));
-            const receptionists = (receptionistsRes.status === 'fulfilled' ? receptionistsRes.value.data : [])
-                .map(r => ({ ...r, role: 'receptionist' }));
+            
+            // Other staff includes all non-teacher roles like Accountants and Receptionists
+            const otherStaffRaw = (staffRes.status === 'fulfilled' ? (staffRes.value.data?.staff || []) : []);
+            
+            // Normalize role/designation if needed
+            const otherStaff = otherStaffRaw.map(s => ({ 
+                ...s, 
+                role: (s.role || s.designation || 'staff').toLowerCase() 
+            }));
 
-            setAllStaff([...teachers, ...accountants, ...receptionists]);
+            setAllStaff([...teachers, ...otherStaff]);
         } catch (err) {
+            console.error("Error loading staff data:", err);
             showToast('Error loading staff data', 'error');
         } finally {
             setLoading(false);

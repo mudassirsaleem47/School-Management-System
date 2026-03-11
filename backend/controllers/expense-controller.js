@@ -86,10 +86,13 @@ const deleteExpense = async (req, res) => {
 const getExpenseStatistics = async (req, res) => {
     try {
         const { schoolId } = req.params;
-        const { session } = req.query;
+        const { session, startDate, endDate } = req.query;
 
         let dateQuery = {};
-        if (session) {
+
+        if (startDate && endDate) {
+            dateQuery.date = { $gte: new Date(startDate), $lte: new Date(endDate) };
+        } else if (session) {
             const SessionData = await mongoose.model('session').findById(session);
             if (SessionData) {
                 dateQuery.date = { $gte: SessionData.startDate, $lte: SessionData.endDate };

@@ -185,7 +185,7 @@ const adminFooterData = [
 5
 
 
-// Teacher limited navigation
+  // Teacher limited navigation
 const teacherNavData = [
   { title: 'Dashboard', url: '/teacher/dashboard', icon: IconSchool },
   {
@@ -202,8 +202,6 @@ const teacherNavData = [
       { title: 'Classes', url: '/teacher/classes' },
       { title: 'Subjects', url: '/teacher/subjects' },
       { title: 'Subject Groups', url: '/teacher/subject-groups' },
-      { title: 'Class Schedule', url: '/teacher/class-schedule' },
-      { title: 'Teacher Schedule', url: '/teacher/teacher-schedule' },
       { title: 'Promote Students', url: '/teacher/promote' },
     ]
   },

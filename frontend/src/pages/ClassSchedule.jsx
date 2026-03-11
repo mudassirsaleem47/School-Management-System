@@ -64,8 +64,18 @@ const ClassSchedule = () => {
         const fetchClasses = async () => {
             try {
                 if (currentUser?._id) {
-                    const result = await axios.get(`${API_BASE}/Sclasses/${currentUser._id}`);
-                    setClasses(result.data);
+                    const schoolId = currentUser.school?._id || currentUser.school || currentUser._id;
+                    const result = await axios.get(`${API_BASE}/Sclasses/${schoolId}`);
+                    
+                    let fetchedClasses = Array.isArray(result.data) ? result.data : [];
+                    
+                    // If teacher, filter classes to only show assigned ones
+                    if (currentUser.userType === 'teacher' && currentUser.assignedClasses) {
+                        const assignedClassIds = currentUser.assignedClasses.map(c => c._id || c);
+                        fetchedClasses = fetchedClasses.filter(c => assignedClassIds.includes(c._id));
+                    }
+                    
+                    setClasses(fetchedClasses);
                 }
             } catch (err) {
                 console.error("Error fetching classes:", err);
@@ -77,7 +87,8 @@ const ClassSchedule = () => {
         const fetchTeachers = async () => {
              if (currentUser?._id) {
                 try {
-                    const res = await axios.get(`${API_BASE}/Teachers/${currentUser._id}`);
+                    const schoolId = currentUser.school?._id || currentUser.school || currentUser._id;
+                    const res = await axios.get(`${API_BASE}/Teachers/${schoolId}`);
                     setTeachers(Array.isArray(res.data) ? res.data : []);
                 } catch(err) { console.error(err); }
              }
@@ -137,10 +148,11 @@ const ClassSchedule = () => {
         }
 
         try {
+            const schoolId = currentUser.school?._id || currentUser.school || currentUser._id;
             const payload = {
                 sclass: selectedClass,
                 section: selectedSection,
-                school: currentUser._id,
+                school: schoolId,
                 days: schedule
             };
             
@@ -382,4 +394,3 @@ const ClassSchedule = () => {
 };
 
 export default ClassSchedule;
-

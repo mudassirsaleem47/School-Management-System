@@ -5,6 +5,13 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import API_URL from '../config/api';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
   Users, School, BookOpen, DollarSign, TrendingUp, Activity, Clock,
   Calendar, Bell, BarChart3, ArrowUpRight, MoreHorizontal, GraduationCap,
   Receipt, CreditCard, UserCheck, UserX, ArrowDownRight, Wallet,
@@ -26,6 +33,7 @@ import {
   Tooltip
 } from 'recharts';
 import DashboardCalendar from '@/components/DashboardCalendar';
+import { DatePicker } from '@/components/ui/DatePicker';
 
 
 const AdminDashboard = () => {
@@ -52,109 +60,122 @@ const AdminDashboard = () => {
   const [expenseStats, setExpenseStats] = useState(null);
   const [classes, setClasses] = useState([]);
 
+  // Date Filters
+  const [startDate, setStartDate] = useState(() => {
+    const d = new Date();
+    d.setDate(1); // Default to start of month
+    return format(d, 'yyyy-MM-dd');
+  });
+  const [endDate, setEndDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [datePreset, setDatePreset] = useState('month');
+
+  const handlePresetChange = (value) => {
+    setDatePreset(value);
+    const end = new Date();
+    const start = new Date();
+
+    if (value === 'lifetime') {
+      setStartDate('');
+      setEndDate('');
+      return;
+    }
+
+    switch (value) {
+      case '7days':
+        start.setDate(end.getDate() - 7);
+        break;
+      case '28days':
+        start.setDate(end.getDate() - 28);
+        break;
+      case '90days':
+        start.setDate(end.getDate() - 90);
+        break;
+      case '365days':
+        start.setDate(end.getDate() - 365);
+        break;
+      case 'month':
+      default:
+        start.setDate(1);
+        break;
+    }
+    setStartDate(format(start, 'yyyy-MM-dd'));
+    setEndDate(format(end, 'yyyy-MM-dd'));
+  };
+
   useEffect(() => {
     if (currentUser) {
-      if (!isTeacher) { // Wait for active session only if admin, or if standard, etc
-        fetchDashboardData();
-      } else {
-        fetchDashboardData();
-      }
+      fetchDashboardData();
     }
-  }, [currentUser, selectedCampus, campuses, activeSession]);
+  }, [currentUser, selectedCampus, campuses, activeSession, startDate, endDate, datePreset]);
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const sessionQuery = activeSession ? `?session=${activeSession._id}` : '';
+
+      // 1. Build stats params
+      // If lifetime is selected, we want NO date filters and NO session filters.
+      // If custom dates are set, we use them.
+      // Otherwise fallback to activeSession if it's not a 'lifetime' preset.
+      let statsParams = '';
+      if (startDate && endDate) {
+        statsParams = `?startDate=${startDate}&endDate=${endDate}`;
+      } else if (datePreset !== 'lifetime' && activeSession) {
+        statsParams = `?session=${activeSession._id}`;
+      }
 
       let studentCount = 0;
       let teacherCount = 0;
       let classCount = 0;
+      let allStudents = [];
+      let allClasses = [];
 
+      // 2. Fetch Core Entity Data (Students, Teachers, Classes)
+      // This part doesn't usually use date filters for the 'Total' cards
       if (isTeacher) {
-        // Teacher: count from assigned classes
-        classCount = currentUser?.assignedClasses?.length || 0;
-        try {
-          const studentsRes = await axios.get(`${API_URL}/Students/${schoolId}`);
-          const allStudents = Array.isArray(studentsRes.data) ? studentsRes.data : [];
-          const assignedClassIds = (currentUser?.assignedClasses || []).map(c => c._id || c);
-          const myStudents = allStudents.filter(s => {
-            const sclassId = s.sclass?._id || s.sclass;
-            return assignedClassIds.includes(sclassId?.toString());
-          });
-          studentCount = myStudents.length;
-          setStudents(myStudents);
-        } catch (err) { setStudents([]); }
-      } else if (selectedCampus) {
-        // Single campus selected
-        try {
-          const res = await axios.get(`${API_URL}/CampusStats/${selectedCampus._id}`);
-          if (res.data.success) {
-            const s = res.data.stats;
-            studentCount = s.totalStudents;
-            teacherCount = s.totalTeachers;
-            classCount = s.totalClasses;
-          }
-        } catch { }
-      } else if (campuses.length > 0) {
-        // Multiple campuses — sum stats
-        try {
-          const promises = campuses.map(campus =>
-            axios.get(`${API_URL}/CampusStats/${campus._id}`)
-          );
-          const results = await Promise.allSettled(promises);
-          results.forEach(res => {
-            if (res.status === 'fulfilled' && res.value.data.success) {
-              studentCount += res.value.data.stats.totalStudents;
-              teacherCount += res.value.data.stats.totalTeachers;
-              classCount += res.value.data.stats.totalClasses;
-            }
-          });
-        } catch { }
+        const studRes = await axios.get(`${API_URL}/Students/${schoolId}`);
+        allStudents = Array.isArray(studRes.data) ? studRes.data : [];
+        const assignedClassIds = (currentUser?.assignedClasses || []).map(c => c._id || c?.toString());
+        const myStudents = allStudents.filter(s => {
+          const sclassId = s.sclass?._id || s.sclass;
+          return assignedClassIds.includes(sclassId?.toString());
+        });
+        allClasses = currentUser?.assignedClasses || [];
+        studentCount = myStudents.length;
+        teacherCount = 1; // It's just them
+        classCount = allClasses.length;
+        setStudents(myStudents);
+        setClasses(allClasses);
       } else {
-        // No campuses — fetch directly from school
-        try {
-          const [studRes, teachRes, classRes] = await Promise.allSettled([
-            axios.get(`${API_URL}/Students/${schoolId}`),
-            axios.get(`${API_URL}/Teachers/${schoolId}`),
-            axios.get(`${API_URL}/Sclasses/${schoolId}`),
-          ]);
-          if (studRes.status === 'fulfilled') {
-            const data = Array.isArray(studRes.value.data) ? studRes.value.data : [];
-            studentCount = data.length;
-            setStudents(data);
-          }
-          if (teachRes.status === 'fulfilled') {
-            teacherCount = Array.isArray(teachRes.value.data) ? teachRes.value.data.length : 0;
-          }
-          if (classRes.status === 'fulfilled') {
-            classCount = Array.isArray(classRes.value.data) ? classRes.value.data.length : 0;
-            setClasses(Array.isArray(classRes.value.data) ? classRes.value.data : []);
-          }
-        } catch (err) { }
+        // Fetch everything in parallel
+        const [studRes, teachRes, classRes] = await Promise.allSettled([
+          axios.get(`${API_URL}/Students/${schoolId}`),
+          axios.get(`${API_URL}/Teachers/${schoolId}`),
+          axios.get(`${API_URL}/Sclasses/${schoolId}`),
+        ]);
+
+        if (studRes.status === 'fulfilled') {
+          allStudents = Array.isArray(studRes.value.data) ? studRes.value.data : [];
+          studentCount = allStudents.length;
+          setStudents(allStudents);
+        }
+        if (teachRes.status === 'fulfilled') {
+          teacherCount = Array.isArray(teachRes.value.data) ? teachRes.value.data.length : 0;
+        }
+        if (classRes.status === 'fulfilled') {
+          allClasses = Array.isArray(classRes.value.data) ? classRes.value.data : [];
+          classCount = allClasses.length;
+          setClasses(allClasses);
+        }
       }
 
-      // Revenue from IncomeStatistics
-      let revenue = 0;
-      if (!isTeacher) {
-        try {
-          const incomeRes = await axios.get(`${API_URL}/IncomeStatistics/${schoolId}`);
-          revenue = incomeRes.data?.totalIncome?.amount || 0;
-        } catch { }
-      }
-
-      setStats({ students: studentCount, teachers: teacherCount, classes: classCount, revenue });
-
-      // Parallel fetch for activity, events, detailed stats
+      // 3. Fetch Transactional Statistics (Filtered by Dates)
       const fetchPromises = [
         axios.get(`${API_URL}/Notifications/${schoolId}`),
         axios.get(`${API_URL}/Events/${schoolId}`),
         ...(isTeacher ? [] : [
-          axios.get(`${API_URL}/Students/${schoolId}`),
-          axios.get(`${API_URL}/FeeStatistics/${schoolId}`),
-          axios.get(`${API_URL}/IncomeStatistics/${schoolId}`),
-          axios.get(`${API_URL}/ExpenseStatistics/${schoolId}`),
-          axios.get(`${API_URL}/Sclasses/${schoolId}`),
+          axios.get(`${API_URL}/FeeStatistics/${schoolId}${statsParams}`),
+          axios.get(`${API_URL}/IncomeStatistics/${schoolId}${statsParams}`),
+          axios.get(`${API_URL}/ExpenseStatistics/${schoolId}${statsParams}`),
         ]),
       ];
       const results = await Promise.allSettled(fetchPromises);
@@ -162,40 +183,43 @@ const AdminDashboard = () => {
       let idx = 0;
       const notifRes = results[idx++];
       const eventRes = results[idx++];
+      
+      if (!isTeacher) {
+        const feeS = results[idx++];
+        const incS = results[idx++];
+        const expS = results[idx++];
 
+        if (feeS?.status === 'fulfilled') setFeeStats(feeS.value.data);
+        if (incS?.status === 'fulfilled') {
+          setIncomeStats(incS.value.data);
+          // Set revenue card stat based on filtered income
+          setStats(prev => ({ ...prev, revenue: incS.value.data?.totalIncome?.amount || 0 }));
+        }
+        if (expS?.status === 'fulfilled') setExpenseStats(expS.value.data);
+      }
+
+      // Update remaining stats
+      setStats(prev => ({
+        ...prev,
+        students: studentCount,
+        teachers: teacherCount,
+        classes: classCount,
+        // revenue is updated above for non-teachers
+      }));
+
+      // Notifications and Events
       if (notifRes.status === 'fulfilled') {
-        setActivities(notifRes.value.data.notifications?.slice(0, 5) || []);
-        setNotifications(notifRes.value.data.notifications?.filter(n => !n.read).slice(0, 5) || []);
+        const notifications = notifRes.value.data.notifications || notifRes.value.data;
+        setActivities(Array.isArray(notifications) ? notifications.slice(0, 5) : []);
+        setNotifications(Array.isArray(notifications) ? notifications.filter(n => !n.read).slice(0, 5) : []);
       }
       if (eventRes.status === 'fulfilled') {
-        const upcoming = (Array.isArray(eventRes.value.data) ? eventRes.value.data : [])
+        const eventsData = Array.isArray(eventRes.value.data) ? eventRes.value.data : [];
+        const upcoming = eventsData
           .filter(e => new Date(e.eventFrom) >= new Date())
           .sort((a, b) => new Date(a.eventFrom) - new Date(b.eventFrom))
           .slice(0, 3);
         setEvents(upcoming);
-      }
-
-      if (!isTeacher) {
-        const studentsRes2 = results[idx++];
-        const feeStatsRes = results[idx++];
-        const incomeStatsRes = results[idx++];
-        const expenseStatsRes = results[idx++];
-        const classesRes = results[idx++];
-
-        if (studentsRes2?.status === 'fulfilled') {
-          const data = Array.isArray(studentsRes2.value.data) ? studentsRes2.value.data : [];
-          setStudents(data);
-          // Update student count with fresh data
-          setStats(prev => ({ ...prev, students: data.length }));
-        }
-        if (feeStatsRes?.status === 'fulfilled') setFeeStats(feeStatsRes.value.data);
-        if (incomeStatsRes?.status === 'fulfilled') setIncomeStats(incomeStatsRes.value.data);
-        if (expenseStatsRes?.status === 'fulfilled') setExpenseStats(expenseStatsRes.value.data);
-        if (classesRes?.status === 'fulfilled') {
-          const cls = Array.isArray(classesRes.value.data) ? classesRes.value.data : [];
-          setClasses(cls);
-          setStats(prev => ({ ...prev, classes: cls.length }));
-        }
       }
 
     } catch (error) {
@@ -389,15 +413,62 @@ const AdminDashboard = () => {
             )}
           </div>
         </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" className="hidden sm:flex" onClick={fetchDashboardData}>
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Refresh
+        <div className="flex flex-col lg:flex-row items-center gap-3">
+          {!isTeacher && (
+            <div className="flex flex-wrap items-center gap-2 pl-1 bg-muted/30 rounded-xl border border-primary/10">
+              <div className="flex items-center gap-1.5 px-1 whitespace-nowrap">
+                <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                
+              </div>
+              
+              <Select value={datePreset} onValueChange={handlePresetChange}>
+                <SelectTrigger className="w-[130px] h-8 text-xs">
+                  <SelectValue placeholder="Select Range" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="month">Current Month</SelectItem>
+                  <SelectItem value="7days">Last 7 Days</SelectItem>
+                  <SelectItem value="28days">Last 28 Days</SelectItem>
+                  <SelectItem value="90days">Last 90 Days</SelectItem>
+                  <SelectItem value="365days">Last 365 Days</SelectItem>
+                  <SelectItem value="lifetime">Lifetime</SelectItem>
+                  <SelectItem value="custom">Custom Range</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {datePreset === 'custom' && (
+                <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2 duration-300">
+                  <DatePicker 
+                    value={startDate} 
+                    onChange={setStartDate} 
+                    className="w-[130px] h-8 text-xs" 
+                    placeholder="From Date"
+                  />
+                  <span className="text-muted-foreground text-[10px] font-bold">TO</span>
+                  <DatePicker 
+                    value={endDate} 
+                    onChange={setEndDate} 
+                    className="w-[130px] h-8 text-xs" 
+                    placeholder="To Date"
+                  />
+                </div>
+              )}
+
+              {datePreset !== 'custom' && datePreset !== 'lifetime' && startDate && endDate && (
+                <div className="px-2 text-[10px] font-medium text-primary hidden sm:block">
+                  {format(new Date(startDate), 'MMM dd')} - {format(new Date(endDate), 'MMM dd, yyyy')}
+                </div>
+              )}
+            </div>
+          )}
+          <Button variant="outline" className="h-9 gap-2" onClick={fetchDashboardData}>
+            <RefreshCw className="h-4 w-4" />
+            <span className="hidden md:inline">Refresh</span>
           </Button>
           {!isTeacher && (
-            <Button onClick={() => navigate('/admin/admission')}>
-              <Users className="mr-2 h-4 w-4" />
-              New Admission
+            <Button className="h-9 gap-2" onClick={() => navigate('/admin/admission')}>
+              <Users className="h-4 w-4" />
+              <span className="hidden md:inline">New Admission</span>
             </Button>
           )}
         </div>
