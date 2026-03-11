@@ -395,7 +395,7 @@ const SubjectManagement = () => {
                     {/* Pagination Controls */}
                     {totalPages > 1 && (
                         <div className="py-4 border-t">
-                            <Pagination>
+                            <Pagination className="justify-end pr-4">
                                 <PaginationContent>
                                     <PaginationItem>
                                         <PaginationPrevious 
