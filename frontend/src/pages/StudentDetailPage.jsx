@@ -150,10 +150,24 @@ const StudentDetailPage = () => {
                     <ArrowLeft className="h-4 w-4" />
                     Back to Students
                 </Button>
-                <Button onClick={() => navigate(`/admin/admission?edit=${student._id}`)} className="gap-2">
-                    <Pencil className="h-4 w-4" />
-                    Edit Student
-                </Button>
+                <div className="flex items-center gap-2">
+                    {currentUser?.userType !== 'teacher' && (
+                        <Button 
+                            onClick={() => {
+                                const basePath = window.location.pathname.startsWith('/accountant') ? '/accountant' : '/admin';
+                                navigate(`${basePath}/fee-collection/${student._id}`);
+                            }} 
+                            className="gap-2 bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg transition-all"
+                        >
+                            <CreditCard className="h-4 w-4" />
+                            Collect Fee
+                        </Button>
+                    )}
+                    <Button onClick={() => navigate(`/admin/admission?edit=${student._id}`)} className="gap-2">
+                        <Pencil className="h-4 w-4" />
+                        Edit Student
+                    </Button>
+                </div>
             </div>
 
             {/* Main Grid */}
@@ -627,4 +641,3 @@ const StudentDetailPage = () => {
 };
 
 export default StudentDetailPage;
-

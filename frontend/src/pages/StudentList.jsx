@@ -20,7 +20,8 @@ import {
     Copy,
     Star,
     LayoutGrid,
-    List as ListIcon
+    List as ListIcon,
+    CreditCard
 } from 'lucide-react';
 
 import {
@@ -247,6 +248,11 @@ const StudentList = () => {
         setCurrentStudent(copiedData);
         setIsAddModalOpen(true);
         toast.info("Creating copy of student record");
+    };
+
+    const handleCollectFee = (student) => {
+        const basePath = location.pathname.startsWith('/accountant') ? '/accountant' : '/admin';
+        navigate(`${basePath}/fee-collection/${student._id}`);
     };
 
     const handleFavorite = (student) => {
@@ -557,9 +563,14 @@ const StudentList = () => {
                                                                     </DropdownMenuTrigger>
                                                                     <DropdownMenuContent align="end">
                                                                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                                        <DropdownMenuItem onClick={() => handleEditStudent(student)}>
+                                                                         <DropdownMenuItem onClick={() => handleEditStudent(student)}>
                                                                             <Pencil className="mr-2 h-4 w-4" /> Edit
                                                                         </DropdownMenuItem>
+                                                                        {currentUser?.userType !== 'teacher' && (
+                                                                            <DropdownMenuItem onClick={() => handleCollectFee(student)}>
+                                                                                <CreditCard className="mr-2 h-4 w-4 text-green-600" /> Collect Fee
+                                                                            </DropdownMenuItem>
+                                                                        )}
                                                                         <DropdownMenuItem onClick={() => handleCopy(student)}>
                                                                             <Copy className="mr-2 h-4 w-4" /> Duplicate
                                                                         </DropdownMenuItem>
@@ -656,7 +667,7 @@ const StudentList = () => {
                                                 {/* Actions Footer */}
                                                 <CardFooter className="p-0 border-t bg-muted/40 grid grid-cols-3 divide-x divide-border/60">
 
-                                                    <Button
+                                                     <Button
                                                         variant="ghost"
                                                         className="h-11 rounded-none w-full hover:bg-background hover:text-blue-600 transition-colors group/btn"
                                                         onClick={() => handleEditStudent(student)}
@@ -664,6 +675,16 @@ const StudentList = () => {
                                                     >
                                                         <Pencil className="h-4 w-4 text-muted-foreground group-hover/btn:text-blue-600 transition-colors" />
                                                     </Button>
+                                                    {currentUser?.userType !== 'teacher' && (
+                                                        <Button
+                                                            variant="ghost"
+                                                            className="h-11 rounded-none w-full hover:bg-background hover:text-green-600 transition-colors group/btn"
+                                                            onClick={() => handleCollectFee(student)}
+                                                            title="Collect Fee"
+                                                        >
+                                                            <CreditCard className="h-4 w-4 text-muted-foreground group-hover/btn:text-green-600 transition-colors" />
+                                                        </Button>
+                                                    )}
                                                     <Button
                                                         variant="ghost"
                                                         className="h-11 rounded-none w-full hover:bg-background hover:text-destructive transition-colors group/btn"
