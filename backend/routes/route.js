@@ -1,9 +1,10 @@
 const router = require('express').Router();
 const upload = require('../middleware/uploadMiddleware');
+const loginRateLimit = require('../middleware/loginRateLimit');
 const { adminRegister, adminLogin, getAdminDetail, updateAdmin, updateAdminSettings } = require('../controllers/admin-controller.js');
 const { studentAdmission, studentLogin, getStudentsBySchool, getStudentById, updateStudent, deleteStudent, getDisabledStudents, promoteStudents } = require('../controllers/student-controller.js');
 const { enquiryCreate, enquiryList, enquiryDelete, enquiryUpdate } = require('../controllers/enquiry-controller.js');
-const { sclassCreate, getSclassesBySchool, deleteSclass, addSection, deleteSection, updateSclass } = require('../controllers/sclass-controller.js');
+const { sclassCreate, getSclassesBySchool, deleteSclass, addSection, deleteSection, updateSclass, reorderSclasses } = require('../controllers/sclass-controller.js');
 const { createSection, getSectionsBySchool, deleteSection: deleteStandaloneSection, updateSection } = require('../controllers/section-controller.js');
 
 const { addTeacher, getTeachersBySchool, updateTeacher, deleteTeacher, assignClassToTeacher, removeClassFromTeacher, teacherLogin } = require('../controllers/teacher-controller.js');
@@ -47,15 +48,15 @@ router.delete('/Session/:id', deleteSession);
 
 // --- Admin Auth Routes ---
 router.post('/AdminReg', adminRegister);
-router.post('/AdminLogin', adminLogin);
-router.post('/admin/login', adminLogin); // Alias for case-insensitivity or cleaner URLs
+router.post('/AdminLogin', loginRateLimit, adminLogin);
+router.post('/admin/login', loginRateLimit, adminLogin); // Alias for case-insensitivity or cleaner URLs
 router.get('/Admin/:id', getAdminDetail);
 router.put('/Admin/:id', upload.fields([{ name: 'schoolLogo', maxCount: 1 }, { name: 'favicon', maxCount: 1 }]), updateAdmin);
 router.put('/Admin/Settings/:id', updateAdminSettings);
 
 // --- Student Routes ---
-router.post('/StudentLogin', studentLogin);
-router.post('/student/login', studentLogin); // Alias
+router.post('/StudentLogin', loginRateLimit, studentLogin);
+router.post('/student/login', loginRateLimit, studentLogin); // Alias
 router.post('/StudentRegister', upload.fields([
     { name: 'studentPhoto', maxCount: 1 },
     { name: 'fatherPhoto', maxCount: 1 },
@@ -79,6 +80,7 @@ router.post('/SclassCreate', sclassCreate);
 router.get('/Sclasses/:schoolId', getSclassesBySchool);
 router.delete('/Sclass/:id', deleteSclass);
 router.put('/SclassUpdate/:id', updateSclass);
+router.post('/SclassReorder', reorderSclasses);
 router.put('/Sclass/:id/Section', addSection);
 
 router.delete('/Sclass/:id/Section/:sectionId', deleteSection);
@@ -122,8 +124,8 @@ router.delete('/EnquiryDelete/:id', enquiryDelete);
 router.put('/EnquiryUpdate/:id', enquiryUpdate);
 
 // --- Teacher Routes ---
-router.post('/TeacherLogin', teacherLogin);
-router.post('/teacher/login', teacherLogin); // Alias
+router.post('/TeacherLogin', loginRateLimit, teacherLogin);
+router.post('/teacher/login', loginRateLimit, teacherLogin); // Alias
 router.post('/TeacherRegister', addTeacher);
 router.get('/Teachers/:schoolId', getTeachersBySchool);
 router.put('/Teacher/:id', updateTeacher);
@@ -233,8 +235,8 @@ router.get('/CampusStats/:id', getCampusStats);
 
 
 // --- Staff Management Routes ---
-router.post('/StaffLogin', staffLogin);
-router.post('/staff/login', staffLogin); // Alias
+router.post('/StaffLogin', loginRateLimit, staffLogin);
+router.post('/staff/login', loginRateLimit, staffLogin); // Alias
 router.post('/Staff', createStaff);
 router.get('/Staff/:schoolId', getStaffBySchool);
 router.get('/StaffDetail/:id', getStaffById);

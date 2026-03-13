@@ -1,30 +1,29 @@
 const multer = require('multer');
-const cloudinary = require('cloudinary').v2;
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const dotenv = require('dotenv');
+const fs = require('fs');
+const path = require('path');
 
-dotenv.config();
+const uploadsDir = path.join(__dirname, '..', 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
-// Debug logs to verify env vars
-console.log('Cloudinary Config:', {
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY ? 'Loaded' : 'Missing',
-    api_secret: process.env.CLOUDINARY_API_SECRET ? 'Loaded' : 'Missing'
-});
+const sanitizeToken = (value) => {
+    if (!value) return '';
+    return String(value).replace(/[^a-zA-Z0-9_-]/g, '');
+};
 
-// Configure Cloudinary
-cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET
-});
-
-// Configure storage
-const storage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: {
-        folder: 'school_management_system',
-        resource_type: 'auto',
+// Local disk storage for all uploads.
+const storage = multer.diskStorage({
+    destination: (_req, _file, cb) => {
+        cb(null, uploadsDir);
+    },
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname || '').toLowerCase();
+        const base = path.basename(file.originalname || 'file', ext).replace(/[^a-zA-Z0-9_-]/g, '_');
+        const schoolToken = sanitizeToken(req.body?.schoolId || req.body?.school || req.params?.schoolId);
+        const stamp = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+        const prefix = schoolToken ? `${schoolToken}_` : '';
+        cb(null, `${prefix}${base}_${stamp}${ext}`);
     },
 });
 

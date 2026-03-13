@@ -71,7 +71,7 @@ export function NavMain({
                         <SidebarMenuSubButton
                           asChild
                           className={isActive(subItem.url)
-                            ? "bg-primary text-primary-foreground font-semibold shadow-sm hover:bg-primary/90"
+                            ? "bg-primary text-primary-foreground font-semibold shadow-sm hover:text-primary-foreground hover:bg-primary/90"
                             : "hover:bg-accent/50"}
                         >
                           <Link to={subItem.url}>

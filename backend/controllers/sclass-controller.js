@@ -37,6 +37,7 @@ const getSclassesBySchool = async (req, res) => {
     try {
         const { schoolId } = req.params;
         const sclasses = await Sclass.find({ school: schoolId })
+            .sort({ order: 1, createdAt: 1 })
             .populate('classIncharge', 'name email')
             .populate('sections');
 
@@ -139,5 +140,31 @@ const updateSclass = async (req, res) => {
     }
 };
 
+// 7. Reorder Classes
+const reorderSclasses = async (req, res) => {
+    try {
+        const { schoolId, newOrder } = req.body; // newOrder should be an array of { id, order }
+
+        if (!Array.isArray(newOrder)) {
+            return res.status(400).json({ message: "Invalid order data." });
+        }
+
+        const bulkOps = newOrder.map(item => ({
+            updateOne: {
+                filter: { _id: item.id, school: schoolId },
+                update: { $set: { order: item.order } }
+            }
+        }));
+
+        if (bulkOps.length > 0) {
+            await Sclass.bulkWrite(bulkOps);
+        }
+
+        res.status(200).json({ message: "Classes reordered successfully." });
+    } catch (err) {
+        res.status(500).json({ message: "Internal Server Error during Reordering.", error: err.message });
+    }
+};
+
 // Export mein naye functions add karna mat bhoolna
-module.exports = { sclassCreate, getSclassesBySchool, deleteSclass, addSection, deleteSection, updateSclass };
+module.exports = { sclassCreate, getSclassesBySchool, deleteSclass, addSection, deleteSection, updateSclass, reorderSclasses };

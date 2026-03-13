@@ -1,78 +1,109 @@
-const cloudinary = require('cloudinary').v2;
+const fs = require('fs');
+const path = require('path');
 const Admin = require('../models/adminSchema.js');
 const Student = require('../models/studentSchema.js');
 const Complain = require('../models/complainSchema.js');
 const CardTemplate = require('../models/cardTemplateSchema.js');
 const Visitor = require('../models/visitorSchema.js');
 
+const uploadsDir = path.join(__dirname, '..', 'uploads');
+
+const normalizePath = (value) => (value || '').replace(/\\/g, '/');
+
+const toRelativeUploadPath = (value) => {
+    const normalized = normalizePath(value);
+    const marker = '/uploads/';
+    const markerIndex = normalized.indexOf(marker);
+
+    if (markerIndex >= 0) {
+        return `uploads/${normalized.slice(markerIndex + marker.length)}`;
+    }
+
+    if (normalized.startsWith('uploads/')) return normalized;
+    return normalized;
+};
+
+const toPublicUrl = (req, relativePath) => {
+    const normalized = normalizePath(relativePath);
+    const withoutLeadingSlash = normalized.startsWith('/') ? normalized.slice(1) : normalized;
+    return `${req.protocol}://${req.get('host')}/${withoutLeadingSlash}`;
+};
+
+const fileStatsToMedia = (req, relativePath) => {
+    const absolutePath = path.join(__dirname, '..', relativePath);
+    if (!fs.existsSync(absolutePath)) return null;
+
+    const stats = fs.statSync(absolutePath);
+    const ext = path.extname(relativePath).replace('.', '').toLowerCase() || 'unknown';
+    const lower = ext.toLowerCase();
+
+    let resource_type = 'raw';
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'avif'].includes(lower)) resource_type = 'image';
+    if (['mp4', 'mov', 'avi', 'mkv', 'webm'].includes(lower)) resource_type = 'video';
+    if (['mp3', 'wav', 'ogg', 'aac', 'm4a'].includes(lower)) resource_type = 'audio';
+
+    return {
+        public_id: normalizePath(relativePath),
+        url: toPublicUrl(req, relativePath),
+        format: ext,
+        created_at: stats.birthtime || stats.mtime,
+        bytes: stats.size,
+        width: null,
+        height: null,
+        resource_type,
+        filename: path.basename(relativePath),
+    };
+};
+
 const getMedia = async (req, res) => {
     try {
         const { schoolId } = req.params;
         
-        let allowedUrls = new Set();
+        let allowedPaths = new Set();
         
         // Fetch Admin Logo
         const admin = await Admin.findById(schoolId);
-        if (admin && admin.schoolLogo) allowedUrls.add(admin.schoolLogo);
+        if (admin && admin.schoolLogo) allowedPaths.add(toRelativeUploadPath(admin.schoolLogo));
         
         // Fetch Students Photos
         const students = await Student.find({ school: schoolId });
         students.forEach(student => {
-            if (student.studentPhoto) allowedUrls.add(student.studentPhoto);
-            if (student.father?.photo) allowedUrls.add(student.father.photo);
-            if (student.mother?.photo) allowedUrls.add(student.mother.photo);
-            if (student.guardian?.photo) allowedUrls.add(student.guardian.photo);
+            if (student.studentPhoto) allowedPaths.add(toRelativeUploadPath(student.studentPhoto));
+            if (student.father?.photo) allowedPaths.add(toRelativeUploadPath(student.father.photo));
+            if (student.mother?.photo) allowedPaths.add(toRelativeUploadPath(student.mother.photo));
+            if (student.guardian?.photo) allowedPaths.add(toRelativeUploadPath(student.guardian.photo));
         });
 
         // Fetch Complains Documents
         const complains = await Complain.find({ school: schoolId });
         complains.forEach(complain => {
-            if (complain.document) allowedUrls.add(complain.document);
+            if (complain.document) allowedPaths.add(toRelativeUploadPath(complain.document));
         });
 
         // Fetch Visitors Documents
         const visitors = await Visitor.find({ schoolId: schoolId });
         visitors.forEach(visitor => {
-            if (visitor.document) allowedUrls.add(visitor.document);
+            if (visitor.document) allowedPaths.add(toRelativeUploadPath(visitor.document));
         });
 
         // Fetch Card Templates
         const templates = await CardTemplate.find({ school: schoolId });
         templates.forEach(template => {
-            if (template.backgroundImage) allowedUrls.add(template.backgroundImage);
+            if (template.backgroundImage) allowedPaths.add(toRelativeUploadPath(template.backgroundImage));
         });
 
-        let allResources = [];
-        let nextCursor = null;
+        // Include manually uploaded media by school prefix: <schoolId>_...
+        if (fs.existsSync(uploadsDir)) {
+            const allFiles = fs.readdirSync(uploadsDir);
+            allFiles
+                .filter((name) => name.startsWith(`${schoolId}_`))
+                .forEach((name) => allowedPaths.add(`uploads/${name}`));
+        }
 
-        // Fetch paginated until we get all resources in the specific folder
-        do {
-            const result = await cloudinary.search
-                .expression('folder:school_management_system/*')
-                .with_field('context')
-                .with_field('tags')
-                .max_results(500)
-                .next_cursor(nextCursor)
-                .execute();
-
-            allResources = allResources.concat(result.resources);
-            nextCursor = result.next_cursor;
-        } while (nextCursor);
-
-        // Map and Filter data to only include school specific files
-        const media = allResources
-            .filter(item => allowedUrls.has(item.secure_url) || (item.tags && item.tags.includes(schoolId)))
-            .map(item => ({
-                public_id: item.public_id,
-                url: item.secure_url,
-                format: item.format,
-                created_at: item.created_at,
-                bytes: item.bytes,
-                width: item.width,
-                height: item.height,
-                resource_type: item.resource_type,
-                filename: item.filename
-            }));
+        const media = Array.from(allowedPaths)
+            .map((relativePath) => fileStatsToMedia(req, relativePath))
+            .filter(Boolean)
+            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         
         // Calculate storage usage
         let totalUsedBytes = media.reduce((acc, curr) => acc + curr.bytes, 0);
@@ -86,8 +117,8 @@ const getMedia = async (req, res) => {
             }
         });
     } catch (error) {
-        console.error("Cloudinary Get Media Error:", error);
-        res.status(500).json({ success: false, message: 'Failed to fetch media from Cloudinary', error });
+        console.error("Local Media Fetch Error:", error);
+        res.status(500).json({ success: false, message: 'Failed to fetch media from local storage', error: error.message });
     }
 };
 
@@ -99,22 +130,26 @@ const deleteMedia = async (req, res) => {
             return res.status(400).json({ success: false, message: 'No public_id provided' });
         }
 
-        const result = await cloudinary.uploader.destroy(public_id);
-        
-        if (result.result === 'ok') {
-            // Unset schoolLogo from any Admin if the deleted image was the logo
-            await Admin.updateMany(
-                { schoolLogo: { $regex: public_id, $options: 'i' } }, 
-                { $unset: { schoolLogo: '' } }
-            );
-
-            res.status(200).json({ success: true, message: 'Media deleted successfully' });
-        } else {
-            res.status(400).json({ success: false, message: 'Failed to delete media', result });
+        const relativePath = toRelativeUploadPath(public_id);
+        const safeRelativePath = normalizePath(relativePath);
+        if (!safeRelativePath.startsWith('uploads/')) {
+            return res.status(400).json({ success: false, message: 'Invalid file path' });
         }
+
+        const absolutePath = path.join(__dirname, '..', safeRelativePath);
+        if (fs.existsSync(absolutePath)) {
+            fs.unlinkSync(absolutePath);
+        }
+
+        await Admin.updateMany(
+            { schoolLogo: { $regex: path.basename(safeRelativePath), $options: 'i' } },
+            { $unset: { schoolLogo: '' } }
+        );
+
+        res.status(200).json({ success: true, message: 'Media deleted successfully' });
     } catch (error) {
-        console.error("Cloudinary Delete Media Error:", error);
-        res.status(500).json({ success: false, message: 'Failed to delete media from Cloudinary', error });
+        console.error("Local Media Delete Error:", error);
+        res.status(500).json({ success: false, message: 'Failed to delete media from local storage', error: error.message });
     }
 };
 
@@ -126,27 +161,26 @@ const uploadMedia = async (req, res) => {
         
         const { schoolId } = req.body;
 
-        // Tag the uploaded file with the schoolId for filtering later
-        if (schoolId) {
-            await cloudinary.uploader.add_tag(schoolId, [req.file.filename]);
-        }
+        const relativePath = `uploads/${req.file.filename}`;
 
-        // Return Cloudinary URL and details
         res.status(200).json({ 
             success: true, 
             message: 'File uploaded successfully',
             media: {
-                url: req.file.path,
-                public_id: req.file.filename,
+                url: toPublicUrl(req, relativePath),
+                public_id: relativePath,
                 format: req.file.mimetype.split('/')[1] || 'unknown',
                 created_at: new Date().toISOString(),
-                bytes: req.file.size || 0 
+                bytes: req.file.size || 0,
+                resource_type: req.file.mimetype.startsWith('image/') ? 'image' : 'raw',
+                filename: req.file.filename,
+                schoolId: schoolId || null,
             }
         });
 
     } catch (error) {
-        console.error("Cloudinary Upload Media Error:", error);
-        res.status(500).json({ success: false, message: 'Failed to upload media', error });
+        console.error("Local Media Upload Error:", error);
+        res.status(500).json({ success: false, message: 'Failed to upload media', error: error.message });
     }
 }
 

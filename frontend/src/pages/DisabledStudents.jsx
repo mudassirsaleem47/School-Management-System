@@ -418,7 +418,7 @@ const DisabledStudents = () => {
                                                 <TableCell>
                                                             <div className="flex items-center gap-3">
                                                                 <Avatar className="h-9 w-9 border">
-                                                                    <AvatarImage src={`${API_BASE}/${student.studentPhoto}`} alt={student.name} />
+                                                                    <AvatarImage src={student.studentPhoto?.startsWith('http') ? student.studentPhoto : `${API_BASE}/${student.studentPhoto}`} alt={student.name} />
                                                                     <AvatarFallback>{student.name?.substring(0, 2).toUpperCase()}</AvatarFallback>
                                                                 </Avatar>
                                                                 <div className="flex flex-col">
@@ -493,7 +493,7 @@ const DisabledStudents = () => {
                                         </div>
                                         <CardContent className="pt-0 relative flex flex-col items-center pb-6">
                                                         <Avatar className="h-20 w-20 border-4 border-background -mt-10 mb-3 shadow-md grayscale group-hover:grayscale-0 transition-all cursor-pointer" onClick={(e) => handleNameClick(e, student._id)}>
-                                                <AvatarImage src={`${API_BASE}/${student.studentPhoto}`} className="object-cover" />
+                                                 <AvatarImage src={student.studentPhoto?.startsWith('http') ? student.studentPhoto : `${API_BASE}/${student.studentPhoto}`} className="object-cover" />
                                                 <AvatarFallback className="text-2xl">{student.name.charAt(0)}</AvatarFallback>
                                             </Avatar>
                                                         <h3 className="font-bold text-lg text-center leading-tight mb-1 hover:underline cursor-pointer text-primary" onClick={(e) => handleNameClick(e, student._id)}>{student.name}</h3>

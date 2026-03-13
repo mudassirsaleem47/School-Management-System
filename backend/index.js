@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const path = require("path");
 const routes = require("./routes/route");
 const transportRoutes = require("./routes/transportRoutes");
 const lessonPlanRoutes = require("./routes/lessonPlanRoutes");
@@ -22,28 +23,37 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+const isAllowedOrigin = (origin) => {
+    if (!origin) return true;
+
+    try {
+        const parsed = new URL(origin);
+        const host = parsed.hostname;
+
+        if (host === 'localhost' || host === '127.0.0.1') return true;
+        if (/^192\.168\./.test(host)) return true;
+        if (host === 'hostingersite.com' || host.endsWith('.hostingersite.com')) return true;
+        if (host === 'vercel.app' || host.endsWith('.vercel.app')) return true;
+
+        return false;
+    } catch (error) {
+        return false;
+    }
+};
+
 // Middleware
 app.use(express.json());
 app.use(cors({
     origin: function (origin, callback) {
-        if (!origin) return callback(null, true);
-        if (
-            origin.includes('hostingersite.com') ||
-            origin.includes('vercel.app') ||
-            origin.includes('localhost') ||
-            origin.includes('127.0.0.1') ||
-            origin.startsWith('http://192.168.')
-        ) {
-            return callback(null, true);
-        }
-        callback(null, false);
+        if (isAllowedOrigin(origin)) return callback(null, true);
+        return callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
 }));
 
-app.use('/uploads', express.static('uploads'));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
 app.get("/", (req, res) => {

@@ -53,6 +53,7 @@ import {
 } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 import API_URL from '@/config/api';
 const API_BASE = API_URL;
@@ -428,7 +429,7 @@ const SubjectGroup = () => {
                                     {formData.subjects.length === subjects.length && subjects.length > 0 ? 'Deselect All' : 'Select All'}
                                 </Button>
                             </div>
-                            <div className="border rounded-lg max-h-48 overflow-y-auto">
+                            <ScrollArea className="h-48 rounded-lg border">
                                 {subjects.length === 0 ? (
                                     <div className="p-4 text-center text-sm text-muted-foreground">
                                         No subjects found. Create subjects first.
@@ -452,7 +453,7 @@ const SubjectGroup = () => {
                                         ))}
                                     </div>
                                 )}
-                            </div>
+                            </ScrollArea>
                             {formData.subjects.length > 0 && (
                                 <p className="text-xs text-muted-foreground">{formData.subjects.length} subject(s) selected</p>
                             )}

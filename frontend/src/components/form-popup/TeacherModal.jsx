@@ -82,7 +82,6 @@ const TeacherModal = ({ isOpen, onClose, onSubmit, initialData }) => {
                             <Input
                                 id="name"
                                 name="name" 
-                                placeholder="e.g. John Doe"
                                 value={formData.name}
                                 onChange={handleChange}
                                 required 

@@ -154,7 +154,6 @@ const StaffModal = ({ staff, onClose }) => {
                                     id="name"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
-                                    placeholder="John Doe"
                                     required
                                 />
                             </div>
@@ -165,7 +164,6 @@ const StaffModal = ({ staff, onClose }) => {
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="john@example.com"
                                     required
                                 />
                             </div>

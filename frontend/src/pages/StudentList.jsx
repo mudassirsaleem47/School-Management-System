@@ -514,7 +514,7 @@ const StudentList = () => {
                                                             <TableCell>
                                                                 <div className="flex items-center gap-3">
                                                                     <Avatar className="h-8 w-8 border shrink-0">
-                                                                        <AvatarImage src={`${API_BASE}/${student.studentPhoto}`} />
+                                                                         <AvatarImage src={student.studentPhoto?.startsWith('http') ? student.studentPhoto : `${API_BASE}/${student.studentPhoto}`} />
                                                                         <AvatarFallback className="bg-primary/10 text-primary text-[10px]">{student.name.substring(0, 2).toUpperCase()}</AvatarFallback>
                                                                     </Avatar>
                                                                     <div className="flex flex-col min-w-0">
@@ -625,7 +625,7 @@ const StudentList = () => {
                                                     {/* Avatar */}
                                                     <div className="relative -mt-12 mb-3 group-hover:scale-105 transition-transform duration-300">
                                                         <Avatar className="h-24 w-24 border-4 border-background shadow-lg">
-                                                            <AvatarImage src={`${API_BASE}/${student.studentPhoto}`} className="object-cover" />
+                                                             <AvatarImage src={student.studentPhoto?.startsWith('http') ? student.studentPhoto : `${API_BASE}/${student.studentPhoto}`} className="object-cover" />
                                                             <AvatarFallback className="text-2xl font-bold bg-primary/10 text-primary">
                                                                 {student.name.substring(0, 2).toUpperCase()}
                                                             </AvatarFallback>
@@ -747,7 +747,7 @@ const StudentList = () => {
                             {/* Profile Header */}
                             <div className="flex flex-col items-center justify-center p-4 bg-muted/20 rounded-lg border border-dashed">
                                 <Avatar className="h-24 w-24 border-4 border-background shadow-md mb-3">
-                                    <AvatarImage src={`${API_BASE}/${drawerData.studentPhoto}`} className="object-cover" />
+                                     <AvatarImage src={drawerData.studentPhoto?.startsWith('http') ? drawerData.studentPhoto : `${API_BASE}/${drawerData.studentPhoto}`} className="object-cover" />
                                     <AvatarFallback className="text-2xl font-bold bg-primary/10 text-primary">
                                         {drawerData.name.substring(0, 2).toUpperCase()}
                                     </AvatarFallback>

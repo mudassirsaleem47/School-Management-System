@@ -32,8 +32,7 @@ const studentAdmission = async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        // Handle file uploads
-        const studentPhoto = req.files && req.files['studentPhoto'] ? req.files['studentPhoto'][0].path : "";
+        const studentPhoto = req.files && req.files['studentPhoto'] ? req.files['studentPhoto'][0].path : (req.body.studentPhotoUrl || "");
         const fatherPhoto = req.files && req.files['fatherPhoto'] ? req.files['fatherPhoto'][0].path : "";
         const motherPhoto = req.files && req.files['motherPhoto'] ? req.files['motherPhoto'][0].path : "";
         const guardianPhoto = req.files && req.files['guardianPhoto'] ? req.files['guardianPhoto'][0].path : "";
@@ -172,17 +171,12 @@ const studentLogin = async (req, res) => {
     if (req.body.rollNum && req.body.studentName && req.body.password) {
         let student = await Student.findOne({ rollNum: req.body.rollNum, name: req.body.studentName });
         if (student) {
-            if (req.body.password === student.password) { // Plain text fallback (for legacy/testing)
+            const validPassword = await bcrypt.compare(req.body.password, student.password);
+            if (validPassword) {
                 student.password = undefined;
                 res.send(student);
             } else {
-                const validPassword = await bcrypt.compare(req.body.password, student.password);
-                if (validPassword) {
-                    student.password = undefined;
-                    res.send(student);
-                } else {
-                    res.status(400).json({ message: "Invalid Password" });
-                }
+                res.status(400).json({ message: "Invalid Password" });
             }
         } else {
             res.status(404).json({ message: "Student not found" });

@@ -22,6 +22,10 @@ const sclassSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'teacher',
         required: false // Optional - class incharge assign karna zaroori nahi
+    },
+    order: {
+        type: Number,
+        default: 0
     }
 }, { timestamps: true });
 

@@ -192,7 +192,7 @@ const StudentDetailPage = () => {
                             {/* Avatar */}
                             <div className="flex flex-col items-center -mt-12 mb-4">
                                 <Avatar className="h-24 w-24 border-4 border-background shadow-lg">
-                                    <AvatarImage src={`${API_BASE}/${student.studentPhoto}`} className="object-cover" />
+                                    <AvatarImage src={student.studentPhoto?.startsWith('http') ? student.studentPhoto : `${API_BASE}/${student.studentPhoto}`} className="object-cover" />
                                     <AvatarFallback className="text-2xl font-bold bg-primary/10 text-primary">
                                         {student.name?.substring(0, 2).toUpperCase()}
                                     </AvatarFallback>
@@ -529,7 +529,7 @@ const StudentDetailPage = () => {
                                 <TabsContent value="documents">
                                     <div className="space-y-3">
                                         {[
-                                            { label: 'Student Photo', value: student.studentPhoto },
+                                            { label: 'Student Photo', value: student.studentPhoto?.startsWith('http') ? student.studentPhoto : `${API_BASE}/${student.studentPhoto}` },
                                             { label: "Father's Photo", value: student.father?.photo },
                                             { label: "Mother's Photo", value: student.mother?.photo },
                                             { label: "Guardian's Photo", value: student.guardian?.photo },
@@ -540,7 +540,7 @@ const StudentDetailPage = () => {
                                                     <span className="text-sm font-medium">{label}</span>
                                                 </div>
                                                 {value ? (
-                                                    <a href={`${API_BASE}/${value}`} target="_blank" rel="noopener noreferrer">
+                                                    <a href={value.startsWith('http') ? value : `${API_BASE}/${value}`} target="_blank" rel="noopener noreferrer">
                                                         <Button size="sm" variant="outline" className="gap-2">
                                                             <TrendingUp className="h-3 w-3" />View
                                                         </Button>
@@ -615,7 +615,7 @@ const StudentDetailPage = () => {
                                     <CardContent className="pt-4 pb-4">
                                         <div className="flex items-center gap-3">
                                             <Avatar className="h-10 w-10 border">
-                                                <AvatarImage src={`${API_BASE}/${sib.studentPhoto}`} className="object-cover" />
+                                                <AvatarImage src={sib.studentPhoto?.startsWith('http') ? sib.studentPhoto : `${API_BASE}/${sib.studentPhoto}`} className="object-cover" />
                                                 <AvatarFallback className="bg-blue-100 text-blue-700 font-bold">
                                                     {sib.name?.substring(0, 2).toUpperCase()}
                                                 </AvatarFallback>

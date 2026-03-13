@@ -54,9 +54,6 @@ const getTeachersBySchool = async (req, res) => {
             .populate('assignedClasses', 'sclassName')
             .select('-password'); // Exclude password from response
 
-        if (teachers.length === 0) {
-            return res.status(404).json({ message: "No teachers found in this school." });
-        }
 
         res.status(200).json(teachers);
 

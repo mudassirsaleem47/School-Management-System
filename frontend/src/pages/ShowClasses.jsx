@@ -4,7 +4,24 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
-import { Plus, GraduationCap, Users, BookOpen, Trash2, X, MoreHorizontal, Pencil, AlertTriangle } from 'lucide-react';
+import { Plus, GraduationCap, Users, BookOpen, Trash2, X, MoreHorizontal, Pencil, AlertTriangle, GripVertical } from 'lucide-react';
+
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    verticalListSortingStrategy,
+    useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -89,6 +106,18 @@ const ShowClasses = () => {
 
     // Delete Confirmation State
     const [deleteConfig, setDeleteConfig] = useState({ open: false, type: null, id: null, subId: null });
+
+    // DND Sensors
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 8,
+            },
+        }),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
 
 
     // --- 1. Fetch Classes ---
@@ -285,6 +314,158 @@ const ShowClasses = () => {
         }
     };
 
+    const handleDragEnd = async (event) => {
+        const { active, over } = event;
+
+        if (active.id !== over.id) {
+            const oldIndex = sclasses.findIndex((item) => item._id === active.id);
+            const newIndex = sclasses.findIndex((item) => item._id === over.id);
+
+            const newSortedClasses = arrayMove(sclasses, oldIndex, newIndex);
+            setSclasses(newSortedClasses);
+
+            try {
+                const preparedOrder = newSortedClasses.map((cls, index) => ({
+                    id: cls._id,
+                    order: index
+                }));
+
+                await axios.post(`${API_BASE}/SclassReorder`, {
+                    schoolId: currentUser._id,
+                    newOrder: preparedOrder
+                });
+                toast.success("Order updated!");
+            } catch (error) {
+                console.error("Failed to update order", error);
+                toast.error("Failed to save new order");
+                fetchClasses(); // Revert on failure
+            }
+        }
+    };
+
+    // --- Sub-component: Sortable Class Item ---
+    const SortableClassItem = ({ item }) => {
+        const {
+            attributes,
+            listeners,
+            setNodeRef,
+            transform,
+            transition,
+            isDragging
+        } = useSortable({ id: item._id });
+
+        const style = {
+            transform: CSS.Transform.toString(transform),
+            transition,
+            zIndex: isDragging ? 50 : 'auto',
+            opacity: isDragging ? 0.5 : 1,
+        };
+
+        return (
+            <div ref={setNodeRef} style={style}>
+                <Card className={`flex flex-col sm:flex-row sm:items-center justify-between hover:shadow-md transition-all duration-200 p-4 gap-4 ${isDragging ? 'border-primary ring-1 ring-primary shadow-lg' : ''}`}>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-10 flex-1 w-full">
+                        <div className="flex items-center gap-4">
+                            <div 
+                                {...attributes} 
+                                {...listeners} 
+                                className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded-md touch-none"
+                                title="Drag to reorder"
+                            >
+                                <GripVertical className="h-5 w-5 text-muted-foreground" />
+                            </div>
+                            <div className="min-w-[160px] flex flex-col gap-1">
+                                <div className="flex items-center gap-2">
+                                    <CardTitle className="text-xl font-bold text-primary">{item.sclassName}</CardTitle>
+                                </div>
+                                <span className="text-xs text-muted-foreground">ID: {item._id.slice(-4)}</span>
+                                {item.classIncharge && (
+                                    <Badge variant="secondary" className="w-fit mt-1 font-normal bg-secondary/50">
+                                        Incharge: {item.classIncharge.name}
+                                    </Badge>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="flex-1">
+                            <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">Sections</Label>
+                            <div className="flex flex-wrap gap-2 items-center">
+                                {item.sections && item.sections.length > 0 ? (
+                                    item.sections.map((sec) => (
+                                        <Badge
+                                            key={sec._id}
+                                            variant="outline"
+                                            className="bg-background text-foreground shrink-0 border-border group relative pr-7"
+                                        >
+                                            {sec.sectionName}
+                                            <button 
+                                                onClick={() => handleQuickRemoveSection(item, sec._id)}
+                                                className="absolute right-1 top-1/2 -translate-y-1/2 rounded-full p-0.5 opacity-50 hover:opacity-100 hover:bg-destructive/10 text-destructive transition-all"
+                                                title="Remove section"
+                                            >
+                                                <X className="h-3 w-3" />
+                                            </button>
+                                        </Badge>
+                                    ))
+                                ) : (
+                                    <span className="text-xs text-muted-foreground italic bg-muted/50 px-2 py-1 rounded-md">No sections added</span>
+                                )}
+                                
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="outline" size="icon" className="h-6 w-6 rounded-full shrink-0">
+                                            <span className="sr-only">Assign Section</span>
+                                            <Plus className="h-3 w-3" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                        <DropdownMenuLabel>Add Section</DropdownMenuLabel>
+                                        <DropdownMenuSeparator />
+                                        {availableSections.filter(s => !item.sections?.find(is => is._id === s._id)).length > 0 ? (
+                                            availableSections
+                                                .filter(s => !item.sections?.find(is => is._id === s._id))
+                                                .map(s => (
+                                                    <DropdownMenuItem key={s._id} onClick={() => handleQuickAssignSection(item, s._id)}>
+                                                        {s.sectionName}
+                                                    </DropdownMenuItem>
+                                                ))
+                                        ) : (
+                                            <DropdownMenuItem disabled>No more sections</DropdownMenuItem>
+                                        )}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="shrink-0 self-end sm:self-center">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground">
+                                    <span className="sr-only">Actions</span>
+                                    <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <DropdownMenuItem onClick={() => navigate(`/admin/students?class=${item._id}`)}>
+                                    <Users className="mr-2 h-4 w-4" /> View Students
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleEditClick(item)}>
+                                    <Pencil className="mr-2 h-4 w-4" /> Edit Class
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDeleteRequest('class', item._id)}>
+                                    <Trash2 className="mr-2 h-4 w-4" /> Delete Class
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                </Card>
+            </div>
+        );
+    };
+
     return (
         <div className="flex-1 space-y-6 p-8 pt-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -315,100 +496,23 @@ const ShowClasses = () => {
                         </Button>
                     </div>
                 ) : (
-                        <div className="flex flex-col gap-4">
-                    {sclasses.map((item) => (
-                        <Card key={item._id} className="flex flex-col sm:flex-row sm:items-center justify-between hover:shadow-md transition-all duration-200 p-4 gap-4">
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-10 flex-1 w-full">
-                                <div className="min-w-[200px] flex flex-col gap-1">
-                                    <div className="flex items-center gap-2">
-                                        <CardTitle className="text-xl font-bold text-primary">{item.sclassName}</CardTitle>
-                                    </div>
-                                    <span className="text-xs text-muted-foreground">ID: {item._id.slice(-4)}</span>
-                                    {item.classIncharge && (
-                                        <Badge variant="secondary" className="w-fit mt-1 font-normal bg-secondary/50">
-                                            Incharge: {item.classIncharge.name}
-                                        </Badge>
-                                    )}
+                        <DndContext
+                            sensors={sensors}
+                            collisionDetection={closestCenter}
+                            onDragEnd={handleDragEnd}
+                        >
+                            <SortableContext
+                                items={sclasses.map(c => c._id)}
+                                strategy={verticalListSortingStrategy}
+                            >
+                                <div className="flex flex-col gap-4">
+                                    {sclasses.map((item) => (
+                                        <SortableClassItem key={item._id} item={item} />
+                                    ))}
                                 </div>
-
-                                <div className="flex-1">
-                                    <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">Sections</Label>
-                                    <div className="flex flex-wrap gap-2 items-center">
-                                        {item.sections && item.sections.length > 0 ? (
-                                            item.sections.map((sec) => (
-                                                <Badge
-                                                    key={sec._id}
-                                                    variant="outline"
-                                                    className="bg-background text-foreground shrink-0 border-border group relative pr-7"
-                                                >
-                                                    {sec.sectionName}
-                                                    <button 
-                                                        onClick={() => handleQuickRemoveSection(item, sec._id)}
-                                                        className="absolute right-1 top-1/2 -translate-y-1/2 rounded-full p-0.5 opacity-50 hover:opacity-100 hover:bg-destructive/10 text-destructive transition-all"
-                                                        title="Remove section"
-                                                    >
-                                                        <X className="h-3 w-3" />
-                                                    </button>
-                                                </Badge>
-                                            ))
-                                        ) : (
-                                            <span className="text-xs text-muted-foreground italic bg-muted/50 px-2 py-1 rounded-md">No sections added</span>
-                                        )}
-                                        
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="outline" size="icon" className="h-6 w-6 rounded-full shrink-0">
-                                                    <span className="sr-only">Assign Section</span>
-                                                    <Plus className="h-3 w-3" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent>
-                                                <DropdownMenuLabel>Add Section</DropdownMenuLabel>
-                                                <DropdownMenuSeparator />
-                                                {availableSections.filter(s => !item.sections?.find(is => is._id === s._id)).length > 0 ? (
-                                                    availableSections
-                                                        .filter(s => !item.sections?.find(is => is._id === s._id))
-                                                        .map(s => (
-                                                            <DropdownMenuItem key={s._id} onClick={() => handleQuickAssignSection(item, s._id)}>
-                                                                {s.sectionName}
-                                                            </DropdownMenuItem>
-                                                        ))
-                                                ) : (
-                                                    <DropdownMenuItem disabled>No more sections</DropdownMenuItem>
-                                                )}
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="shrink-0 self-end sm:self-center">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground">
-                                            <span className="sr-only">Actions</span>
-                                            <MoreHorizontal className="h-4 w-4" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                        <DropdownMenuItem onClick={() => navigate(`/admin/students?class=${item._id}`)}>
-                                            <Users className="mr-2 h-4 w-4" /> View Students
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => handleEditClick(item)}>
-                                            <Pencil className="mr-2 h-4 w-4" /> Edit Class
-                                        </DropdownMenuItem>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDeleteRequest('class', item._id)}>
-                                            <Trash2 className="mr-2 h-4 w-4" /> Delete Class
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div>
-                        </Card>
-                    ))}
-                </div>
-            )}
+                            </SortableContext>
+                        </DndContext>
+                )}
 
             {/* Add Class Modal */}
             <Dialog open={showAddModal} onOpenChange={setShowAddModal}>

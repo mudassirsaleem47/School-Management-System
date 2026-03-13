@@ -49,7 +49,7 @@ const StudentDetailsModal = ({ isOpen, onClose, student }) => {
 
                     <div className="h-24 w-24 rounded-full border-4 border-white/20 overflow-hidden bg-white/10 shrink-0 shadow-xl">
                         {student.studentPhoto ? (
-                            <img src={`${API_URL}/${student.studentPhoto}`} alt={student.name} className="w-full h-full object-cover" />
+                            <img src={student.studentPhoto?.startsWith('http') ? student.studentPhoto : `${API_URL}/${student.studentPhoto}`} alt={student.name} className="w-full h-full object-cover" />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center text-white/90 font-bold text-3xl">
                                 {student.name?.charAt(0)}

@@ -60,6 +60,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from '@/components/ui/badge';
 import ConfirmDeleteModal from '../components/form-popup/ConfirmDeleteModal';
+import { TablePagination } from '../components/TablePagination';
+import { Checkbox } from '@/components/ui/checkbox';
 
 import API_URL from '@/config/api';
 const API_BASE = API_URL;
@@ -81,6 +83,9 @@ const FeeManagement = () => {
   const [editingFee, setEditingFee] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [feeToDelete, setFeeToDelete] = useState(null);
+  const [selectedFees, setSelectedFees] = useState([]);
+  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
+  const [isDeletingBulk, setIsDeletingBulk] = useState(false);
   
   const [formData, setFormData] = useState({
     feeName: '',
@@ -95,8 +100,27 @@ const FeeManagement = () => {
   });
 
   const [searchTerm, setSearchTerm] = useState('');
+  
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const feeTypes = ['Tuition', 'Transport', 'Library', 'Sports', 'Lab', 'Exam', 'Uniform', 'Other'];
+
+  useEffect(() => {
+    setCurrentPage(1);
+    setSelectedFees([]);
+  }, [searchTerm]);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    setSelectedFees([]);
+  };
+
+  const handleRowsPerPageChange = (value) => {
+    setRowsPerPage(value);
+    setCurrentPage(1);
+    setSelectedFees([]);
+  };
 
   useEffect(() => {
     if (currentUser) {
@@ -193,6 +217,38 @@ const FeeManagement = () => {
     }
   };
 
+  const toggleSelectAll = () => {
+    if (selectedFees.length === currentFees.length) {
+      setSelectedFees([]);
+    } else {
+      setSelectedFees(currentFees.map(f => f._id));
+    }
+  };
+
+  const toggleSelectFee = (id) => {
+    if (selectedFees.includes(id)) {
+      setSelectedFees(selectedFees.filter(fid => fid !== id));
+    } else {
+      setSelectedFees([...selectedFees, id]);
+    }
+  };
+
+  const confirmBulkDelete = async () => {
+    if (selectedFees.length === 0) return;
+    try {
+      setIsDeletingBulk(true);
+      await Promise.all(selectedFees.map(id => axios.delete(`${API_BASE}/FeeStructure/${id}`)));
+      showToast(`${selectedFees.length} fee structure(s) deleted successfully!`, 'success');
+      setSelectedFees([]);
+      fetchData();
+    } catch (error) {
+      showToast(error.response?.data?.message || 'Error deleting some fee structures', 'error');
+    } finally {
+      setIsDeletingBulk(false);
+      setIsBulkDeleteModalOpen(false);
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       feeName: '',
@@ -213,6 +269,11 @@ const FeeManagement = () => {
     fee.feeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     fee.feeType.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const totalPages = Math.ceil(filteredFees.length / rowsPerPage);
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentFees = filteredFees.slice(indexOfFirstRow, indexOfLastRow);
 
   if (loading) {
     return (
@@ -290,14 +351,26 @@ const FeeManagement = () => {
             <CardTitle>Fee Structures</CardTitle>
             <CardDescription>All defined fee types and amounts</CardDescription>
           </div>
-          <div className="relative w-64">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search fees..."
-              className="pl-9"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+          <div className="flex items-center space-x-4">
+            {selectedFees.length > 0 && (
+              <Button 
+                variant="destructive" 
+                size="sm"
+                onClick={() => setIsBulkDeleteModalOpen(true)}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete Selected ({selectedFees.length})
+              </Button>
+            )}
+            <div className="relative w-64">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search fees..."
+                className="pl-9"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -307,10 +380,18 @@ const FeeManagement = () => {
               <p>No fee structures found</p>
             </div>
           ) : (
+            <>
               <div className="rounded-md border">
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-[50px]">
+                        <Checkbox 
+                          checked={selectedFees.length === currentFees.length && currentFees.length > 0} 
+                          onCheckedChange={toggleSelectAll} 
+                          aria-label="Select all"
+                        />
+                      </TableHead>
                       <TableHead>Fee Name</TableHead>
                       <TableHead>Type</TableHead>
                       <TableHead>Class</TableHead>
@@ -321,8 +402,15 @@ const FeeManagement = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredFees.map((fee) => (
+                    {currentFees.map((fee) => (
                       <TableRow key={fee._id}>
+                        <TableCell>
+                          <Checkbox 
+                            checked={selectedFees.includes(fee._id)} 
+                            onCheckedChange={() => toggleSelectFee(fee._id)} 
+                            aria-label="Select fee"
+                          />
+                        </TableCell>
                         <TableCell className="font-medium">{fee.feeName}</TableCell>
                         <TableCell>
                           <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">
@@ -361,6 +449,17 @@ const FeeManagement = () => {
                 </TableBody>
               </Table>
             </div>
+            <TablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              rowsPerPage={rowsPerPage}
+              onRowsPerPageChange={handleRowsPerPageChange}
+              totalRows={filteredFees.length}
+              selectedRows={selectedFees.length}
+              showSelectionMsg={selectedFees.length > 0}
+            />
+          </>
           )}
         </CardContent>
       </Card>
@@ -527,6 +626,15 @@ const FeeManagement = () => {
         title="Delete Fee Structure?"
         description="Are you sure you want to delete this fee structure? This action cannot be undone."
         confirmText="Delete"
+      />
+
+      <ConfirmDeleteModal
+        isOpen={isBulkDeleteModalOpen}
+        onClose={() => setIsBulkDeleteModalOpen(false)}
+        onConfirm={confirmBulkDelete}
+        title={`Delete ${selectedFees.length} Fee Structures?`}
+        description="Are you sure you want to delete the selected fee structures? This action cannot be undone."
+        confirmText={isDeletingBulk ? "Deleting..." : "Delete Selected"}
       />
     </div>
   );

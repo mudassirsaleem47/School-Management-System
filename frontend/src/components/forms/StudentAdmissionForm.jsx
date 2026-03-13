@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, Plus, Trash2, User, BookOpen, Users, Bus, Save, Check, Calendar as DollarSign } from 'lucide-react';
+import { Upload, Plus, Trash2, User, BookOpen, Users, Bus, Save, Check, Calendar as DollarSign, X } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { useCampus } from '../../context/CampusContext';
@@ -26,7 +26,7 @@ import { PasswordField } from '@/components/ui/email-pass';
 import API_URL from '@/config/api';
 const API_BASE = API_URL;
 
-const StudentAdmissionForm = ({ onSuccess, onCancel }) => {
+const StudentAdmissionForm = ({ onSuccess, onCancel, editStudentId }) => {
     const { currentUser, activeSession } = useAuth();
     const { campuses, selectedCampus } = useCampus();
 
@@ -76,7 +76,8 @@ const StudentAdmissionForm = ({ onSuccess, onCancel }) => {
         guardian: { name: '', phone: '', occupation: '', email: '', address: '', relation: '' },
 
         transport: { route: '', pickupPoint: '', feesMonth: '' },
-        siblings: []
+        siblings: [],
+        studentPhotoUrl: ''
     };
 
     const [formData, setFormData] = useState(initialFormState);
@@ -161,10 +162,82 @@ const StudentAdmissionForm = ({ onSuccess, onCancel }) => {
     useEffect(() => {
         if (currentUser) {
             fetchClasses();
-            fetchNextAdmissionNum();
+            if (!editStudentId) {
+                fetchNextAdmissionNum();
+            }
             fetchRoutes();
         }
-    }, [currentUser, fetchClasses, fetchNextAdmissionNum, fetchRoutes]);
+    }, [currentUser, fetchClasses, fetchNextAdmissionNum, fetchRoutes, editStudentId]);
+
+    // Fetch student data if edit mode
+    useEffect(() => {
+        const fetchStudentForEdit = async () => {
+            if (!editStudentId) return;
+            try {
+                setLoading(true);
+                const res = await axios.get(`${API_BASE}/Student/${editStudentId}`);
+                const data = res.data;
+                
+                // Map API data to formData structure
+                setFormData({
+                    ...initialFormState,
+                    ...data,
+                    sclassName: data.sclassName?._id || data.sclassName || '',
+                    dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth).toISOString().split('T')[0] : '',
+                    admissionDate: data.admissionDate || new Date().toISOString(),
+                    measurementDate: data.measurementDate || new Date().toISOString(),
+                    father: data.father || initialFormState.father,
+                    mother: data.mother || initialFormState.mother,
+                    guardian: data.guardian || initialFormState.guardian,
+                    transport: data.transport || initialFormState.transport,
+                    siblings: data.siblings || [],
+                    studentPhotoUrl: data.studentPhotoUrl || '' // Ensure this field exists in your API
+                });
+
+                // Populate Previews
+                const getPreview = (path) => path ? (path.startsWith('http') ? path : `${API_BASE}/${path}`) : null;
+                setPreviews({
+                    studentPhoto: getPreview(data.studentPhoto),
+                    fatherPhoto: getPreview(data.father?.photo),
+                    motherPhoto: getPreview(data.mother?.photo),
+                    guardianPhoto: getPreview(data.guardian?.photo),
+                });
+
+                // Determine active guardian tab
+                if (data.guardian?.name) setGuardianType('other');
+                else if (data.mother?.name && !data.father?.name) setGuardianType('mother');
+                else setGuardianType('father');
+
+                // Pre-fetch sections if class is selected
+                if (data.sclassName) {
+                    const classId = data.sclassName?._id || data.sclassName;
+                    // Note: classesList might not be loaded yet, so we'll rely on the API returning valid sections for the class
+                    try {
+                         const cRes = await axios.get(`${API_BASE}/Sclasses/${currentUser._id}`);
+                         const selectedClass = cRes.data.find(c => c._id === classId);
+                         if (selectedClass) setSectionsList(selectedClass.sections);
+                         setClassesList(cRes.data);
+                    } catch (e) {}
+                    fetchAvailableFees(classId);
+                }
+
+                // If transport route exists, fetch pickup points
+                if (data.transport?.route) {
+                    fetchPickupPoints(data.transport.route); // pass route ID if stored, though it might be stored by string in db. Let it try.
+                }
+
+            } catch (err) {
+                 toast.error("Failed to load student details for editing");
+                 console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (editStudentId && currentUser) {
+            fetchStudentForEdit();
+        }
+    }, [editStudentId, currentUser]);
 
     useEffect(() => {
         if (activeSession) {
@@ -219,6 +292,14 @@ const StudentAdmissionForm = ({ onSuccess, onCancel }) => {
                 setPreviews(prev => ({ ...prev, [type]: reader.result }));
             };
             reader.readAsDataURL(file);
+        }
+    };
+
+    const handleRemovePhoto = (type) => {
+        setPhotos(prev => ({ ...prev, [type]: null }));
+        setPreviews(prev => ({ ...prev, [type]: null }));
+        if (type === 'studentPhoto') {
+            setFormData(prev => ({ ...prev, studentPhotoUrl: '' }));
         }
     };
 
@@ -278,15 +359,23 @@ const StudentAdmissionForm = ({ onSuccess, onCancel }) => {
 
             data.append('feeStructureIds', JSON.stringify(selectedFees));
 
-            await axios.post(`${API_BASE}/StudentRegister`, data, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
-
-            toast.success("Student admitted successfully!");
+            if (editStudentId) {
+                // Ignore password if blank on edit
+                if (!data.get('password')) { data.delete('password'); }
+                await axios.put(`${API_BASE}/Student/${editStudentId}`, data, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+                toast.success("Student updated successfully!");
+            } else {
+                await axios.post(`${API_BASE}/StudentRegister`, data, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+                toast.success("Student admitted successfully!");
+            }
             if (onSuccess) onSuccess();
         } catch (err) {
             console.error(err);
-            toast.error(err.response?.data?.message || "Error admitting student");
+            toast.error(err.response?.data?.message || (editStudentId ? "Error updating student" : "Error admitting student"));
         } finally {
             setLoading(false);
         }
@@ -296,33 +385,45 @@ const StudentAdmissionForm = ({ onSuccess, onCancel }) => {
 
     // Photo Upload Component
     const PhotoUploader = ({ label, type, preview }) => (
-        <div className="flex flex-col items-center gap-3 w-full">
+        <div className="flex flex-col items-center gap-3 w-full relative">
             <Label className="text-muted-foreground font-medium">{label}</Label>
-            <label
-                htmlFor={`file-${type}`}
-                className={`
-                    relative flex flex-col items-center justify-center w-32 h-32 md:w-40 md:h-40 
-                    border-2 border-dashed rounded-full cursor-pointer
-                    transition-all overflow-hidden bg-muted/30
-                    ${preview ? 'border-primary' : 'border-muted-foreground/30 hover:border-primary/50 hover:bg-primary/5'}
-                `}
-            >
-                {preview ? (
-                    <img src={preview} alt="Preview" className="w-full h-full object-cover" />
-                ) : (
-                    <div className="flex flex-col items-center justify-center text-muted-foreground">
-                        <User className="w-8 h-8 mb-1" />
-                        <span className="text-[10px] uppercase font-bold tracking-wider">Upload</span>
-                    </div>
-                )}
+            <div className="relative group">
+                <label
+                    htmlFor={`file-${type}`}
+                    className={`
+                        relative flex flex-col items-center justify-center w-32 h-32 md:w-40 md:h-40 
+                        border-2 border-dashed rounded-full cursor-pointer
+                        transition-all overflow-hidden bg-muted/30
+                        ${preview ? 'border-primary' : 'border-muted-foreground/30 hover:border-primary/50 hover:bg-primary/5'}
+                    `}
+                >
+                    {preview ? (
+                        <img src={preview} alt="Preview" className="w-full h-full object-cover" />
+                    ) : (
+                        <div className="flex flex-col items-center justify-center text-muted-foreground">
+                            <User className="w-8 h-8 mb-1" />
+                            <span className="text-[10px] uppercase font-bold tracking-wider">Upload</span>
+                        </div>
+                    )}
+
+                    {preview && (
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Upload className="w-6 h-6 text-white" />
+                        </div>
+                    )}
+                    <input type="file" hidden id={`file-${type}`} onChange={(e) => handleFileChange(e, type)} accept="image/*" />
+                </label>
 
                 {preview && (
-                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                        <Upload className="w-6 h-6 text-white" />
-                    </div>
+                    <button
+                        type="button"
+                        onClick={() => handleRemovePhoto(type)}
+                        className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-1.5 shadow-lg hover:scale-110 transition-transform z-10"
+                    >
+                        <X className="w-4 h-4" />
+                    </button>
                 )}
-                <input type="file" hidden id={`file-${type}`} onChange={(e) => handleFileChange(e, type)} accept="image/*" />
-            </label>
+            </div>
         </div>
     );
 
@@ -340,23 +441,34 @@ const StudentAdmissionForm = ({ onSuccess, onCancel }) => {
                 <CardContent>
                     <div className="flex flex-col md:flex-row gap-8 items-start">
                         {/* Photo Column */}
-                        <div className="w-full md:w-auto flex justify-center md:justify-start shrink-0">
-                            <PhotoUploader label="Student Photo" type="studentPhoto" preview={previews.studentPhoto} />
+                        <div className="w-full md:w-auto flex flex-col justify-center items-center md:items-start shrink-0 gap-4">
+                            <PhotoUploader label="Student Photo" type="studentPhoto" preview={previews.studentPhoto || formData.studentPhotoUrl} />
+                            <div className="w-full max-w-[160px] space-y-1 text-center md:text-left">
+                                <Label htmlFor="studentPhotoUrl" className="text-xs text-muted-foreground">Or Image URL</Label>
+                                <Input 
+                                    id="studentPhotoUrl"
+                                    name="studentPhotoUrl" 
+                                    value={formData.studentPhotoUrl || ''} 
+                                    onChange={handleInputChange} 
+                                    placeholder="https://..."
+                                    className="text-xs h-8"
+                                />
+                            </div>
                         </div>
 
                         {/* Basic Info Column */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
                             <div className="space-y-2">
                                 <Label htmlFor="firstName">First Name <span className="text-destructive">*</span></Label>
-                                <Input id="firstName" name="firstName" value={formData.firstName} onChange={handleInputChange} required placeholder="John" />
+                                <Input id="firstName" name="firstName" value={formData.firstName} onChange={handleInputChange} required />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="lastName">Last Name</Label>
-                                <Input id="lastName" name="lastName" value={formData.lastName} onChange={handleInputChange} placeholder="Doe" />
+                                <Input id="lastName" name="lastName" value={formData.lastName} onChange={handleInputChange} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="admissionNum">Admission No</Label>
-                                <Input id="admissionNum" name="admissionNum" value={nextAdmissionNum} readOnly className="bg-muted font-mono" />
+                                <Input id="admissionNum" name="admissionNum" value={editStudentId ? formData.admissionNum : nextAdmissionNum} readOnly className="bg-muted font-mono" />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="rollNum">Roll Number <span className="text-destructive">*</span></Label>
@@ -555,10 +667,10 @@ const StudentAdmissionForm = ({ onSuccess, onCancel }) => {
                         <PasswordField
                             label="Login Password"
                             id="password"
-                            value={formData.password}
+                            value={formData.password || ''}
                             onChange={handleInputChange}
-                            required
-                            placeholder="Set a strong password for login"
+                            required={!editStudentId} // Not required on edit
+                            placeholder={editStudentId ? "Leave blank to keep existing password" : "Set a strong password for login"}
                         />
                     </div>
                 </CardContent>
@@ -743,14 +855,18 @@ const StudentAdmissionForm = ({ onSuccess, onCancel }) => {
                 <CardHeader>
                     <div className="flex items-center gap-2">
                         <DollarSign className="h-5 w-5 text-green-600" />
-                        <CardTitle>Fee Assignment</CardTitle>
+                        <CardTitle>Fee Assignment {editStudentId && "(Disabled during edit)"}</CardTitle>
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">
                         Select fee structures to assign to this student upon admission.
                     </p>
                 </CardHeader>
                 <CardContent>
-                    {!formData.sclassName ? (
+                    {editStudentId ? (
+                        <div className="text-center py-6 border-2 border-dashed rounded-lg bg-muted/20">
+                            <p className="text-muted-foreground text-sm">Fee assignment is done during new admission. To manage fees for existing students, please use the Fee Collection module.</p>
+                        </div>
+                    ) : !formData.sclassName ? (
                         <div className="text-center py-6 border-2 border-dashed rounded-lg bg-muted/20">
                             <p className="text-muted-foreground text-sm">Please select a class first to see available fee structures.</p>
                         </div>
@@ -854,7 +970,7 @@ const StudentAdmissionForm = ({ onSuccess, onCancel }) => {
                 <Button type="submit" size="lg" disabled={loading} className="min-w-[150px]">
                     {loading ? "Processing..." : (
                         <>
-                            <Save className="h-4 w-4 mr-2" /> Admit Student
+                            <Save className="h-4 w-4 mr-2" /> {editStudentId ? "Update Student" : "Admit Student"}
                         </>
                     )}
                 </Button>

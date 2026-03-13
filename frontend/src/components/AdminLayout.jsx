@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "lucide-react";
 import CalendarDialog from "./CalendarDialog";
 import TaskModal from "./TaskModal";
+import { ScrollArea } from "./ui/scroll-area";
 
 
 

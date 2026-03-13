@@ -247,7 +247,6 @@ const ComplainModal = ({ isOpen, onClose, onSubmit, initialData = null, viewMode
                                                 value={formData.complainBy}
                                                 onChange={handleChange}
                                                 required
-                                                placeholder="John Doe"
                                             />
                                         </div>
                                         <div className="grid gap-2">
