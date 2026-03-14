@@ -1,7 +1,6 @@
 const router = require('express').Router();
 const upload = require('../middleware/uploadMiddleware');
 const loginRateLimit = require('../middleware/loginRateLimit');
-const { authenticate, checkSubscription } = require('../middleware/auth');
 const { adminRegister, adminLogin, getAdminDetail, updateAdmin, updateAdminSettings } = require('../controllers/admin-controller.js');
 const { studentAdmission, studentLogin, getStudentsBySchool, getStudentById, updateStudent, deleteStudent, getDisabledStudents, promoteStudents } = require('../controllers/student-controller.js');
 const { enquiryCreate, enquiryList, enquiryDelete, enquiryUpdate } = require('../controllers/enquiry-controller.js');
@@ -40,20 +39,6 @@ const { getMedia, deleteMedia, uploadMedia } = require('../controllers/media-con
 // --- Session API Routes ---
 const { createSession, getSessionsBySchool, makeSessionActive, deleteSession, updateSession, getActiveSessionBySchool } = require('../controllers/session-controller.js');
 
-// --- PUBLIC ROUTES (No Auth Required) ---
-router.post('/AdminReg', adminRegister);
-router.post('/AdminLogin', loginRateLimit, adminLogin);
-router.post('/admin/login', loginRateLimit, adminLogin);
-router.post('/StudentLogin', loginRateLimit, studentLogin);
-router.post('/student/login', loginRateLimit, studentLogin);
-router.post('/TeacherLogin', loginRateLimit, teacherLogin);
-router.post('/teacher/login', loginRateLimit, teacherLogin);
-router.post('/StaffLogin', loginRateLimit, staffLogin);
-router.post('/staff/login', loginRateLimit, staffLogin);
-
-// --- PROTECTED ROUTES (Auth Required) ---
-router.use(authenticate);
-
 router.post('/SessionCreate', createSession);
 router.get('/Sessions/:schoolId', getSessionsBySchool);
 router.get('/Sessions/Active/:schoolId', getActiveSessionBySchool);
@@ -61,12 +46,17 @@ router.put('/Sessions/MakeActive', makeSessionActive);
 router.put('/Session/:id', updateSession);
 router.delete('/Session/:id', deleteSession);
 
-// --- Admin Auth Routes --- (Handled above)
+// --- Admin Auth Routes ---
+router.post('/AdminReg', adminRegister);
+router.post('/AdminLogin', loginRateLimit, adminLogin);
+router.post('/admin/login', loginRateLimit, adminLogin); // Alias for case-insensitivity or cleaner URLs
 router.get('/Admin/:id', getAdminDetail);
 router.put('/Admin/:id', upload.fields([{ name: 'schoolLogo', maxCount: 1 }, { name: 'favicon', maxCount: 1 }]), updateAdmin);
 router.put('/Admin/Settings/:id', updateAdminSettings);
 
-// --- Student Routes --- (Login handled above)
+// --- Student Routes ---
+router.post('/StudentLogin', loginRateLimit, studentLogin);
+router.post('/student/login', loginRateLimit, studentLogin); // Alias
 router.post('/StudentRegister', upload.fields([
     { name: 'studentPhoto', maxCount: 1 },
     { name: 'fatherPhoto', maxCount: 1 },
@@ -133,7 +123,9 @@ router.get('/EnquiryList/:id', enquiryList);
 router.delete('/EnquiryDelete/:id', enquiryDelete);
 router.put('/EnquiryUpdate/:id', enquiryUpdate);
 
-// --- Teacher Routes --- (Login handled above)
+// --- Teacher Routes ---
+router.post('/TeacherLogin', loginRateLimit, teacherLogin);
+router.post('/teacher/login', loginRateLimit, teacherLogin); // Alias
 router.post('/TeacherRegister', addTeacher);
 router.get('/Teachers/:schoolId', getTeachersBySchool);
 router.put('/Teacher/:id', updateTeacher);
@@ -244,7 +236,9 @@ router.delete('/Campus/:id', deleteCampus);
 router.get('/CampusStats/:id', getCampusStats);
 
 
-// --- Staff Management Routes --- (Login handled above)
+// --- Staff Management Routes ---
+router.post('/StaffLogin', loginRateLimit, staffLogin);
+router.post('/staff/login', loginRateLimit, staffLogin); // Alias
 router.post('/Staff', createStaff);
 router.get('/Staff/:schoolId', getStaffBySchool);
 router.get('/StaffDetail/:id', getStaffById);

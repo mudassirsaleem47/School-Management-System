@@ -1,6 +1,5 @@
 const Staff = require('../models/staffSchema.js');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 
 // Create new staff member
 const createStaff = async (req, res) => {
@@ -280,17 +279,14 @@ const staffLogin = async (req, res) => {
             });
         }
 
-        // Generate Token
-        const token = jwt.sign(
-            { id: staff._id, role: staff.role || staff.designation, schoolId: staff.school?._id },
-            process.env.JWT_SECRET || 'sms_backup_secret_do_not_use_in_prod',
-            { expiresIn: '24h' }
-        );
+        // Return staff info without password
+        const staffResponse = staff.toObject();
+        delete staffResponse.password;
 
         res.status(200).json({
             success: true,
             message: 'Login successful',
-            staff: { ...staffResponse, token }
+            staff: staffResponse
         });
     } catch (error) {
         console.error('Error in staff login:', error);

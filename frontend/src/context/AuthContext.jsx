@@ -4,40 +4,6 @@ import API_URL from '../config/api.js';
 
 export const AuthContext = createContext();
 
-// --- AXIOS INTERCEPTOR ---
-// Har request se pehle token check karo aur header mein add karo
-axios.interceptors.request.use(
-    (config) => {
-        try {
-            const user = JSON.parse(localStorage.getItem('currentUser'));
-            if (user && user.token) {
-                config.headers.Authorization = `Bearer ${user.token}`;
-            }
-        } catch (e) {
-            // Ignore if no user
-        }
-        return config;
-    },
-    (error) => {
-        return Promise.reject(error);
-    }
-);
-
-// Response interceptor: Agar token expire ho jaye (401), toh logout kar do
-axios.interceptors.response.use(
-    (response) => response,
-    (error) => {
-        if (error.response?.status === 401) {
-            // Token expired or invalid
-            localStorage.removeItem('currentUser');
-            if (window.location.pathname !== '/login') {
-                window.location.href = '/login?expired=true';
-            }
-        }
-        return Promise.reject(error);
-    }
-);
-
 const LOGIN_URL = `${API_URL}/AdminLogin`; 
 const TEACHER_LOGIN_URL = `${API_URL}/TeacherLogin`;
 const STUDENT_LOGIN_URL = `${API_URL}/StudentLogin`;

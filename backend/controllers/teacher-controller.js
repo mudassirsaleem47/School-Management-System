@@ -1,6 +1,5 @@
 const Teacher = require('../models/teacherSchema.js');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 
 // 1. Add New Teacher
 const addTeacher = async (req, res) => {
@@ -209,15 +208,9 @@ const teacherLogin = async (req, res) => {
             role: teacher.role
         };
 
-        const token = jwt.sign(
-            { id: teacher._id, role: 'Teacher', schoolId: teacher.school?._id },
-            process.env.JWT_SECRET || 'sms_backup_secret_do_not_use_in_prod',
-            { expiresIn: '24h' }
-        );
-
         res.status(200).json({
             message: "Login successful!",
-            teacher: { ...teacherData, token }
+            teacher: teacherData
         });
 
     } catch (err) {
