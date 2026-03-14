@@ -176,8 +176,7 @@ const SettingsProfile = () => {
     // Password
     const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
     const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    const [showCurrentPass, setShowCurrentPass] = useState(false);
-    const [showNewPass, setShowNewPass] = useState(false);
+    const [passwordLoading, setPasswordLoading] = useState(false);
 
     // Notifications
     const [notifications, setNotifications] = useState(() => {
@@ -239,6 +238,11 @@ const SettingsProfile = () => {
 
     // --- Effects ---
     useEffect(() => { if (currentUser) fetchSettings(); }, [currentUser]);
+    useEffect(() => {
+        if (isAdmin && activeSection === 'sessions' && currentUser?._id) {
+            fetchSessions();
+        }
+    }, [activeSection, isAdmin, currentUser?._id]);
     useEffect(() => { applyAccentColor(accentColor); }, [accentColor, theme]);
     useEffect(() => { applyRadius(borderRadius); }, [borderRadius]);
     useEffect(() => { applyFontScale(fontSize); }, [fontSize]);
@@ -269,7 +273,8 @@ const SettingsProfile = () => {
                     borderRadius,
                     fontSize,
                     sidebarCompact,
-                    preferences
+                    preferences,
+                    theme
                 };
                 await axios.put(`${API_BASE}/Admin/Settings/${currentUser.school || currentUser._id}`, { settings: settingsObject });
             } catch (err) {
@@ -278,7 +283,7 @@ const SettingsProfile = () => {
         }, 1000);
 
         return () => clearTimeout(t);
-    }, [notifications, accentColor, borderRadius, fontSize, sidebarCompact, preferences, isAdmin, currentUser]);
+    }, [notifications, accentColor, borderRadius, fontSize, sidebarCompact, preferences, theme, isAdmin, currentUser]);
 
     // --- Handlers ---
     const fetchSettings = async () => {
@@ -305,6 +310,7 @@ const SettingsProfile = () => {
                     if (data.settings.fontSize) { setFontSize(data.settings.fontSize); applyFontScale(data.settings.fontSize); }
                     if (data.settings.sidebarCompact !== undefined) setSidebarCompact(data.settings.sidebarCompact);
                     if (data.settings.preferences) setPreferences(data.settings.preferences);
+                    if (data.settings.theme) setTheme(data.settings.theme);
 
                 }
 
@@ -552,9 +558,36 @@ const SettingsProfile = () => {
     const handlePasswordChange = async () => {
         if (passwordData.newPassword !== passwordData.confirmPassword) { showToast("Passwords do not match", "error"); return; }
         if (passwordData.newPassword.length < 6) { showToast("Password must be at least 6 characters", "error"); return; }
-        showToast("Password updated!", "success");
-        setPasswordDialogOpen(false);
-        setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+        try {
+            setPasswordLoading(true);
+
+            if (isAdmin) {
+                await axios.put(`${API_BASE}/Admin/Settings/${currentUser._id}`, {
+                    currentPassword: passwordData.currentPassword,
+                    newPassword: passwordData.newPassword
+                });
+            } else if (isTeacher) {
+                await axios.put(`${API_BASE}/Teacher/${currentUser._id}`, {
+                    password: passwordData.newPassword
+                });
+            } else if (isParent) {
+                await axios.put(`${API_BASE}/Student/${currentUser._id}`, {
+                    password: passwordData.newPassword
+                });
+            } else if (isAccountant || isReceptionist) {
+                await axios.put(`${API_BASE}/Staff/${currentUser._id}/resetPassword`, {
+                    newPassword: passwordData.newPassword
+                });
+            }
+
+            showToast("Password updated!", "success");
+            setPasswordDialogOpen(false);
+            setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+        } catch (err) {
+            showToast(err.response?.data?.message || "Failed to update password", "error");
+        } finally {
+            setPasswordLoading(false);
+        }
     };
 
     const handleNotifChange = (key, value) => {
@@ -1616,6 +1649,7 @@ const SettingsProfile = () => {
                             onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
                             required
                             placeholder="Enter current password"
+                            hideStrength={true}
                         />
                         <PasswordField
                             label="New Password"
@@ -1641,8 +1675,8 @@ const SettingsProfile = () => {
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setPasswordDialogOpen(false)}>Cancel</Button>
-                        <Button onClick={handlePasswordChange} disabled={!passwordData.currentPassword || !passwordData.newPassword || passwordData.newPassword !== passwordData.confirmPassword}>
-                            Update Password
+                        <Button onClick={handlePasswordChange} disabled={passwordLoading || !passwordData.currentPassword || !passwordData.newPassword || passwordData.newPassword !== passwordData.confirmPassword}>
+                            {passwordLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Updating...</> : 'Update Password'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

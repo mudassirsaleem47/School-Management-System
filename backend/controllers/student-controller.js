@@ -250,11 +250,58 @@ const updateStudent = async (req, res) => {
         const studentId = req.params.id;
         const updateData = { ...req.body };
 
+        const safeParse = (value, fallback) => {
+            if (typeof value !== 'string') return value ?? fallback;
+            const trimmed = value.trim();
+            if (!trimmed) return fallback;
+            try {
+                return JSON.parse(trimmed);
+            } catch (_) {
+                return fallback;
+            }
+        };
+
+        // Multipart form fields for nested objects arrive as JSON strings.
+        // Parse only when keys are present to avoid overwriting existing data on partial updates.
+        if (Object.prototype.hasOwnProperty.call(updateData, 'father')) {
+            updateData.father = safeParse(updateData.father, {});
+        }
+        if (Object.prototype.hasOwnProperty.call(updateData, 'mother')) {
+            updateData.mother = safeParse(updateData.mother, {});
+        }
+        if (Object.prototype.hasOwnProperty.call(updateData, 'guardian')) {
+            updateData.guardian = safeParse(updateData.guardian, {});
+        }
+        if (Object.prototype.hasOwnProperty.call(updateData, 'transport')) {
+            updateData.transport = safeParse(updateData.transport, {});
+        }
+        if (Object.prototype.hasOwnProperty.call(updateData, 'siblings')) {
+            updateData.siblings = safeParse(updateData.siblings, []);
+        }
+
+        if (updateData.rollNum !== undefined && updateData.rollNum !== '') {
+            updateData.rollNum = Number(updateData.rollNum);
+        }
+
+        if (updateData.campus === '') delete updateData.campus;
+        if (updateData.session === '') delete updateData.session;
+        if (updateData.studentPhotoUrl) {
+            updateData.studentPhoto = updateData.studentPhotoUrl;
+            delete updateData.studentPhotoUrl;
+        }
+
+        if (updateData.password) {
+            const salt = await bcrypt.genSalt(10);
+            updateData.password = await bcrypt.hash(updateData.password, salt);
+        } else {
+            delete updateData.password;
+        }
+
         if (req.files) {
             if (req.files['studentPhoto']) updateData.studentPhoto = req.files['studentPhoto'][0].path;
-            if (req.files['fatherPhoto']) updateData.fatherPhoto = req.files['fatherPhoto'][0].path;
-            if (req.files['motherPhoto']) updateData.motherPhoto = req.files['motherPhoto'][0].path;
-            if (req.files['guardianPhoto']) updateData.guardianPhoto = req.files['guardianPhoto'][0].path;
+            if (req.files['fatherPhoto']) updateData.father = { ...updateData.father, photo: req.files['fatherPhoto'][0].path };
+            if (req.files['motherPhoto']) updateData.mother = { ...updateData.mother, photo: req.files['motherPhoto'][0].path };
+            if (req.files['guardianPhoto']) updateData.guardian = { ...updateData.guardian, photo: req.files['guardianPhoto'][0].path };
         }
 
         // If status is being changed to 'Disabled', handle disable info

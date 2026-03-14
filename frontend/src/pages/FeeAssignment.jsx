@@ -53,7 +53,7 @@ const FeeAssignment = () => {
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  const [selectedFeeStructure, setSelectedFeeStructure] = useState('');
+  const [selectedFeeStructures, setSelectedFeeStructures] = useState([]);
   const [assignmentMode, setAssignmentMode] = useState('individual');
   const [selectedClass, setSelectedClass] = useState('all');
   const [selectedSection, setSelectedSection] = useState('all');
@@ -131,6 +131,14 @@ const FeeAssignment = () => {
     );
   };
 
+  const toggleFeeStructureSelection = (feeId) => {
+    setSelectedFeeStructures((prev) =>
+      prev.includes(feeId)
+        ? prev.filter((id) => id !== feeId)
+        : [...prev, feeId]
+    );
+  };
+
   const selectAllStudents = () => {
     if (selectedStudents.length === filteredStudents.length) {
       setSelectedStudents([]);
@@ -140,16 +148,16 @@ const FeeAssignment = () => {
   };
 
   // Calculate Totals
-  const selectedFee = feeStructures.find(f => f._id === selectedFeeStructure);
-  const feeAmount = selectedFee ? selectedFee.amount : 0;
+  const selectedFeeItems = feeStructures.filter(f => selectedFeeStructures.includes(f._id));
+  const feeAmount = selectedFeeItems.reduce((sum, fee) => sum + (Number(fee.amount) || 0), 0);
   const studentCount = assignmentMode === 'class'
     ? filteredStudents.length
     : selectedStudents.length;
   const totalProjected = feeAmount * studentCount;
 
   const handleAssignFees = async () => {
-    if (!selectedFeeStructure) {
-      showToast('Please select a fee structure', 'error');
+    if (selectedFeeStructures.length === 0) {
+      showToast('Please select at least one fee structure', 'error');
       return;
     }
 
@@ -175,20 +183,43 @@ const FeeAssignment = () => {
     }
 
     try {
-      const response = await axios.post(`${API_BASE}/AssignFee`, {
-        feeStructureId: selectedFeeStructure,
-        studentIds: studentIds,
-        school: currentUser._id
-      });
+      const assignmentResults = await Promise.all(
+        selectedFeeStructures.map(async (feeStructureId) => {
+          try {
+            const response = await axios.post(`${API_BASE}/AssignFee`, {
+              feeStructureId,
+              studentIds,
+              school: currentUser._id
+            });
+            return { ok: true, data: response.data };
+          } catch (error) {
+            return {
+              ok: false,
+              message: error.response?.data?.message || 'Error assigning one of the selected fee structures'
+            };
+          }
+        })
+      );
 
-      showToast(response.data.message, 'success');
-      
-      if (response.data.errors && response.data.errors.length > 0) {
-        showToast(`${response.data.errors.length} student(s) already had this fee assigned`, 'warning');
+      const successResults = assignmentResults.filter(result => result.ok);
+      const failedResults = assignmentResults.filter(result => !result.ok);
+      const totalAssigned = successResults.reduce((sum, result) => sum + (result.data?.assignedFees?.length || 0), 0);
+      const duplicateCount = successResults.reduce((sum, result) => sum + (result.data?.errors?.length || 0), 0);
+
+      if (successResults.length > 0) {
+        showToast(`Assigned ${selectedFeeStructures.length - failedResults.length} fee structure(s) to ${studentIds.length} student(s). Total created entries: ${totalAssigned}.`, 'success');
+      }
+
+      if (duplicateCount > 0) {
+        showToast(`${duplicateCount} assignment(s) skipped because fee already existed.`, 'warning');
+      }
+
+      if (failedResults.length > 0) {
+        showToast(`${failedResults.length} fee structure assignment(s) failed.`, 'error');
       }
 
       setSelectedStudents([]);
-      setSelectedFeeStructure('');
+      setSelectedFeeStructures([]);
     } catch (error) {
       showToast(error.response?.data?.message || 'Error assigning fees', 'error');
     }
@@ -221,7 +252,7 @@ const FeeAssignment = () => {
                 <CardTitle className="text-xl flex items-center gap-2">
                   <CreditCard className="w-5 h-5 text-primary" /> Fee Structure
                 </CardTitle>
-                <CardDescription>Select the fee to assign</CardDescription>
+                <CardDescription>Select one or more fee structures to assign</CardDescription>
               </div>
               <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -245,18 +276,26 @@ const FeeAssignment = () => {
                       filteredFees.map((fee) => (
                         <div
                           key={fee._id}
-                          onClick={() => setSelectedFeeStructure(fee._id)}
-                          className={`p-4 rounded-xl border-2 cursor-pointer transition-all hover:shadow-md ${selectedFeeStructure === fee._id
+                          onClick={() => toggleFeeStructureSelection(fee._id)}
+                          className={`p-4 rounded-xl border-2 cursor-pointer transition-all hover:shadow-md ${selectedFeeStructures.includes(fee._id)
                             ? 'border-primary bg-primary/5 ring-1 ring-primary/20 shadow-sm'
                             : 'border-transparent bg-card hover:bg-accent/50'
                             }`}
                         >
                           {/* Fee Name + Type Badge */}
                           <div className="flex items-start justify-between mb-3">
-                            <h3 className={`font-semibold text-sm ${selectedFeeStructure === fee._id ? 'text-primary' : 'text-foreground'}`}>
-                              {fee.feeName}
-                            </h3>
-                            <Badge variant={selectedFeeStructure === fee._id ? 'default' : 'secondary'} className="ml-2 shrink-0">
+                            <div className="flex items-start gap-2">
+                              <Checkbox
+                                checked={selectedFeeStructures.includes(fee._id)}
+                                onCheckedChange={() => toggleFeeStructureSelection(fee._id)}
+                                onClick={(e) => e.stopPropagation()}
+                                className="mt-0.5"
+                              />
+                              <h3 className={`font-semibold text-sm ${selectedFeeStructures.includes(fee._id) ? 'text-primary' : 'text-foreground'}`}>
+                                {fee.feeName}
+                              </h3>
+                            </div>
+                            <Badge variant={selectedFeeStructures.includes(fee._id) ? 'default' : 'secondary'} className="ml-2 shrink-0">
                               {fee.feeType}
                             </Badge>
                           </div>
@@ -538,17 +577,17 @@ const FeeAssignment = () => {
             <CardFooter className="border-t bg-muted/30 p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Badge variant="outline" className="bg-background">
-                  Total Projected Amount: Rs. {totalProjected.toLocaleString()}
+                  {selectedFeeStructures.length} fee structure(s) selected • Total Projected Amount: Rs. {totalProjected.toLocaleString()}
                 </Badge>
               </div>
               <Button
                 onClick={handleAssignFees} 
-                disabled={!selectedFeeStructure || (assignmentMode !== 'class' && selectedStudents.length === 0) || (assignmentMode === 'class' && filteredStudents.length === 0)}
+                disabled={selectedFeeStructures.length === 0 || (assignmentMode !== 'class' && selectedStudents.length === 0) || (assignmentMode === 'class' && filteredStudents.length === 0)}
                 size="lg"
                 className="w-full sm:w-auto gap-2 shadow-lg hover:shadow-primary/25 transition-all font-semibold"
               >
                 <DollarSign className="w-4 h-4" />
-                Assign Fee to {
+                Assign Fee{selectedFeeStructures.length > 1 ? 's' : ''} to {
                   assignmentMode === 'class' 
                     ? `${filteredStudents.length} Students`
                     : `${selectedStudents.length} Selected`

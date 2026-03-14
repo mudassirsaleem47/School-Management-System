@@ -106,10 +106,39 @@ const updateAdmin = async (req, res) => {
 
 const updateAdminSettings = async (req, res) => {
     try {
-        const { settings } = req.body;
-        const result = await Admin.findByIdAndUpdate(req.params.id, { $set: { settings } }, { new: true });
-        result.password = undefined;
-        res.send(result);
+        const { settings, currentPassword, newPassword } = req.body;
+        const admin = await Admin.findById(req.params.id);
+
+        if (!admin) {
+            return res.status(404).json({ message: "Admin not found" });
+        }
+
+        if (settings && typeof settings === 'object') {
+            admin.settings = { ...(admin.settings || {}), ...settings };
+        }
+
+        if (newPassword !== undefined) {
+            if (!currentPassword) {
+                return res.status(400).json({ message: "Current password is required" });
+            }
+
+            const isPasswordValid = await bcrypt.compare(currentPassword, admin.password);
+            if (!isPasswordValid) {
+                return res.status(400).json({ message: "Current password is incorrect" });
+            }
+
+            if (typeof newPassword !== 'string' || newPassword.length < 6) {
+                return res.status(400).json({ message: "New password must be at least 6 characters" });
+            }
+
+            const salt = await bcrypt.genSalt(10);
+            admin.password = await bcrypt.hash(newPassword, salt);
+        }
+
+        await admin.save();
+        const safeAdmin = admin.toObject();
+        delete safeAdmin.password;
+        res.send(safeAdmin);
     } catch (err) {
         res.status(500).json(err);
     }
