@@ -31,7 +31,7 @@ const isAllowedOrigin = (origin) => {
 
         if (host === 'localhost' || host === '127.0.0.1') return true;
         if (/^192\.168\./.test(host)) return true;
-        if (host === 'hostingersite.com' || host.endsWith('.hostingersite.com')) return true;
+        if (host === 'hostingsite.com' || host.endsWith('.hostingsite.com')) return true;
         if (host === 'vercel.app' || host.endsWith('.vercel.app')) return true;
 
         return false;

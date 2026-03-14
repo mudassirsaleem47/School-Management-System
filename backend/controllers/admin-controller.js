@@ -37,7 +37,7 @@ const adminRegister = async (req, res) => {
         // Generate Token
         const token = jwt.sign(
             { id: result._id, role: 'Admin', schoolId: result._id, schoolName: result.schoolName },
-            process.env.JWT_SECRET,
+            process.env.JWT_SECRET || 'sms_backup_secret_do_not_use_in_prod',
             { expiresIn: '24h' }
         );
 
@@ -70,7 +70,7 @@ const adminLogin = async (req, res) => {
         // Generate JWT Token
         const token = jwt.sign(
             { id: admin._id, role: 'Admin', schoolId: admin._id, schoolName: admin.schoolName },
-            process.env.JWT_SECRET,
+            process.env.JWT_SECRET || 'sms_backup_secret_do_not_use_in_prod',
             { expiresIn: '24h' }
         );
 

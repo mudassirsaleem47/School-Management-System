@@ -9,7 +9,7 @@ const authenticate = async (req, res, next) => {
             return res.status(401).json({ message: "Authentication required. Please login." });
         }
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'sms_backup_secret_do_not_use_in_prod');
         req.user = decoded;
         next();
     } catch (err) {

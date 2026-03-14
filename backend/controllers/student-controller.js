@@ -176,7 +176,7 @@ const studentLogin = async (req, res) => {
             if (validPassword) {
                 const token = jwt.sign(
                     { id: student._id, role: 'Student', schoolId: student.school },
-                    process.env.JWT_SECRET,
+                    process.env.JWT_SECRET || 'sms_backup_secret_do_not_use_in_prod',
                     { expiresIn: '24h' }
                 );
                 student.password = undefined;

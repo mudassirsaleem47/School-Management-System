@@ -283,7 +283,7 @@ const staffLogin = async (req, res) => {
         // Generate Token
         const token = jwt.sign(
             { id: staff._id, role: staff.role || staff.designation, schoolId: staff.school?._id },
-            process.env.JWT_SECRET,
+            process.env.JWT_SECRET || 'sms_backup_secret_do_not_use_in_prod',
             { expiresIn: '24h' }
         );
 

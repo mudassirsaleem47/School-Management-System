@@ -211,7 +211,7 @@ const teacherLogin = async (req, res) => {
 
         const token = jwt.sign(
             { id: teacher._id, role: 'Teacher', schoolId: teacher.school?._id },
-            process.env.JWT_SECRET,
+            process.env.JWT_SECRET || 'sms_backup_secret_do_not_use_in_prod',
             { expiresIn: '24h' }
         );
 
