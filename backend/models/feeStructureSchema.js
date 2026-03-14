@@ -15,15 +15,6 @@ const feeStructureSchema = new mongoose.Schema({
         enum: ['Tuition', 'Transport', 'Library', 'Sports', 'Lab', 'Exam', 'Uniform', 'Other'],
         required: true
     },
-    class: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'sclass',
-        required: true
-    },
-    section: {
-        type: String,
-        default: 'All'
-    },
     amount: {
         type: Number,
         required: true,

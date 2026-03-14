@@ -1,7 +1,9 @@
+const dotenv = require("dotenv");
+dotenv.config();
+
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const dotenv = require("dotenv");
 const path = require("path");
 const routes = require("./routes/route");
 const transportRoutes = require("./routes/transportRoutes");
@@ -16,9 +18,6 @@ const itemMasterRoutes = require("./routes/itemMasterRoutes");
 const itemCategoryRoutes = require("./routes/itemCategoryRoutes");
 const itemSupplierRoutes = require("./routes/itemSupplierRoutes");
 const itemStoreRoutes = require("./routes/itemStoreRoutes");
-
-
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;

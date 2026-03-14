@@ -177,6 +177,8 @@ router.delete('/RevertTransaction/:transactionId', revertTransaction);
 router.get('/FeeReceipt/:transactionId', getReceiptDetails);
 router.get('/FeeStatistics/:schoolId', getFeeStatistics);
 router.post('/Fee/Remind/:id', sendFeeReminder);
+// --- Income Management Routes ---
+
 
 // --- Income Management Routes ---
 router.post('/IncomeCreate', createIncome);

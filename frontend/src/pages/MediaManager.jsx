@@ -204,7 +204,7 @@ const MediaManager = () => {
         });
 
         toast.promise(uploadPromise, {
-            loading: 'Uploading file to secure storage...',
+            loading: 'Uploading file to local storage...',
             success: 'File uploaded successfully!',
             error: (err) => `Failed to upload file. ${err.response?.data?.message || err.message}`
         });
@@ -240,7 +240,7 @@ const MediaManager = () => {
                 <div className="flex flex-col gap-1">
                     <h2 className="text-3xl font-bold tracking-tight">Media Library</h2>
                     <p className="text-muted-foreground mt-1">
-                        Manage your school's secure Cloudinary storage assets
+                        Manage your school's local media storage assets
                     </p>
                 </div>
                 

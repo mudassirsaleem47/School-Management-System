@@ -319,6 +319,13 @@ const StudentAdmissionForm = ({ onSuccess, onCancel, editStudentId }) => {
         e.preventDefault();
         setLoading(true);
 
+        // Basic student fields validation
+        if (!formData.firstName || !formData.rollNum || !formData.sclassName || !formData.section || !formData.academicYear) {
+            toast.error("Please fill in all required student identity fields mark with *");
+            setLoading(false);
+            return;
+        }
+
         // Required Validations for Guardian
         if (guardianType === 'father' && !formData.father.name) {
             toast.error("Please enter Father's Name");

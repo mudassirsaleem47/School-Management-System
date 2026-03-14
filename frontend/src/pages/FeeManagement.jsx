@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import axios from 'axios';
 import { 
-  DollarSign, 
+  DollarSign,
   TrendingUp, 
   Calendar, 
   Plus, 
@@ -42,7 +42,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
 import {
@@ -90,7 +89,6 @@ const FeeManagement = () => {
   const [formData, setFormData] = useState({
     feeName: '',
     feeType: 'Tuition',
-    class: '',
     amount: '',
     academicYear: new Date().getFullYear().toString(),
     frequency: 'Monthly',
@@ -98,29 +96,15 @@ const FeeManagement = () => {
     dueDate: '',
     description: ''
   });
+  const [errors, setErrors] = useState({});
 
   const [searchTerm, setSearchTerm] = useState('');
-  
-  const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const feeTypes = ['Tuition', 'Transport', 'Library', 'Sports', 'Lab', 'Exam', 'Uniform', 'Other'];
 
   useEffect(() => {
-    setCurrentPage(1);
     setSelectedFees([]);
   }, [searchTerm]);
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-    setSelectedFees([]);
-  };
-
-  const handleRowsPerPageChange = (value) => {
-    setRowsPerPage(value);
-    setCurrentPage(1);
-    setSelectedFees([]);
-  };
 
   useEffect(() => {
     if (currentUser) {
@@ -154,10 +138,27 @@ const FeeManagement = () => {
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: null }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Explicit validation for required fields
+    const newErrors = {};
+    if (!formData.feeName) newErrors.feeName = 'Fee Name is required';
+    if (!formData.feeType) newErrors.feeType = 'Fee Type is required';
+    if (!formData.amount) newErrors.amount = 'Amount is required';
+    if (!formData.academicYear) newErrors.academicYear = 'Academic Year is required';
+    if (!formData.dueDate) newErrors.dueDate = 'Due Date is required';
+    if (formData.frequency === 'Monthly' && !formData.month) newErrors.month = 'Month is required';
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
     
     try {
       const payload = {
@@ -186,7 +187,6 @@ const FeeManagement = () => {
     setFormData({
       feeName: fee.feeName,
       feeType: fee.feeType,
-      class: fee.class?._id || '',
       amount: fee.amount.toString(),
       academicYear: fee.academicYear,
       frequency: fee.frequency || 'Monthly',
@@ -253,7 +253,6 @@ const FeeManagement = () => {
     setFormData({
       feeName: '',
       feeType: 'Tuition',
-      class: '',
       amount: '',
       academicYear: new Date().getFullYear().toString(),
       frequency: 'Monthly',
@@ -263,17 +262,13 @@ const FeeManagement = () => {
     });
     setEditingFee(null);
     setIsDialogOpen(false);
+    setErrors({});
   };
 
   const filteredFees = feeStructures.filter(fee =>
     fee.feeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     fee.feeType.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  const totalPages = Math.ceil(filteredFees.length / rowsPerPage);
-  const indexOfLastRow = currentPage * rowsPerPage;
-  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-  const currentFees = filteredFees.slice(indexOfFirstRow, indexOfLastRow);
 
   if (loading) {
     return (
@@ -387,14 +382,13 @@ const FeeManagement = () => {
                     <TableRow>
                       <TableHead className="w-[50px]">
                         <Checkbox 
-                          checked={selectedFees.length === currentFees.length && currentFees.length > 0} 
+                          checked={selectedFees.length === filteredFees.length && filteredFees.length > 0} 
                           onCheckedChange={toggleSelectAll} 
                           aria-label="Select all"
                         />
                       </TableHead>
                       <TableHead>Fee Name</TableHead>
                       <TableHead>Type</TableHead>
-                      <TableHead>Class</TableHead>
                       <TableHead>Frequency</TableHead>
                       <TableHead>Amount</TableHead>
                       <TableHead>Due Date</TableHead>
@@ -402,7 +396,7 @@ const FeeManagement = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {currentFees.map((fee) => (
+                    {filteredFees.map((fee) => (
                       <TableRow key={fee._id}>
                         <TableCell>
                           <Checkbox 
@@ -417,7 +411,6 @@ const FeeManagement = () => {
                             {fee.feeType}
                                   </Badge>
                                 </TableCell>
-                                <TableCell>{fee.class?.sclassName || 'All Classes'}</TableCell>
                                 <TableCell>
                                   <div className="flex flex-col">
                                     <span>{fee.frequency}</span>
@@ -449,17 +442,7 @@ const FeeManagement = () => {
                 </TableBody>
               </Table>
             </div>
-            <TablePagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-              rowsPerPage={rowsPerPage}
-              onRowsPerPageChange={handleRowsPerPageChange}
-              totalRows={filteredFees.length}
-              selectedRows={selectedFees.length}
-              showSelectionMsg={selectedFees.length > 0}
-            />
-          </>
+            </>
           )}
         </CardContent>
       </Card>
@@ -487,6 +470,7 @@ const FeeManagement = () => {
                   placeholder="e.g. Tuition Fee"
                   required
                 />
+                {errors.feeName && <p className="text-xs text-destructive">{errors.feeName}</p>}
               </div>
 
               <div className="space-y-2">
@@ -500,32 +484,15 @@ const FeeManagement = () => {
                   </SelectTrigger>
                   <SelectContent>
                     {feeTypes.map(type => (
-                                  <SelectItem key={type} value={type}>{type}</SelectItem>
-                                ))}
+                      <SelectItem key={type} value={type}>{type}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
+                {errors.feeType && <p className="text-xs text-destructive">{errors.feeType}</p>}
               </div>
-                </div>
+            </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Class</Label>
-                <Select
-                  value={formData.class}
-                  onValueChange={(val) => handleInputChange('class', val)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Class" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {/* Removed the empty value SelectItem to fix the error */}
-                    {classes.map(cls => (
-                                  <SelectItem key={cls._id} value={cls._id}>{cls.sclassName}</SelectItem>
-                                ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
+            <div className="grid grid-cols-1 gap-4">
               <div className="space-y-2">
                 <Label>Amount (Rs.) *</Label>
                 <Input
@@ -536,8 +503,9 @@ const FeeManagement = () => {
                   min="0"
                   required
                 />
+                {errors.amount && <p className="text-xs text-destructive">{errors.amount}</p>}
               </div>
-                </div>
+            </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -574,6 +542,7 @@ const FeeManagement = () => {
                       ))}
                     </SelectContent>
                   </Select>
+                  {errors.month && <p className="text-xs text-destructive">{errors.month}</p>}
                 </div>
               )}
             </div>
@@ -587,6 +556,7 @@ const FeeManagement = () => {
                   placeholder="Select due date"
                   required
                 />
+                {errors.dueDate && <p className="text-xs text-destructive">{errors.dueDate}</p>}
               </div>
               <div className="space-y-2">
                 <Label>Academic Year *</Label>
@@ -595,8 +565,9 @@ const FeeManagement = () => {
                   onChange={(e) => handleInputChange('academicYear', e.target.value)}
                   required
                 />
+                {errors.academicYear && <p className="text-xs text-destructive">{errors.academicYear}</p>}
               </div>
-                </div>
+            </div>
 
             <div className="space-y-2">
               <Label>Description</Label>

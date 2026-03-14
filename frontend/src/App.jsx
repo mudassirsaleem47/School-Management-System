@@ -155,7 +155,6 @@ function App() {
                   <Route path="print-mark-sheet" element={<PrintMarkSheet />} />
                   <Route path="campuses" element={<CampusManagement />} />
                   <Route path="reports" element={<ReportsPage />} />
-                  <Route path="reports" element={<ReportsPage />} />
                   <Route path="accountants" element={<AccountantList />} />
                   <Route path="receptionists" element={<ReceptionistList />} />
                   <Route path="staff-directory" element={<StaffDirectory />} />
@@ -193,7 +192,7 @@ function App() {
                   <Route path="card-management/student" element={<StudentIdCard />} />
                   <Route path="card-management/staff" element={<StaffIdCard />} />
                   <Route path="card-management/designer" element={<CardDesigner />} />
-                  <Route path="/admin/report-card" element={<ReportCard />} />
+                  <Route path="report-card" element={<ReportCard />} />
                   <Route path="message-report" element={<MessageReport />} />
                   <Route path="notifications" element={<NotificationsPage />} />
                   <Route path="*" element={<NotFoundPage />} />

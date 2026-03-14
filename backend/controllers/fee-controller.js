@@ -9,23 +9,17 @@ const EmailService = require('../services/emailService.js');
 // 1. Create Fee Structure
 const createFeeStructure = async (req, res) => {
     try {
-        const { feeName, feeType, class: classId, section, amount, academicYear, dueDate, description, school } = req.body;
-
-        // Verify class exists
-        const sclass = await Sclass.findById(classId);
-        if (!sclass) {
-            return res.status(404).json({ message: "Class not found." });
-        }
+        const { feeName, feeType, amount, academicYear, dueDate, description, school, frequency, month } = req.body;
 
         const newFeeStructure = new FeeStructure({
             school,
             feeName,
             feeType,
-            class: classId,
-            section,
             amount,
             academicYear,
             dueDate,
+            frequency,
+            month,
             description: description || ""
         });
 
@@ -47,7 +41,6 @@ const getFeeStructuresBySchool = async (req, res) => {
         const { schoolId } = req.params;
         
         const feeStructures = await FeeStructure.find({ school: schoolId, status: 'Active' })
-            .populate('class', 'sclassName')
             .sort({ createdAt: -1 });
 
         res.status(200).json(feeStructures);
@@ -66,7 +59,7 @@ const updateFeeStructure = async (req, res) => {
             id,
             req.body,
             { new: true }
-        ).populate('class', 'sclassName');
+        );
 
         if (!updatedFeeStructure) {
             return res.status(404).json({ message: "Fee structure not found." });

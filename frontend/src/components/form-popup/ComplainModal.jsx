@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { formatDateTime } from '../../utils/formatDateTime';
+import { toast } from 'sonner';
 import { X, Upload, FileText, Download, Eye, Trash2 } from 'lucide-react';
 import {
     Dialog,
@@ -90,6 +91,13 @@ const ComplainModal = ({ isOpen, onClose, onSubmit, initialData = null, viewMode
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        // Validation
+        if (!formData.complainBy || !formData.date || !formData.description) {
+            toast.error("Please fill in all required fields marked with *");
+            return;
+        }
+
         onSubmit(formData);
     };
 

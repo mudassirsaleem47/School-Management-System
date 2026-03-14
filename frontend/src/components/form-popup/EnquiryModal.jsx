@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { formatDateTime } from '../../utils/formatDateTime';
+import { toast } from 'sonner';
 import {
     Dialog,
     DialogContent,
@@ -60,6 +61,7 @@ const EnquiryModal = ({ isOpen, onClose, onSubmit, initialData, classesList = []
         class: '',
         noOfChild: 1
     });
+    const [errors, setErrors] = useState({});
 
     useEffect(() => {
         if (initialData) {
@@ -86,18 +88,39 @@ const EnquiryModal = ({ isOpen, onClose, onSubmit, initialData, classesList = []
                 noOfChild: 1
             });
         }
+        setErrors({});
     }, [initialData, isOpen]);
 
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+        if (errors[name]) {
+            setErrors(prev => ({ ...prev, [name]: null }));
+        }
     };
 
     const handleSelectChange = (name, value) => {
         setFormData({ ...formData, [name]: value });
+        if (errors[name]) {
+            setErrors(prev => ({ ...prev, [name]: null }));
+        }
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        // Required fields validation
+        const newErrors = {};
+        if (!formData.name) newErrors.name = "Name is required";
+        if (!formData.phone) newErrors.phone = "Phone is required";
+        if (!formData.date) newErrors.date = "Date is required";
+        if (!formData.class) newErrors.class = "Class is required";
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+
         onSubmit(formData);
     };
 
@@ -301,6 +324,7 @@ const EnquiryModal = ({ isOpen, onClose, onSubmit, initialData, classesList = []
                                     required
                                     className="focus-visible:ring-blue-500"
                                 />
+                                {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="phone">Phone <span className="text-destructive">*</span></Label>
@@ -313,6 +337,7 @@ const EnquiryModal = ({ isOpen, onClose, onSubmit, initialData, classesList = []
                                     required
                                     className="focus-visible:ring-blue-500"
                                 />
+                                {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="email">Email</Label>
@@ -354,6 +379,7 @@ const EnquiryModal = ({ isOpen, onClose, onSubmit, initialData, classesList = []
                                         />
                                     </PopoverContent>
                                 </Popover>
+                                {errors.date && <p className="text-xs text-destructive">{errors.date}</p>}
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="class">Interested Class <span className="text-destructive">*</span></Label>
@@ -375,6 +401,7 @@ const EnquiryModal = ({ isOpen, onClose, onSubmit, initialData, classesList = []
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>
+                                {errors.class && <p className="text-xs text-destructive">{errors.class}</p>}
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="assigned">Assign To</Label>

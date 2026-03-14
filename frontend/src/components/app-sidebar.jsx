@@ -183,7 +183,6 @@ const adminFooterData = [
   { title: 'Settings', url: '/admin/settings', icon: IconSettings },
   { title: 'Reports', url: '/admin/reports', icon: IconFileText },
 ]
-5
 
 
   // Teacher limited navigation
