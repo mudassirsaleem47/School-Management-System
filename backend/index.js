@@ -1,7 +1,12 @@
 const dotenv = require("dotenv");
 dotenv.config();
 
-const express = require("express");
+// Debug logs for environment (Safe because it's just keys existence check)
+console.log("Environment Check:");
+console.log("- PORT:", process.env.PORT || 5000);
+console.log("- MONGO_URL:", process.env.MONGO_URL ? "Defined ✅" : "MISSING ❌");
+console.log("- JWT_SECRET:", process.env.JWT_SECRET ? "Defined ✅" : "MISSING (Using Fallback) ⚠️");
+console.log("- CLOUDINARY:", process.env.CLOUDINARY_CLOUD_NAME ? "Defined ✅" : "MISSING ❌");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
@@ -23,30 +28,13 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 const isAllowedOrigin = (origin) => {
-    if (!origin) return true;
-
-    try {
-        const parsed = new URL(origin);
-        const host = parsed.hostname;
-
-        if (host === 'localhost' || host === '127.0.0.1') return true;
-        if (/^192\.168\./.test(host)) return true;
-        if (host === 'hostingsite.com' || host.endsWith('.hostingsite.com')) return true;
-        if (host === 'vercel.app' || host.endsWith('.vercel.app')) return true;
-
-        return false;
-    } catch (error) {
-        return false;
-    }
+    return true; // DEBUG: Allow all temporarily to see the real 500 error
 };
 
 // Middleware
 app.use(express.json());
 app.use(cors({
-    origin: function (origin, callback) {
-        if (isAllowedOrigin(origin)) return callback(null, true);
-        return callback(new Error('Not allowed by CORS'));
-    },
+    origin: true, // DEBUG: Allow all for preflight debugging
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
@@ -88,5 +76,15 @@ mongoose
     .catch((err) => {
         console.log("Database Connection Error:", err);
     });
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+    console.error("Uncaught Server Error:", err);
+    res.status(500).json({ 
+        success: false, 
+        message: "Internal Server Error", 
+        error: err.message
+    });
+});
 
 module.exports = app;
