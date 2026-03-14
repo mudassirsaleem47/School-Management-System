@@ -23,20 +23,25 @@ if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && proce
     storage = new CloudinaryStorage({
         cloudinary: cloudinary,
         params: async (req, file) => {
-            const schoolToken = sanitizeToken(req.body?.schoolId || req.body?.school || req.params?.schoolId);
+            const schoolToken = sanitizeToken(req.body?.schoolId || req.body?.school || req.params?.schoolId || req.query?.schoolId);
             return {
                 folder: 'school_management_system',
                 allowed_formats: ['jpg', 'png', 'jpeg', 'pdf'],
                 resource_type: 'auto',
-                public_id: `${schoolToken ? schoolToken + '_' : ''}${Date.now()}_${Math.round(Math.random() * 1e9)}`
+                public_id: `${schoolToken ? schoolToken + '_' : ''}${Date.now()}_${Math.round(Math.random() * 1e9)}`,
+                tags: schoolToken ? [schoolToken, 'sms_upload'] : ['sms_upload'],
+                context: {
+                    schoolId: schoolToken || 'unknown',
+                    originalName: file.originalname
+                }
             };
         }
     });
 
     console.log("✅ Upload Storage: Using Cloudinary Storage");
 } else {
-    // --- Local Disk Storage Fallback (Pointing to Frontend's Public Folder for Hostinger Space) ---
-    const uploadsDir = path.join(__dirname, '..', '..', 'frontend', 'public', 'uploads');
+    // --- Local Disk Storage Fallback (Mainly for Local Development) ---
+    const uploadsDir = path.join(__dirname, '..', 'uploads');
 
     // Skip directory creation on Vercel (Read-only filesystem)
     if (!process.env.VERCEL) {
@@ -44,7 +49,7 @@ if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && proce
             try {
                 fs.mkdirSync(uploadsDir, { recursive: true });
             } catch (err) {
-                console.error("Warning: Failed to create local uploads directory in frontend:", err.message);
+                console.error("Warning: Failed to create local uploads directory:", err.message);
             }
         }
     }
@@ -64,7 +69,7 @@ if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && proce
         },
     });
 
-    console.log(`✅ Upload Storage: Using Frontend Public Folder (${process.env.VERCEL ? '/tmp' : 'frontend/public/uploads/'})`);
+    console.log(`✅ Upload Storage: Using Local Disk Storage (${process.env.VERCEL ? '/tmp' : 'uploads/'})`);
 }
 
 // --- Common Multer Config ---

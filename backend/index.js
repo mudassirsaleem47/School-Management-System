@@ -5,7 +5,6 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
-const fs = require('fs');
 const routes = require("./routes/route");
 const transportRoutes = require("./routes/transportRoutes");
 const lessonPlanRoutes = require("./routes/lessonPlanRoutes");
@@ -53,10 +52,7 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
 }));
 
-const staticUploadsDir = fs.existsSync(path.join(__dirname, '..', 'frontend', 'public', 'uploads'))
-    ? path.join(__dirname, '..', 'frontend', 'public', 'uploads')
-    : path.join(__dirname, 'uploads');
-app.use('/uploads', express.static(staticUploadsDir));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
 app.get("/", (req, res) => {

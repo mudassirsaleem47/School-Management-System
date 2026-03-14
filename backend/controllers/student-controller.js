@@ -7,6 +7,7 @@ const MessageTemplate = require('../models/messageTemplateSchema.js');
 const MessageLog = require('../models/messageLogSchema.js');
 const EmailService = require('../services/emailService.js');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 // 1. New Student ka Admission
 const studentAdmission = async (req, res) => {
@@ -173,8 +174,13 @@ const studentLogin = async (req, res) => {
         if (student) {
             const validPassword = await bcrypt.compare(req.body.password, student.password);
             if (validPassword) {
+                const token = jwt.sign(
+                    { id: student._id, role: 'Student', schoolId: student.school },
+                    process.env.JWT_SECRET,
+                    { expiresIn: '24h' }
+                );
                 student.password = undefined;
-                res.send(student);
+                res.status(200).json({ ...student.toObject(), token });
             } else {
                 res.status(400).json({ message: "Invalid Password" });
             }

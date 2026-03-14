@@ -1,5 +1,6 @@
 const Admin = require('../models/adminSchema');
 const bcrypt = require('bcryptjs'); // Password secure karne ke liye
+const jwt = require('jsonwebtoken');
 
 const adminRegister = async (req, res) => {
     try {
@@ -33,10 +34,18 @@ const adminRegister = async (req, res) => {
         const result = await admin.save();
         console.log("Admin registered successfully:", result._id);
         
-        // Password wapis nahi bhejna response mein
-        result.password = undefined;
+        // Generate Token
+        const token = jwt.sign(
+            { id: result._id, role: 'Admin', schoolId: result._id, schoolName: result.schoolName },
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' }
+        );
 
-        res.status(200).json(result);
+        // Password wapis nahi bhejna response mein
+        const safeAdmin = result.toObject();
+        delete safeAdmin.password;
+
+        res.status(200).json({ ...safeAdmin, token });
     } catch (err) {
         console.error("Error in adminRegister:", err);
         res.status(500).json({ message: "Internal Server Error", error: err.message });
@@ -58,11 +67,20 @@ const adminLogin = async (req, res) => {
             return res.status(400).json({ message: "Invalid Password" });
         }
         
+        // Generate JWT Token
+        const token = jwt.sign(
+            { id: admin._id, role: 'Admin', schoolId: admin._id, schoolName: admin.schoolName },
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+
         // Admin data bhejna (Login successful)
-        admin.password = undefined;
-        res.status(200).json(admin);
+        const safeAdmin = admin.toObject();
+        delete safeAdmin.password;
+        res.status(200).json({ ...safeAdmin, token });
     } catch (err) {
-        res.status(500).json(err);
+        console.error("Admin Login Error:", err);
+        res.status(500).json({ message: "Internal server error during login", error: err.message });
     }
 };
 
