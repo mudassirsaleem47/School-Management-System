@@ -1,0 +1,376 @@
+const pino = require('pino');
+const QRCode = require('qrcode');
+const MessagingSettings = require('../models/messagingSettingsSchema');
+const WhatsAppSession = require('../models/whatsappSessionSchema');
+
+// Store active socket connections in memory
+const activeSockets = new Map();
+const qrCodes = new Map(); // Store current QR for a school
+
+/**
+ * MongoDB Auth Adapter for Baileys
+ * Adapts MongoDB to Baileys AuthState interface
+ */
+const useMongoDBAuthState = async (collection) => {
+    // Dynamic import for Baileys
+    const { useMultiFileAuthState } = await import('@whiskeysockets/baileys');
+
+    // Helper to read data
+    const readData = async (key) => {
+        try {
+            const data = await WhatsAppSession.findOne({ _id: collection });
+            if (data && data.creds && key === 'creds') {
+                return data.creds;
+            }
+            if (data && data.keys && data.keys[key]) {
+                return JSON.parse(data.keys[key]);
+            }
+            return null;
+        } catch (error) {
+            console.error('Error reading auth state:', error);
+            return null;
+        }
+    };
+
+    // Helper to write data
+    const writeData = async (data, key) => {
+        try {
+            const update = {};
+            if (key === 'creds') {
+                update.creds = data;
+            } else {
+                update[`keys.${key}`] = JSON.stringify(data);
+            }
+
+            await WhatsAppSession.findOneAndUpdate(
+                { _id: collection },
+                { $set: update },
+                { upsert: true, new: true }
+            );
+        } catch (error) {
+            console.error('Error writing auth state:', error);
+        }
+    };
+
+    // Helper to remove data
+    const removeData = async (key) => {
+        try {
+            const update = {};
+            update[`keys.${key}`] = 1;
+            await WhatsAppSession.updateOne(
+                { _id: collection },
+                { $unset: update }
+            );
+        } catch (error) {
+            console.error('Error removing auth state:', error);
+        }
+    };
+
+    const creds = (await readData('creds')) || (await (async () => {
+        try {
+            // Use /tmp for serverless environments (Vercel)
+            const tempDir = process.platform === 'win32' ? './temp_auth' : '/tmp/baileys_auth';
+            const { state } = await useMultiFileAuthState(tempDir);
+            return state.creds; 
+        } catch (e) {
+            console.error("Failed to init auth state in /tmp, trying memory", e);
+            return {}; // Fallback
+        }
+    })());
+
+    return {
+        state: {
+            creds,
+            keys: {
+                get: async (type, ids) => {
+                    const data = {};
+                    await Promise.all(
+                        ids.map(async (id) => {
+                            let value = await readData(`${type}-${id}`);
+                            if (value) data[id] = value;
+                        })
+                    );
+                    return data;
+                },
+                set: async (data) => {
+                    await Promise.all(
+                        Object.keys(data).map(async (category) => {
+                            await Promise.all(
+                                Object.keys(data[category]).map(async (id) => {
+                                    const value = data[category][id];
+                                    const key = `${category}-${id}`;
+                                    if (value) {
+                                        await writeData(value, key);
+                                    } else {
+                                        await removeData(key);
+                                    }
+                                })
+                            );
+                        })
+                    );
+                }
+            }
+        },
+        saveCreds: async () => {
+            await writeData(creds, 'creds');
+        }
+    };
+};
+
+
+class WhatsAppService {
+
+    /**
+     * Initialize/Connect WhatsApp for a school
+     */
+    static async connect(schoolId) {
+        try {
+            // Dynamic Import
+            const {
+                default: makeWASocket,
+                DisconnectReason,
+                fetchLatestBaileysVersion,
+                makeCacheableSignalKeyStore
+            } = await import('@whiskeysockets/baileys');
+
+            // If already connected, return status
+            if (activeSockets.has(schoolId)) {
+                const sock = activeSockets.get(schoolId);
+                if (sock.user) {
+                    return { 
+                        success: true, 
+                        connected: true, 
+                        phoneNumber: sock.user.id.split(':')[0] 
+                    };
+                }
+            }
+
+            // Clean up existing QR if any
+            qrCodes.delete(schoolId);
+
+            // Fetch latest version
+            const { version, isLatest } = await fetchLatestBaileysVersion();
+            console.log(`using WA v${version.join('.')}, isLatest: ${isLatest}`);
+
+            // Initialize Auth State with MongoDB
+            const { state, saveCreds } = await useMongoDBAuthState(schoolId);
+
+            // Create Socket
+            const sock = makeWASocket({
+                version,
+                logger: pino({ level: 'silent' }),
+                printQRInTerminal: false,
+                auth: {
+                    creds: state.creds,
+                    keys: makeCacheableSignalKeyStore(state.keys, pino({ level: 'silent' })),
+                },
+                generateHighQualityLinkPreview: true,
+            });
+
+            // Save schoolId to socket for reference
+            sock.schoolId = schoolId;
+            activeSockets.set(schoolId, sock);
+
+            // Store QR promise resolver
+            let qrResolve;
+            const qrPromise = new Promise((resolve) => { qrResolve = resolve; });
+
+            // Connection Update Handler
+            sock.ev.on('connection.update', async (update) => {
+                const { connection, lastDisconnect, qr } = update;
+
+                if (qr) {
+                    console.log(`QR Generated for ${schoolId}`);
+                    try {
+                        const qrDataURL = await QRCode.toDataURL(qr, {
+                            width: 256,
+                            margin: 2,
+                            color: { dark: '#128C7E', light: '#FFFFFF' }
+                        });
+                        
+                        qrCodes.set(schoolId, qrDataURL);
+
+                        if (qrResolve) {
+                            qrResolve({
+                                success: true,
+                                qrCode: qrDataURL,
+                                message: 'Scan QR code with WhatsApp'
+                            });
+                            qrResolve = null;
+                        }
+                    } catch (err) {
+                        console.error('QR Generate Error:', err);
+                    }
+                }
+
+                if (connection === 'close') {
+                    const shouldReconnect = (lastDisconnect.error)?.output?.statusCode !== DisconnectReason.loggedOut;
+                    console.log(`Connection closed for ${schoolId}:`, lastDisconnect.error, ', reconnecting:', shouldReconnect);
+
+                    activeSockets.delete(schoolId);
+                    
+                    if (shouldReconnect) {
+                        this.connect(schoolId);
+                    } else {
+                        console.log(`Logged out ${schoolId}`);
+                        await WhatsAppSession.deleteOne({ _id: schoolId });
+                        await MessagingSettings.findOneAndUpdate(
+                            { school: schoolId },
+                            { 'whatsapp.connected': false, 'whatsapp.phoneNumber': '' }
+                        );
+                    }
+                } else if (connection === 'open') {
+                    console.log('Opened connection to WA for', schoolId);
+                    
+                    const phoneNumber = sock.user.id.split(':')[0];
+
+                    await MessagingSettings.findOneAndUpdate(
+                        { school: schoolId },
+                        { 
+                            'whatsapp.connected': true, 
+                            'whatsapp.phoneNumber': phoneNumber,
+                            'whatsapp.lastConnected': new Date()
+                        },
+                        { upsert: true }
+                    );
+
+                    qrCodes.delete(schoolId);
+                    
+                    if (qrResolve) {
+                        qrResolve({
+                            success: true,
+                            connected: true,
+                            phoneNumber
+                        });
+                        qrResolve = null;
+                    }
+                }
+            });
+
+            sock.ev.on('creds.update', saveCreds);
+
+            const timeoutPromise = new Promise(resolve => setTimeout(() => {
+                if (qrResolve) {
+                    qrResolve({ success: false, error: "Connection timed out" });
+                    qrResolve = null;
+                }
+            }, 20000));
+
+            return Promise.race([qrPromise, timeoutPromise]);
+            
+        } catch (error) {
+            console.error('WhatsApp Connect Error:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
+     * Get Connection Status
+     */
+    static async getStatus(schoolId) {
+        if (activeSockets.has(schoolId)) {
+            const sock = activeSockets.get(schoolId);
+            if (sock.user) {
+                return {
+                    connected: true,
+                    phoneNumber: sock.user.id.split(':')[0]
+                };
+            }
+        }
+
+        if (qrCodes.has(schoolId)) {
+            return {
+                connected: false,
+                 qrCode: qrCodes.get(schoolId),
+                 status: 'waiting_scan'
+             };
+        }
+
+        const settings = await MessagingSettings.findOne({ school: schoolId });
+        if (settings?.whatsapp?.connected) {
+            if (!activeSockets.has(schoolId)) {
+                this.connect(schoolId);
+                return {
+                    connected: true,
+                    phoneNumber: settings.whatsapp.phoneNumber,
+                    message: "Reconnecting session..."
+                };
+            }
+        }
+
+        return {
+            connected: false,
+            phoneNumber: settings?.whatsapp?.phoneNumber || ''
+        };
+    }
+
+    /**
+     * Disconnect/Logout
+     */
+    static async disconnect(schoolId) {
+        try {
+            if (activeSockets.has(schoolId)) {
+                const sock = activeSockets.get(schoolId);
+                sock.end(undefined);
+                activeSockets.delete(schoolId);
+            }
+
+            await WhatsAppSession.deleteOne({ _id: schoolId });
+            await MessagingSettings.findOneAndUpdate(
+                { school: schoolId },
+                { 'whatsapp.connected': false, 'whatsapp.phoneNumber': '' }
+            );
+
+            qrCodes.delete(schoolId);
+            
+            return { success: true, message: 'Disconnected and session cleared' };
+        } catch (error) {
+            console.error('Disconnect Error:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
+     * Send Message
+     */
+    static async sendMessage(schoolId, phoneNumber, message) {
+        try {
+            let sock = activeSockets.get(schoolId);
+
+            if (!sock) {
+                const sessionExists = await WhatsAppSession.exists({ _id: schoolId });
+                if (sessionExists) {
+                    await this.connect(schoolId);
+                    await new Promise(r => setTimeout(r, 2000));
+                    sock = activeSockets.get(schoolId);
+                }
+            }
+
+            if (!sock) {
+                return { success: false, error: 'WhatsApp not connected' };
+            }
+
+            let formattedNumber = phoneNumber.replace(/\D/g, '');
+            if (!formattedNumber.startsWith('92') && formattedNumber.startsWith('0')) {
+                formattedNumber = '92' + formattedNumber.substring(1);
+            } else if (!formattedNumber.startsWith('92')) {
+                formattedNumber = '92' + formattedNumber;
+            }
+            const jid = formattedNumber + '@s.whatsapp.net';
+
+            const sent = await sock.sendMessage(jid, { text: message });
+            
+            return {
+                success: true,
+                messageId: sent.key.id,
+                message: 'Message sent successfully'
+            };
+
+        } catch (error) {
+            console.error('Send Message Error:', error);
+            return { success: false, error: error.message };
+        }
+    }
+}
+
+module.exports = WhatsAppService;
